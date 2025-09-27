@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Feedback</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background-color: #f5f5f5;
+        min-height: 100vh;
+    }
+    
+    .community-background {
+        background: url("community-feedback-page_bg.png") no-repeat center center/cover;
+        background-attachment: fixed;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    
+    /* Header styles */
+    #i6po {
+        background-color: rgba(18, 39, 1, 1);
+        padding: 10px 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    #itjq {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    #iyd2 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    #ihtxj {
+        width: 54px;
+        height: 54px;
+    }
+
+    #it00l {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 20px;
+    }
+
+    .nav-links a {
+        color: rgba(255, 255, 255, 1);
+        text-decoration: none;
+        padding: 10px 20px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .nav-links a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    #i1mew {
+        padding: 10px 20px;
+        text-transform: uppercase;
+        font-family: Arial, Helvetica, sans-serif;
+        letter-spacing: 3px;
+        background-color: rgba(101, 85, 4, 1);
+        color: white;
+        text-decoration: none;
+        border-radius: 3px;
+    }
+
+    .gjs-grid-row {
+        display: block;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .gjs-grid-column {
+        display: block;
+        width: 100%;
+    }
+
+    /* Community Section Styles */
+    .community-section {
+        width: 95%;
+        max-width: 1200px;
+        background: transparent;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        min-height: 80vh;
+        padding: 30px;
+    }
+
+    .community-section h2 {
+        color: rgba(255, 255, 255, 1);
+        text-shadow: 1px 1px 5px black;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5rem;
+    }
+
+    /* Bulletin Board Styles */
+    .bulletin-board-main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .bulletin-board-container-large {
+        position: relative;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        border: 3px solid #8B4513;
+        border-radius: 15px;
+        overflow: hidden;
+        background: #D2B48C;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .bulletin-board-image {
+        width: 100%;
+        height: auto;
+        display: none;
+    }
+
+    .bulletin-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 500px;
+        background: linear-gradient(135deg, #D2B48C, #DEB887);
+        color: #8B4513;
+        text-align: center;
+        padding: 40px;
+    }
+
+    .bulletin-placeholder svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 20px;
+        opacity: 0.7;
+    }
+
+    .bulletin-placeholder h3 {
+        margin: 0 0 15px 0;
+        font-size: 1.8rem;
+    }
+
+    .bulletin-placeholder p {
+        margin: 0 0 10px 0;
+        font-size: 1.1rem;
+    }
+
+    .photo-spots {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .photo-spot {
+        position: absolute;
+        width: 120px;
+        height: 100px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        pointer-events: auto;
+        z-index: 10;
+    }
+
+    .photo-placeholder-spot {
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px dashed #666;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .photo-placeholder-spot span {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+
+    .photo-placeholder-spot p {
+        font-size: 0.8rem;
+        margin: 0;
+        color: #666;
+    }
+
+    .photo-spot:hover {
+        transform: scale(1.05);
+        z-index: 20;
+    }
+
+    .photo-spot.filled .photo-placeholder-spot {
+        background: white;
+        border: 2px solid #ddd;
+    }
+
+    .submitted-photo {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    .photo-author {
+        font-size: 0.7rem;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .bulletin-instructions {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.158);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .bulletin-instructions p {
+        margin: 5px 0;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 1);
+        text-shadow: 1px 1px 5px black;
+    }
+
+    /* Modal Styles */
+    .photo-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.8rem;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-close:hover {
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+    }
+
+    .file-input {
+        opacity: 0;
+        position: absolute;
+        z-index: -1;
+    }
+
+    .file-input-label {
+        display: inline-block;
+        padding: 12px 24px;
+        background: linear-gradient(45deg, #4ECDC4, #44A08D);
+        color: white;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+
+    .file-input-label:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+    }
+
+    .photo-preview-modal {
+        display: none;
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 10px;
+        margin-top: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 100px;
+        box-sizing: border-box;
+    }
+
+    textarea:focus {
+        border-color: #667eea;
+        outline: none;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus {
+        border-color: #667eea;
+        outline: none;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Form padding */
+    .modal-content form {
+        padding: 25px 30px 30px;
+    }
+
+    /* Footer styles */
+    #iv3be5 {
+        background-color: #f8f8f8;
+        padding: 60px 20px 20px;
+    }
+
+    #ilriti {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    #im0rle {
+        display: flex;
+        justify-content: space-between;
+        gap: 40px;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+    }
+
+    #ikhs8g {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        margin-bottom: 20px;
+    }
+
+    .footer-column {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .footer-column h3 {
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        color: #333;
+    }
+
+    .footer-column a {
+        display: block;
+        color: #666;
+        text-decoration: none;
+        margin-bottom: 8px;
+    }
+
+    .footer-column a:hover {
+        color: #333;
+    }
+
+    .gjs-divider {
+        height: 2px;
+        background-color: rgba(0, 0, 0, 0.1);
+        margin: 30px 0;
+    }
+
+    #it6g1v {
+        text-align: center;
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+<body>
+    <!-- Header -->
+    <div id="i6po" class="gjs-grid-row">
+        <div id="itjq" class="gjs-grid-column">
+            <div id="iyd2">
+                <div>
+                    <a href="homepage.html">
+                        <img id="ihtxj" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div id="it00l">
+                    <div class="nav-links">
+                        <a href="homepage.html">Home</a>
+                        <a href="#">About</a>                    
+                        <a href="menu.html">Menu</a>
+                        <a href="reservation.html">Reservation</a>
+                        <a href="community.html">Community</a>
+                    </div>
+                </div>
+                <div>
+                    <a id="i1mew" href="login.html">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="community-background">
+        <div class="community-section">
+            <h2>Community Bulletin Board</h2>
+            
+            <!-- Centered Large Bulletin Board -->
+            <div class="bulletin-board-main">
+                <div class="bulletin-board-container-large" id="bulletinBoardContainer">
+                    <img src="bulletin_board_bg.png" alt="Cafe Bulletin Board" class="bulletin-board-image" id="bulletinBoardImage" 
+                         onload="this.style.display='block'; document.getElementById('bulletinPlaceholder').style.display='none';" 
+                         onerror="showBulletinPlaceholder()">
+                    
+                    <!-- Placeholder shown when no image or image fails to load -->
+                    <div class="bulletin-placeholder" id="bulletinPlaceholder">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-1 16H9V7h9v14z"/>
+                        </svg>
+                        <h3>Community Bulletin Board</h3>
+                        <p>Share your cafe experiences and photos here!</p>
+                        <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">Your submitted photos will appear as pinned notes on this board</p>
+                    </div>
+                    
+                    <!-- Invisible photo spots that will show user submissions -->
+                    <div class="photo-spots" id="photoSpots">
+                        <!-- Photo Spot 1 - Top Left -->
+                        <div class="photo-spot" id="spot1" style="top: 15%; left: 12%; transform: rotate(-8deg);" onclick="openPhotoModal(1)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Spot 2 - Top Right -->
+                        <div class="photo-spot" id="spot2" style="top: 10%; right: 15%; transform: rotate(5deg);" onclick="openPhotoModal(2)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Spot 3 - Center Left -->
+                        <div class="photo-spot" id="spot3" style="top: 35%; left: 8%; transform: rotate(12deg);" onclick="openPhotoModal(3)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Spot 4 - Center -->
+                        <div class="photo-spot" id="spot4" style="top: 45%; left: 50%; transform: translate(-50%, -50%) rotate(-3deg);" onclick="openPhotoModal(4)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Spot 5 - Center Right -->
+                        <div class="photo-spot" id="spot5" style="top: 30%; right: 10%; transform: rotate(-7deg);" onclick="openPhotoModal(5)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Spot 6 - Bottom Left -->
+                        <div class="photo-spot" id="spot6" style="bottom: 20%; left: 15%; transform: rotate(4deg);" onclick="openPhotoModal(6)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Spot 7 - Bottom Right -->
+                        <div class="photo-spot" id="spot7" style="bottom: 15%; right: 12%; transform: rotate(-5deg);" onclick="openPhotoModal(7)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Spot 8 - Bottom Center -->
+                        <div class="photo-spot" id="spot8" style="bottom: 25%; left: 45%; transform: rotate(8deg);" onclick="openPhotoModal(8)">
+                            <div class="photo-placeholder-spot">
+                                <span>📷</span>
+                                <p>Click to add photo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="bulletin-instructions">
+                    <p>🖼️ Click on any empty spot to add your photo and review!</p>
+                    <p>📌 Share your cafe moments with the community</p>
+                </div>
+            </div>
+            
+            <!-- Photo Upload Modal -->
+            <div class="photo-modal" id="photoModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>📸 Share Your Cafe Experience</h3>
+                        <button class="modal-close" onclick="closePhotoModal()">&times;</button>
+                    </div>
+                    
+                    <form id="photoSubmissionForm" onsubmit="submitPhotoToBulletin(event)">
+                        <div class="form-group">
+                            <label for="modalPhotoInput">Choose Your Photo:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="modalPhotoInput" class="file-input" accept="image/*" onchange="previewModalPhoto(event)" required>
+                                <label for="modalPhotoInput" class="file-input-label">
+                                    📷 Select Photo
+                                </label>
+                                <img id="modalPhotoPreview" class="photo-preview-modal" alt="Photo preview">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="modalReviewText">Your Review:</label>
+                            <textarea id="modalReviewText" placeholder="Share your experience at Acaccia Bistro Cafe..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="modalUserName">Your Name:</label>
+                            <input type="text" id="modalUserName" placeholder="How should we credit you?" required>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Pin to Bulletin Board</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer - separate section with its own styling -->
+    <footer id="iv3be5" class="gjs-grid-row">
+        <div id="ilriti" class="gjs-grid-column">
+            <div id="im0rle">
+                <div>
+                    <a href="homepage.html">
+                        <img id="ikhs8g" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div class="footer-column">
+                    <h3>Acaccia Bistro Cafe</h3>
+                    <a>Alaminos, Laguna</a>
+                    <a>09123456789</a>
+                    <a>www.Cafesync.com</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <a href="homepage.html">Home</a>
+                    <a href="menu.html">Menu</a>
+                    <a href="reservation.html">Reservations</a>
+                    <a href="#">Events</a>
+                    <a href="#">About Us</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Social Media</h3>
+                    <a href="#">Facebook</a>
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                </div>
+            </div>
+            <div class="gjs-divider"></div>
+            <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
+        </div>
+    </footer>
+
+<script>
+// Global variables for bulletin board
+let selectedSpot = null;
+let bulletinPhotos = {}; // Store photos for each spot
+
+// Function to show bulletin board placeholder when image fails to load
+function showBulletinPlaceholder() {
+    document.getElementById('bulletinBoardImage').style.display = 'none';
+    document.getElementById('bulletinPlaceholder').style.display = 'block';
+}
+
+// Function to load bulletin board image when URL is provided
+function loadBulletinImage(imageUrl) {
+    const img = document.getElementById('bulletinBoardImage');
+    const placeholder = document.getElementById('bulletinPlaceholder');
+    
+    img.src = imageUrl;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+    
+    img.onerror = showBulletinPlaceholder;
+}
+
+// Open photo upload modal for specific spot
+function openPhotoModal(spotNumber) {
+    selectedSpot = spotNumber;
+    document.getElementById('photoModal').style.display = 'block';
+    
+    // Clear previous form data
+    document.getElementById('photoSubmissionForm').reset();
+    document.getElementById('modalPhotoPreview').style.display = 'none';
+}
+
+// Close photo upload modal
+function closePhotoModal() {
+    document.getElementById('photoModal').style.display = 'none';
+    selectedSpot = null;
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('photoModal');
+    if (event.target === modal) {
+        closePhotoModal();
+    }
+}
+
+// Preview uploaded photo in modal
+function previewModalPhoto(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('modalPhotoPreview');
+    
+    if (file) {
+        // Check file size (limit to 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Please choose an image smaller than 5MB.');
+            event.target.value = '';
+            preview.style.display = 'none';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// Submit photo to bulletin board
+function submitPhotoToBulletin(event) {
+    event.preventDefault();
+    
+    if (!selectedSpot) {
+        alert('Error: No spot selected.');
+        return;
+    }
+    
+    const photoInput = document.getElementById('modalPhotoInput');
+    const reviewText = document.getElementById('modalReviewText').value.trim();
+    const userName = document.getElementById('modalUserName').value.trim();
+    
+    if (!photoInput.files[0]) {
+        alert('Please select a photo to upload.');
+        return;
+    }
+    
+    if (!reviewText) {
+        alert('Please write a review to go with your photo.');
+        return;
+    }
+    
+    if (!userName) {
+        alert('Please enter your name.');
+        return;
+    }
+    
+    // Process the image
+    const file = photoInput.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        // Store the photo data
+        bulletinPhotos[selectedSpot] = {
+            image: e.target.result,
+            author: userName,
+            review: reviewText,
+            date: new Date().toLocaleDateString()
+        };
+        
+        // Update the visual spot
+        updatePhotoSpot(selectedSpot, bulletinPhotos[selectedSpot]);
+        
+        // Close modal
+        closePhotoModal();
+        
+        // Show success message
+        showSuccessMessage('Your photo has been pinned to the bulletin board!');
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// Update photo spot with submitted photo
+function updatePhotoSpot(spotNumber, photoData) {
+    const spot = document.getElementById(`spot${spotNumber}`);
+    
+    if (spot) {
+        spot.classList.add('filled');
+        
+        // Create the photo content
+        spot.innerHTML = `
+            <div class="photo-placeholder-spot">
+                <img src="${photoData.image}" alt="Community photo" class="submitted-photo">
+                <div class="photo-author">📝 ${photoData.author}</div>
+            </div>
+        `;
+        
+        // Add click event to view full photo and review
+        spot.onclick = function() {
+            viewPhotoDetails(spotNumber);
+        };
+    }
+}
+
+// View photo details in modal
+function viewPhotoDetails(spotNumber) {
+    const photoData = bulletinPhotos[spotNumber];
+    
+    if (!photoData) return;
+    
+    // Create a view-only modal
+    const modal = document.createElement('div');
+    modal.className = 'photo-modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📸 ${photoData.author}'s Experience</h3>
+                <button class="modal-close" onclick="this.closest('.photo-modal').remove()">&times;</button>
+            </div>
+            <div style="padding: 25px 30px 30px;">
+                <img src="${photoData.image}" alt="Community photo" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 10px; margin-bottom: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h4 style="margin: 0 0 10px 0; color: #667eea;">Review:</h4>
+                    <p style="margin: 0; line-height: 1.6;">${photoData.review}</p>
+                    <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">Shared on ${photoData.date}</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close when clicking outside
+    modal.onclick = function(event) {
+        if (event.target === modal) {
+            modal.remove();
+        }
+    };
+}
+
+// Show success message
+function showSuccessMessage(message) {
+    // Create success notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        z-index: 1001;
+        font-weight: bold;
+        animation: slideInRight 0.5s ease-out;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.2rem;">✅</span>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Add animation CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideInRight 0.5s ease-out reverse';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 500);
+    }, 3000);
+}
+
+// Initialize bulletin board when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Bulletin board initialized');
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="index,follow">
+    <style>
+        /* Reset and base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            line-height: 1.6;
+        }
+
+        /* Fix the main grid structure */
+        .gjs-grid-row {
+            display: block; /* Changed from flex to block */
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .gjs-grid-column {
+            display: block; /* Changed from flex to block */
+            width: 100%;
+        }
+
+        /* Header styles */
+        #i6po {
+            background-color: rgba(18, 39, 1, 1);
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        #itjq {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        #iyd2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        #ihtxj {
+            width: 54px;
+            height: 54px;
+        }
+
+        #it00l {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 1);
+            text-decoration: none;
+            padding: 10px 20px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #i1mew {
+            padding: 10px 20px;
+            text-transform: uppercase;
+            font-family: Arial, Helvetica, sans-serif;
+            letter-spacing: 3px;
+            background-color: rgba(101, 85, 4, 1);
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+
+        /* Hero section */
+        #irz7b {
+            background-image: url("https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/7cedd874-66a4-4bde-bdcd-6ed59000b0df__websiteherobackground.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 80px 20px;
+            text-align: center;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #iycz3 {
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        #irjua {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 1);
+            text-shadow: 1px 1px 5px black;
+            margin-bottom: 20px;
+        }
+
+        #itndw {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: rgba(252, 252, 252, 0.75);
+            text-shadow: 1px 1px 5px black;
+            max-width: 750px;
+            margin: 0 auto 40px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            padding: 12px 24px;
+            text-transform: uppercase;
+            font-family: Arial, Helvetica, sans-serif;
+            letter-spacing: 3px;
+            background-color: rgba(101, 85, 4, 1);
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: rgba(81, 65, 0, 1);
+        }
+
+        /* Menu section */
+        #ixig3 {
+            background-image: url("https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/83562634-6979-470c-a9b1-5cf56065539a__menubg.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 80px 20px;
+            min-height: 600px;
+        }
+
+        #ifx1t {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        #ie2yp {
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 20px;
+        }
+
+        #ip9za {
+            max-width: 750px;
+            margin: 0 auto 40px;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Carousel styles */
+        .carousel-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 40px auto;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .slide {
+            flex: 0 0 300px;
+            scroll-snap-align: start;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .slide:hover {
+            transform: scale(1.05);
+        }
+
+        .slide img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .slide-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .slide-content h2 {
+            margin: 0 0 10px;
+            font-size: 1.3rem;
+            color: #333;
+        }
+
+        .slide-content p {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        /* Reservation section */
+        #ichzi {
+            background-image: url("https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/b79069aa-9ab4-4e03-9cbd-44f0aa20bd43__reservationbg.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 80px 20px;
+            min-height: 400px;
+        }
+
+        #imymf {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #ib541 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 50px;
+        }
+
+        #iz8m8 {
+            flex: 1;
+        }
+
+        #ij2gh {
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 20px;
+        }
+
+        #igrx8 {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        /* Community section */
+        #ioyxg {
+            background-image: url("https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/d780a6c5-13a1-4b21-b12d-16c34bbcfe01__communityfdbackbg-1.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 80px 20px;
+            min-height: 400px;
+        }
+
+        #i8w4i {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: right;
+        }
+
+        #iiacm {
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 20px;
+        }
+
+        #ia21sa {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-left: auto;
+            margin-bottom: 30px;
+        }
+
+        /* Team section */
+        #igo13t {
+            background-image: url("https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/6764d415-540f-4f15-96cc-10ccdcd601fb__ownerbg-1.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        #infwen {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #ihap8q {
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 1);
+            margin-bottom: 20px;
+        }
+
+        #i6fjjy {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 750px;
+            margin: 0 auto 50px;
+        }
+
+        /* Testimonials */
+        .testimonial-section {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .testimonial {
+            background: rgba(155, 188, 134, 0.9);
+            border-radius: 12px;
+            overflow: hidden;
+            flex: 1 1 400px;
+            max-width: 450px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .testimonial img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .info-box {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .info-box h3 {
+            margin: 0 0 5px;
+            font-size: 1.3rem;
+            color: #222;
+        }
+
+        .info-box h4 {
+            margin: 0 0 10px;
+            font-size: 1rem;
+            color: #555;
+            font-weight: normal;
+        }
+
+        .info-box p {
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        #iv3be5 {
+            background-color: #f8f8f8;
+            padding: 60px 20px 20px;
+        }
+
+        #ilriti {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #im0rle {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        #ikhs8g {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            color: #333;
+        }
+
+        .footer-column a {
+            display: block;
+            color: #666;
+            text-decoration: none;
+            margin-bottom: 8px;
+        }
+
+        .footer-column a:hover {
+            color: #333;
+        }
+
+        .gjs-divider {
+            height: 2px;
+            background-color: rgba(0, 0, 0, 0.1);
+            margin: 30px 0;
+        }
+
+        #it6g1v {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            #iyd2 {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            #it00l {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            #irjua {
+                font-size: 2rem;
+            }
+
+            #itndw {
+                font-size: 1.1rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #ib541 {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            #i8w4i {
+                text-align: center;
+            }
+
+            #ia21sa {
+                margin-left: 0;
+            }
+
+            .testimonial-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #im0rle {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .carousel-container {
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .slide {
+                flex: 0 0 280px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div id="i6po" class="gjs-grid-row">
+        <div id="itjq" class="gjs-grid-column">
+            <div id="iyd2">
+                <div>
+                    <a href="/">
+                        <img id="ihtxj" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div id="it00l">
+                    <div class="nav-links">
+                        <a href="homepage.html">Home</a>
+                        <a href="#">About</a>
+                        <a href="menu.html">Menu</a>
+                        <a href="reservation.html">Reservation</a>
+                        <a href="community-feedback.html">Community</a>
+                    </div>
+                </div>
+                <div>
+                    <a id="i1mew" href="login.html">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div id="irz7b" class="gjs-grid-row">
+        <div id="iycz3" class="gjs-grid-column">
+            <h1 id="irjua">Your Sanctuary in Alaminos.</h1>
+            <div id="itndw">Welcome to Acaccia Bistro Cafe, a serene retreat nestled in the heart of Laguna. Find your shade and unwind with our specialty coffee, or indulge in a flavorful journey with our menu of handcrafted bistro meals.</div>
+            <div class="button-group">
+                <a href="menu.html" class="cta-button">View Menu</a>
+                <a href="reservation.html" class="cta-button">Make Reservation</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Section -->
+    <div id="ixig3" class="gjs-grid-row">
+        <div id="ifx1t" class="gjs-grid-column">
+            <div>
+                <h2 id="ie2yp">Check our Menu</h2>
+                <div id="ip9za">Our menu is a celebration of flavor, crafted from fresh, locally-sourced ingredients and a passion for good food. From our signature coffees to comforting bistro meals, every dish is prepared with care, ready to be your new favorite.</div>
+                <a href="menu.html" class="cta-button">View full menu</a>
+            </div>
+            
+            <div class="carousel-container">
+                <div class="slide">
+                    <img src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/8b7e20e7-9d45-45b2-b19e-cf56a4bb0161__sandwiches.jpg" alt="Sandwiches" />
+                    <div class="slide-content">
+                        <h2>Sandwiches</h2>
+                        <p>Freshly made sandwiches with a variety of fillings to satisfy every craving.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/b748e559-4bfc-412c-9673-e97acc4e107e__soup.webp" alt="Soups and Salads" />
+                    <div class="slide-content">
+                        <h2>Soups &amp; Salads</h2>
+                        <p>Wholesome soups and refreshing salads made with seasonal ingredients.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/3bd2e6be-5efa-4e27-a42d-176241eea10d__breakfast.jpg" alt="Breakfast Items" />
+                    <div class="slide-content">
+                        <h2>Breakfast Items</h2>
+                        <p>Start your day with our hearty and energizing breakfast classics.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/5df6e897-606a-4aad-85b6-f213ac5c88dc__pastries.jpg" alt="Pastries and Desserts" />
+                    <div class="slide-content">
+                        <h2>Pastries &amp; Desserts</h2>
+                        <p>Delicious baked goods and sweet treats for every sweet tooth.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/d2541121-45dc-4839-a28b-449fe82cf5bf__coffee.webp" alt="Coffee and Tea" />
+                    <div class="slide-content">
+                        <h2>Coffee &amp; Tea</h2>
+                        <p>Rich brews and soothing teas crafted to perfection.</p>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/313a734d-59e0-43e6-8f9a-43890b05f8b0__special-dish.webp" alt="Specialty Dishes" />
+                    <div class="slide-content">
+                        <h2>Specialty Dishes</h2>
+                        <p>Unique chef-crafted dishes with bold flavors and creativity.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservation Section -->
+    <div id="ichzi" class="gjs-grid-row">
+        <div id="imymf" class="gjs-grid-column">
+            <div id="ib541">
+                <div id="iz8m8">
+                    <h2 id="ij2gh">Interactive Reservation</h2>
+                    <div id="igrx8">Skip the uncertainty. With our new interactive reservation map, you can see a live view of our cafe, check which seats are available, and reserve your favorite spot in advance. Whether you need the quiet corner table or the one by the window, arrive with confidence knowing your seat is waiting for you.</div>
+                    <a href="reservation.html" class="cta-button">Book Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Section -->
+    <div id="ioyxg" class="gjs-grid-row">
+        <div id="i8w4i" class="gjs-grid-column">
+            <h2 id="iiacm">See the community</h2>
+            <div id="ia21sa">Stay in the loop with what's happening at the café! Check out the latest announcements, discover upcoming events, and see what other customers are saying. It's a fun way to share experiences and feel part of the community.</div>
+            <a href="community-feedback.html" class="cta-button">Join Community</a>
+        </div>
+    </div>
+
+    <!-- Team Section -->
+    <div id="igo13t" class="gjs-grid-row">
+        <div id="infwen" class="gjs-grid-column">
+            <h2 id="ihap8q">The People Behind</h2>
+            <div id="i6fjjy">Meet the passionate team that brings Acaccia Bistro Cafe to life every day.</div>
+            
+            <section class="testimonial-section">
+                <div class="testimonial">
+                    <img src="https://images.pexels.com/photos/6532131/pexels-photo-6532131.jpeg" alt="John Doe" />
+                    <div class="info-box">
+                        <h3>John Doe</h3>
+                        <h4>Head Chef</h4>
+                        <p>"Passionate about creating memorable dining experiences with fresh, local ingredients."</p>
+                    </div>
+                </div>
+                <div class="testimonial">
+                    <img src="https://images.pexels.com/photos/7959652/pexels-photo-7959652.jpeg" alt="Jane Smith" />
+                    <div class="info-box">
+                        <h3>Jane Smith</h3>
+                        <h4>Café Manager</h4>
+                        <p>"Dedicated to ensuring every visit to our café is warm, welcoming, and exceptional."</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div id="iv3be5" class="gjs-grid-row">
+        <div id="ilriti" class="gjs-grid-column">
+            <div id="im0rle">
+                <div>
+                    <a href="/">
+                        <img id="ikhs8g" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div class="footer-column">
+                    <h3>Acaccia Bistro Cafe</h3>
+                    <a>Alaminos, Laguna</a>
+                    <a>09123456789</a>
+                    <a>www.Cafesync.com</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <a href="homepage.html">Home</a>
+                    <a href="menu.html">Menu</a>
+                    <a href="reservation.html">Reservations</a>
+                    <a href="community-feedback.html">Community</a>
+                    <a href="#">About Us</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Social Media</h3>
+                    <a href="#">Facebook</a>
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                </div>
+            </div>
+            <div class="gjs-divider"></div>
+            <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
+        </div>
+    </div>
+</body>
+</html>

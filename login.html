@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acaccia Bistro Cafe - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: url(login-page_bg.png);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+            min-height: 550px;
+        }
+
+        .image-section {
+            flex: 1;
+            position: relative;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: url(login-page-img.jpeg) center/cover;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            padding: 40px;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(0,0,0,0.4), rgba(0,0,0,0.1));
+        }
+
+        .image-text {
+            position: relative;
+            z-index: 2;
+            color: white;
+            font-size: 24px;
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.452); /* Add this line */
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome-text h2 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .welcome-text p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-type-selector {
+            display: flex;
+            margin-bottom: 30px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .login-type-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .login-type-btn.active {
+            background: rgba(101, 85, 4, 1);
+            color: white;
+        }
+
+        .login-type-btn:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(101, 85, 4, 1);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 25px;
+        }
+
+        .forgot-password a {
+            color: rgba(101, 85, 4, 1);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .main-button {
+            width: 100%;
+            padding: 14px;
+            background: rgba(101, 85, 4, 1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .main-button:hover {
+            background: #45a049;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e1e5e9;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e1e5e9;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .employee-login {
+            text-align: center;
+        }
+
+        .employee-login button {
+            background: none;
+            border: none;
+            color: #666;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .employee-login button:hover {
+            color: #333;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: rgba(101, 85, 4, 1);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                max-width: 400px;
+            }
+
+            .image-section {
+                min-height: 200px;
+            }
+
+            .form-section {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Image Section -->
+        <div class="image-section">
+            <div class="image-placeholder">
+                <div class="image-overlay"></div>
+                <div class="image-text">Express Yourself.</div>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="welcome-text">
+                <h2 id="welcomeTitle">Welcome Back</h2>
+                <p id="welcomeSubtext">Enter your credentials to view your account</p>
+            </div>
+
+            <!-- Login Type Selector -->
+            <div class="login-type-selector">
+                <button class="login-type-btn active" id="customerBtn" onclick="switchLoginType('customer')">Customer</button>
+                <button class="login-type-btn" id="employeeBtn" onclick="switchLoginType('employee')">Employee</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="user@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <!-- Additional Registration Fields (Hidden by default) -->
+                <div class="form-group hidden" id="confirmPasswordGroup">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••">
+                </div>
+
+                <div class="form-group hidden" id="fullNameGroup">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group hidden" id="phoneGroup">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+                </div>
+
+                <div class="forgot-password">
+                    <a href="#" id="forgotLink">Forgot your password?</a>
+                </div>
+
+                <button type="submit" class="main-button" id="mainButton">Log In</button>
+            </form>
+
+            <div class="divider" id="socialDivider">
+                <span>OR</span>
+            </div>
+
+            <div class="social-buttons" id="socialButtons">
+                <button class="social-btn">📘 Sign in with Facebook</button>
+                <button class="social-btn">🔍 Sign in with Google</button>
+            </div>
+
+            <!-- Employee Login (Customer mode) -->
+            <div class="employee-login" id="employeeLoginLink">
+                <button type="button" onclick="switchLoginType('employee')">Login as Employee</button>
+            </div>
+
+            <!-- Register Link (Login mode only) -->
+            <div class="register-link" id="registerLink">
+                <a href="#" onclick="toggleMode()">Don't have an account? Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLoginType = 'customer';
+        let isRegisterMode = false;
+
+        function switchLoginType(type) {
+            currentLoginType = type;
+            
+            // Update button states
+            document.getElementById('customerBtn').classList.toggle('active', type === 'customer');
+            document.getElementById('employeeBtn').classList.toggle('active', type === 'employee');
+            
+            // Update form based on login type
+            if (type === 'customer') {
+                document.getElementById('welcomeTitle').textContent = 'Welcome Back';
+                document.getElementById('welcomeSubtext').textContent = 'Enter your credentials to view your account';
+                document.getElementById('socialDivider').style.display = 'block';
+                document.getElementById('socialButtons').style.display = 'flex';
+                document.getElementById('employeeLoginLink').style.display = 'block';
+                document.getElementById('registerLink').style.display = 'block';
+                
+                // Reset to login mode when switching to customer
+                if (isRegisterMode) {
+                    toggleMode();
+                }
+            } else {
+                document.getElementById('welcomeTitle').textContent = 'Employee Login';
+                document.getElementById('welcomeSubtext').textContent = 'Access employee dashboard';
+                document.getElementById('socialDivider').style.display = 'none';
+                document.getElementById('socialButtons').style.display = 'none';
+                document.getElementById('employeeLoginLink').style.display = 'none';
+                document.getElementById('registerLink').style.display = 'none';
+                document.getElementById('mainButton').textContent = 'Employee Login';
+                
+                // Hide registration fields if visible
+                hideRegistrationFields();
+                isRegisterMode = false;
+            }
+        }
+
+        function toggleMode() {
+            if (currentLoginType !== 'customer') return;
+            
+            isRegisterMode = !isRegisterMode;
+            
+            if (isRegisterMode) {
+                // Switch to registration mode
+                document.getElementById('welcomeTitle').textContent = 'Create Account';
+                document.getElementById('welcomeSubtext').textContent = 'Join our community today';
+                document.getElementById('mainButton').textContent = 'Sign Up';
+                document.getElementById('registerLink').innerHTML = '<a href="#" onclick="toggleMode()">Already have an account? Log In</a>';
+                document.getElementById('forgotLink').style.display = 'none';
+                showRegistrationFields();
+            } else {
+                // Switch to login mode
+                document.getElementById('welcomeTitle').textContent = 'Welcome Back';
+                document.getElementById('welcomeSubtext').textContent = 'Enter your credentials to view your account';
+                document.getElementById('mainButton').textContent = 'Log In';
+                document.getElementById('registerLink').innerHTML = '<a href="#" onclick="toggleMode()">Don\'t have an account? Sign Up</a>';
+                document.getElementById('forgotLink').style.display = 'block';
+                hideRegistrationFields();
+            }
+        }
+
+        function showRegistrationFields() {
+            document.getElementById('confirmPasswordGroup').classList.remove('hidden');
+            document.getElementById('fullNameGroup').classList.remove('hidden');
+            document.getElementById('phoneGroup').classList.remove('hidden');
+        }
+
+        function hideRegistrationFields() {
+            document.getElementById('confirmPasswordGroup').classList.add('hidden');
+            document.getElementById('fullNameGroup').classList.add('hidden');
+            document.getElementById('phoneGroup').classList.add('hidden');
+        }
+
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (currentLoginType === 'customer') {
+                if (isRegisterMode) {
+                    // Handle registration
+                    const password = document.getElementById('password').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    if (password !== confirmPassword) {
+                        alert('Passwords do not match!');
+                        return;
+                    }
+                    
+                    alert('Account created successfully! Redirecting to homepage...');
+                    setTimeout(() => {
+                        window.location.href = 'homepage.html';
+                    }, 1000);
+                } else {
+                    // Handle customer login
+                    alert('Customer login successful! Redirecting to homepage...');
+                    setTimeout(() => {
+                        window.location.href = 'homepage.html';
+                    }, 1000);
+                }
+            } else {
+                // Handle employee login (placeholder)
+                alert('Employee login functionality will be implemented later.');
+            }
+        });
+    </script>
+</body>
+</html>

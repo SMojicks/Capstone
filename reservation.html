@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation</title>
+</head>
+<style>
+        body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f5f5;
+      min-height: 100vh;
+    }
+        .reservation-background {
+      background: url("reservation_page_bg.png") no-repeat center center/cover;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+/* Header styles */
+        #i6po {
+            background-color: rgba(18, 39, 1, 1);
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        #itjq {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        #iyd2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        #ihtxj {
+            width: 54px;
+            height: 54px;
+        }
+
+        #it00l {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 1);
+            text-decoration: none;
+            padding: 10px 20px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #i1mew {
+            padding: 10px 20px;
+            text-transform: uppercase;
+            font-family: Arial, Helvetica, sans-serif;
+            letter-spacing: 3px;
+            background-color: rgba(101, 85, 4, 1);
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+
+        .gjs-grid-row {
+            display: block;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .gjs-grid-column {
+            display: block;
+            width: 100%;
+        }
+
+        /* Reservation Section Styles */
+        .reservation-section {
+            display: flex;
+            width: 95%;
+            max-width: 1400px;
+            background: rgba(255, 255, 255, 0.123);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-height: 80vh;
+        }
+
+        .reservation-grid {
+            display: flex;
+            width: 100%;
+            gap: 20px;
+        }
+
+        .cafe-section {
+            flex: 2;
+            padding: 20px;
+            background: #f8f9fa21;
+        }
+
+        .cafe-section h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .cafe-layout {
+            position: relative;
+        }
+
+        .cafe-image-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #ffffff28;
+        }
+
+        .cafe-image {
+            width: 100%;
+            height: auto;
+            display: none;
+        }
+
+        .image-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            background: #f0f0f0;
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .image-placeholder svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .table-overlays {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .table-spot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .table-spot.available {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            animation: pulse 2s infinite;
+        }
+
+        .table-spot.occupied {
+            background: linear-gradient(45deg, #df0404, #FF8E53);
+            cursor: not-allowed;
+        }
+
+        .table-spot.selected {
+            background: linear-gradient(45deg, #04ec23, #764ba2);
+            transform: scale(1.3);
+            box-shadow: 0 0 15px rgba(4, 236, 35, 0.6);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .legend {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 1px solid #333;
+        }
+
+        .reservation-form {
+            flex: 1;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .reservation-form h3 {
+            color: rgba(255, 255, 255, 1);
+            text-shadow: 1px 1px 5px black;
+            margin-top: 0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            color: rgba(255, 255, 255, 1);
+            text-shadow: 1px 1px 5px black;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .datetime-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .datetime-group .form-group {
+            flex: 1;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-transform: uppercase;
+            font-family: Arial, Helvetica, sans-serif;
+            letter-spacing: 3px;
+            background-color: rgba(101, 85, 4, 1);
+            text-decoration: none;
+            border-radius: 3px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .selected-table-info {
+            background: linear-gradient(45deg, #04ec23, rgba(101, 85, 4, 1));
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .selected-table-info.show {
+            display: block;
+        }
+
+        .success-message {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+        
+         /* Footer - separate from menu background */
+        #iv3be5 {
+            background-color: #f8f8f8;
+            padding: 60px 20px 20px;
+        }
+
+        #ilriti {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #im0rle {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        #ikhs8g {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            color: #333;
+        }
+
+        .footer-column a {
+            display: block;
+            color: #666;
+            text-decoration: none;
+            margin-bottom: 8px;
+        }
+
+        .footer-column a:hover {
+            color: #333;
+        }
+
+        .gjs-divider {
+            height: 2px;
+            background-color: rgba(0, 0, 0, 0.1);
+            margin: 30px 0;
+        }
+
+        #it6g1v {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+</style>
+<body>
+        <!-- Header -->
+    <div id="i6po" class="gjs-grid-row">
+        <div id="itjq" class="gjs-grid-column">
+            <div id="iyd2">
+                <div>
+                    <a href="homepage.html">
+                        <img id="ihtxj" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div id="it00l">
+                    <div class="nav-links">
+                        <a href="homepage.html">Home</a>
+                        <a href="#">About</a>                    
+                        <a href="menu.html">Menu</a>
+                        <a href="reservation.html">Reservation</a>
+                        <a href="community-feedback.html">Community</a>
+                    </div>
+                </div>
+                <div>
+                    <a id="i1mew" href="login.html">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="reservation-background">
+        <div class="reservation-section">
+            <div class="reservation-grid">
+                <!-- Cafe Layout Section -->
+                <div class="cafe-section">
+                    <h2 style="color: rgba(255, 255, 255, 1); text-shadow: 1px 1px 5px black; font-size: 30px;">Cafe Floor Plan</h2>
+                    <div class="cafe-layout">
+                        <div class="cafe-image-container" id="cafeImageContainer">
+                            <img src='cafe_layout_2d_real.png' alt="Cafe Floor Plan" class="cafe-image" id="cafeImage" onload="this.style.display='block'; document.getElementById('imagePlaceholder').style.display='none';" onerror="showPlaceholder()">
+                            
+                            <!-- Placeholder shown when no image or image fails to load -->
+                            <div class="image-placeholder" id="imagePlaceholder">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M21,19V5c0-1.1-0.9-2-2-2H5c-1.1,0-2,0.9-2,2v14c0,1.1,0.9,2,2,2h14C20.1,21,21,20.1,21,19z M8.5,13.5l2.5,3.01 L14.5,12l4.5,6H5L8.5,13.5z"/>
+                                </svg>
+                                <p><strong>Cafe Floor Plan Image</strong></p>
+                                <p>Replace the image URL in the code to display your cafe layout</p>
+                            </div>
+                            
+                            <!-- Table overlays -->
+                            <div class="table-overlays" id="tableOverlays">
+                                <div class="table-spot" data-id="1" style="top: 25%; left: 10%;"></div>
+                                <div class="table-spot" data-id="2" style="top: 23%; left: 38%;"></div>
+                                <div class="table-spot" data-id="3" style="top: 26%; left: 89%;"></div>
+                                <div class="table-spot" data-id="4" style="top: 60%; left: 13%;"></div>
+                                <div class="table-spot" data-id="5" style="top: 54%; left: 32%;"></div>
+                                <div class="table-spot" data-id="6" style="top: 54%; left: 50%;"></div>
+                                <div class="table-spot" data-id="7" style="top: 82%; left: 6%;"></div>
+                                <div class="table-spot" data-id="8" style="top: 82%; left: 32%;"></div>
+                                <div class="table-spot" data-id="9" style="top: 80%; left:50%;"></div>
+                                <div class="table-spot" data-id="10" style="top: 60%; left: 90%;"></div>
+                                <div class="table-spot" data-id="11" style="top: 78%; left: 90%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: linear-gradient(45deg, #4ECDC4, #44A08D);"></div>
+                                <span>Available Tables</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: linear-gradient(45deg, #df0404, #FF8E53);"></div>
+                                <span>Occupied Tables</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: linear-gradient(45deg, #04ec23, #764ba2);"></div>
+                                <span>Your Selection</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservation Form Section -->
+                <div class="reservation-form">
+                    <h3>Make a Reservation</h3>
+                    
+                    <div class="success-message" id="successMessage">
+                        <strong>🎉 Reservation Confirmed!</strong><br>
+                        Your table has been reserved successfully.
+                    </div>
+
+                    <div class="selected-table-info" id="selectedTableInfo">
+                        <strong>Selected Table: <span id="selectedTableNumber"></span></strong>
+                    </div>
+
+                    <form id="reservationForm">
+                        <div class="form-group">
+                            <label for="customerName">Name *</label>
+                            <input type="text" id="customerNameInput" name="customerName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactNumber">Contact Number *</label>
+                            <input type="tel" id="contactNumber" name="contactNumber" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numberOfDiners">Number of Diners *</label>
+                            <select id="numberOfDiners" name="numberOfDiners" required>
+                                <option value="">Select number of diners</option>
+                                <option value="1">1 Person</option>
+                                <option value="2">2 People</option>
+                                <option value="3">3 People</option>
+                                <option value="4">4 People</option>
+                                <option value="5">5 People</option>
+                                <option value="6">6 People</option>
+                                <option value="7">7 People</option>
+                                <option value="8">8+ People</option>
+                            </select>
+                        </div>
+
+                        <div class="datetime-group">
+                            <div class="form-group">
+                                <label for="reservationDate">Date *</label>
+                                <input type="date" id="reservationDate" name="reservationDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reservationTime">Time *</label>
+                                <input type="time" id="reservationTime" name="reservationTime" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Special Requests / Notes</label>
+                            <textarea id="notes" name="notes" placeholder="Any special requests, dietary restrictions, or additional notes..."></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            Submit Reservation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Footer - separate section with its own styling -->
+    <footer id="iv3be5" class="gjs-grid-row">
+        <div id="ilriti" class="gjs-grid-column">
+            <div id="im0rle">
+                <div>
+                    <a href="homepage.html">
+                        <img id="ikhs8g" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                    </a>
+                </div>
+                <div class="footer-column">
+                    <h3>Acaccia Bistro Cafe</h3>
+                    <a>Alaminos, Laguna</a>
+                    <a>09123456789</a>
+                    <a>www.Cafesync.com</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <a href="homepage.html">Home</a>
+                    <a href="menu.html">Menu</a>
+                    <a href="reservation.html">Reservations</a>
+                    <a href="community-feedback.html">Community</a>
+                    <a href="#">About Us</a>
+                </div>
+                <div class="footer-column">
+                    <h3>Social Media</h3>
+                    <a href="#">Facebook</a>
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                </div>
+            </div>
+            <div class="gjs-divider"></div>
+            <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
+        </div>
+    </footer>
+
+<script>
+// Table selection variables
+let selectedTableId = null;
+let occupiedTables = [];
+let reservationsList = [];
+
+// Function to show placeholder when image fails to load
+function showPlaceholder() {
+    document.getElementById('cafeImage').style.display = 'none';
+    document.getElementById('imagePlaceholder').style.display = 'block';
+}
+
+// Set minimum date to tomorrow
+function setMinDate() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const dateInput = document.getElementById('reservationDate');
+    if (dateInput) {
+        dateInput.min = tomorrow.toISOString().split('T')[0];
+    }
+}
+
+// Initialize table selection
+function initializeTableSelection() {
+    console.log('Initializing table selection...');
+    const tableSpots = document.querySelectorAll('.table-spot');
+    console.log('Found table spots:', tableSpots.length);
+    
+    tableSpots.forEach(spot => {
+        const tableId = spot.getAttribute('data-id');
+        console.log('Setting up table:', tableId);
+        
+        // Set initial state
+        if (occupiedTables.includes(tableId)) {
+            spot.classList.add('occupied');
+        } else {
+            spot.classList.add('available');
+        }
+        
+        // Add click event
+        spot.addEventListener('click', function() {
+            console.log('Table clicked:', tableId);
+            selectTable(tableId, spot);
+        });
+    });
+}
+
+// Select table function
+function selectTable(tableId, spotElement) {
+    console.log('Selecting table:', tableId);
+    
+    // Don't allow selection of occupied tables
+    if (spotElement.classList.contains('occupied')) {
+        alert('This table is already occupied. Please select another table.');
+        return;
+    }
+    
+    // Remove previous selection
+    document.querySelectorAll('.table-spot.selected').forEach(spot => {
+        spot.classList.remove('selected');
+        spot.classList.add('available');
+    });
+    
+    // Select new table
+    selectedTableId = tableId;
+    spotElement.classList.remove('available');
+    spotElement.classList.add('selected');
+    
+    // Update UI
+    updateSelectedTableInfo(tableId);
+}
+
+// Update selected table info
+function updateSelectedTableInfo(tableId) {
+    const selectedTableInfo = document.getElementById('selectedTableInfo');
+    const selectedTableNumber = document.getElementById('selectedTableNumber');
+    
+    if (selectedTableNumber) {
+        selectedTableNumber.textContent = tableId;
+    }
+    
+    selectedTableInfo.classList.add('show');
+}
+
+// Update table status
+function updateTableStatus(tableId, status) {
+    const tableSpot = document.querySelector(`.table-spot[data-id="${tableId}"]`);
+    if (tableSpot) {
+        tableSpot.classList.remove('available', 'selected', 'occupied');
+        tableSpot.classList.add(status);
+    }
+}
+
+// Add reservation to list
+function addReservation(reservationData) {
+    const newReservation = {
+        id: Date.now(),
+        bookingDate: new Date().toLocaleString(),
+        tableNumber: reservationData.tableNumber,
+        name: reservationData.name,
+        contact: reservationData.contact,
+        diners: reservationData.diners,
+        reservationDate: reservationData.date,
+        time: reservationData.time,
+        notes: reservationData.notes || 'None'
+    };
+    
+    reservationsList.unshift(newReservation);
+    console.log('Added reservation:', newReservation);
+}
+
+// Handle reservation form submission
+function handleReservation(event) {
+    event.preventDefault();
+
+    // Check if table is selected
+    if (!selectedTableId) {
+        alert('Please select a table before making a reservation.');
+        return;
+    }
+
+    const formData = new FormData(event.target);
+    const reservationData = {
+        tableNumber: selectedTableId,
+        name: formData.get('customerName'),
+        contact: formData.get('contactNumber'),
+        diners: formData.get('numberOfDiners'),
+        date: formData.get('reservationDate'),
+        time: formData.get('reservationTime'),
+        notes: formData.get('notes')
+    };
+
+    console.log('Reservation Data:', reservationData);
+    addReservation(reservationData);
+    
+    // Mark table as occupied
+    occupiedTables.push(selectedTableId);
+    updateTableStatus(selectedTableId, 'occupied');
+    
+    document.getElementById('successMessage').classList.add('show');
+    
+    setTimeout(() => {
+        document.getElementById('reservationForm').reset();
+        document.getElementById('successMessage').classList.remove('show');
+        document.getElementById('selectedTableInfo').classList.remove('show');
+        selectedTableId = null;
+    }, 3000);
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setMinDate();
+    initializeTableSelection();
+    
+    const form = document.getElementById('reservationForm');
+    if (form) {
+        form.addEventListener('submit', handleReservation);
+    }
+});
+</script>
+
+</body>
+</html>
