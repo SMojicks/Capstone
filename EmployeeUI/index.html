@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CafeSync POS System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-left">
+            <h2 class="company-logo">CafeSync</h2>
+        </div>
+        <div class="navbar-right">
+            <div class="employee-info">
+                <div class="employee-avatar">JS</div>
+                <span class="employee-name">John Smith</span>
+            </div>
+            <button class="btn btn--outline btn--sm logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <button class="nav-link active" data-section="pos">
+                        <span class="nav-icon">🛒</span>
+                        POS
+                    </button>
+                </li>
+                <li class="nav-item">
+                        <button class="nav-link" data-section="inventory" style="position: relative;">
+                            <span class="nav-icon">📦</span>
+                            Inventory
+                            <span id="inventory-alert-dot"></span>
+                        </button>
+                </li>
+                <li class="nav-item">
+                    <button id="transactions-tab" button class="nav-link" data-section="transactions">
+                        <span class="nav-icon">💳</span>
+                        Transactions
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-section="reservations">
+                        <span class="nav-icon">📅</span>
+                        Reservations
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-section="accounts">
+                        <span class="nav-icon">👥</span>
+                        Accounts
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-section="feedback">
+                        <span class="nav-icon">⭐</span>
+                        Feedback
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div id="content-area">
+<!-- POS Section (Default) -->
+            <section id="pos-section" class="content-section active">
+                <div class="section-header-row">
+                    <h1>Point of Sale</h1>
+                    <div class="header-actions">
+                        <button id="delete-mode-btn" class="btn btn--secondary">Delete Mode</button>
+                        <button id="add-menu-item-btn" class="btn btn--primary">Add Menu Item</button>
+                    </div>
+                </div>
+
+                    <!-- Add Menu Item Modal (Two-Column Layout) -->
+                    <div id="menu-item-modal" class="modal">
+                    <div class="modal-content modal-content--wide">
+                        <h2 id="menu-modal-title">Add Menu Item</h2>
+                        <form id="menu-item-form">
+                        <!-- Two Column Grid -->
+                        <div class="form-grid-two-col">
+                            <!-- Left Column -->
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label for="menu-name">Product Name:</label>
+                                    <input type="text" id="menu-name" class="form-control" placeholder="e.g., Cappuccino" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="menu-category">Category:</label>
+                                    <select id="menu-category" class="form-control" required>
+                                        <option value="">Select category...</option>
+                                    </select>
+                                    <input type="text" id="new-category-input" class="form-control" placeholder="Enter new category name..." style="display: none; margin-top: 8px;">
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label for="menu-price">Price (₱):</label>
+                                    <input type="number" id="menu-price" class="form-control" placeholder="0.00" step="0.01" min="0" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="opacity: 0;">Spacer</label>
+                                    <p class="info-box">
+                                        💡 Select a category first, then add ingredients below.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recipe Section (Full Width) -->
+                        <div class="form-group">
+                            <label>Recipe (Ingredients):</label>
+                            <div id="recipe-list"></div>
+                            <button type="button" id="add-ingredient-btn" class="btn btn--secondary btn--small">+ Add Ingredient</button>
+                        </div>
+
+                        <div class="modal-buttons">
+                            <button type="submit" class="btn btn--primary">Save</button>
+                            <button type="button" id="cancel-menu-btn" class="btn btn--secondary">Cancel</button>
+                        </div>
+                        </form>
+                    </div>
+                    </div>
+
+                <div class="pos-layout">
+                    <div class="pos-left">
+                        <!-- Search removed -->
+                        <div class="product-grid" id="product-grid">
+                            <!-- Products will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="pos-right">
+                        <div class="cart-section">
+                            <h3>Shopping Cart</h3>
+                            <div class="cart-items" id="cart-items">
+                                <p class="empty-cart">Cart is empty</p>
+                            </div>
+                            <div class="cart-total">
+                                <div class="total-line">
+                                    <span>Subtotal:</span>
+                                    <span id="cart-subtotal">₱0.00</span>
+                                </div>
+                                <div class="total-line">
+                                    <span>Tax:</span>
+                                    <span id="cart-tax">₱0.00</span>
+                                </div>
+                                <div class="total-line total-final">
+                                    <span>Total:</span>
+                                    <span id="cart-total">₱0.00</span>
+                                </div>
+                            </div>
+                            <div class="payment-buttons">
+                                <button class="btn btn--primary btn--full-width">Process Payment</button>
+                                <button class="btn btn--secondary btn--full-width">Clear Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+                                <!-- Inventory Section -->
+                                <section id="inventory-section" class="content-section">
+                                <div class="section-header">
+                                    <h1>Inventory Management</h1>
+                                    <button id="add-product-btn" class="btn btn--primary">Add Product</button>
+                                </div>
+
+                                <div class="table-container">
+                                    <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Stock</th>
+                                        <th>Minimum Stock</th>
+                                        <th>Price</th>
+                                        <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventory-table">
+                                        <!-- Inventory data will be loaded here -->
+                                    </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- 🔹 Pagination Controls -->
+                                <div class="pagination">
+                                    <button id="prevPage" disabled>Previous</button>
+                                    <span id="pageInfo">Page 1</span>
+                                    <button id="nextPage">Next</button>
+                                </div>
+                                </section>
+
+
+                <!-- Product Modal -->
+                <div id="product-modal" class="modal">
+                <div class="modal-content">
+                    <h2 id="modal-title">Add Product</h2>
+                    <form id="product-form">
+                    <input type="hidden" id="product-id" />
+
+                    <label for="product-name">Name:</label>
+                    <input type="text" id="product-name" required />
+
+                    <label for="product-category">Category:</label>
+                    <input type="text" id="product-category" required />
+
+                    <label for="product-stock">Stock:</label>
+                    <input type="number" id="product-stock" min="0" required />
+                    
+                    <label for="product-min-stock">Minimum Stock:</label>
+                    <input type="number" id="product-min-stock" min="0" required />
+
+                    <label for="product-price">Price:</label>
+                    <input type="number" id="product-price" min="0" step="0.01" required />
+
+                    <div class="modal-actions">
+                        <button type="submit" class="btn btn--primary">Save</button>
+                        <button type="button" id="cancel-btn" class="btn btn--secondary">Cancel</button>
+                    </div>
+                    </form>
+                </div>
+                </div>
+
+                        <!-- Transaction History Section -->
+                        <section id="transactions-section" class="content-section hidden">
+                        <div class="section-header">
+                            <h1>Transaction History</h1>
+                            <div class="filter-container">
+                            <label for="filterRange">Sort by:</label>
+                            <select id="filterRange">
+                                <option value="all">All</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                            </div>
+                        </div>
+
+                        <div class="transactions-container">
+                            <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                <th>Date & Time</th>
+                                <th>Processed By</th>
+                                <th>Items</th>
+                                <th>Subtotal</th>
+                                <th>Tax</th>
+                                <th>Total</th>
+                                <th>Payment Method</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-list">
+                                <!-- Transactions will load here dynamically -->
+                            </tbody>
+                            </table>
+                        </div>
+                        </section>
+
+
+            <!-- Reservations Section -->
+            <section id="reservations-section" class="content-section">
+                <div class="section-header">
+                    <h1>Reservations</h1>
+                </div>
+                <div class="table-container">
+                    <table id="reservationTable">
+                        <thead>
+                            <tr>
+                            <th>Name</th>
+                            <th>Contact</th>
+                            <th>Table</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Diners</th>
+                            <th>Notes</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                </div>
+            </section>
+
+            <!-- Accounts Section -->
+            <section id="accounts-section" class="content-section">
+                <div class="section-header">
+                    <h1>Customer Accounts</h1>
+                    <button class="btn btn--primary">Add Customer</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <tbody id="accounts-table">
+                            <!-- Customer data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+                <!-- Customer Feedback Section -->
+                <section id="feedback-section" class="content-section">
+                    <div class="section-header">
+                        <h1>Customer Feedback Management</h1>
+                    </div>
+                    <div class="table-container">
+                        <table id="feedbackTable">
+                            <thead>
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Comment</th>
+                                    <th>Date Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Feedback will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+        </div>
+    </main>
+
+   
+    <script type="module" src="/firebase.js"></script>
+    <script type="module" src="/inventory.js"></script>
+   <!-- <script type="module" src="/pos.js"></script> -->
+    <script type="module" src="/mix-function.js"></script>
+     <script type="module" src="/transaction.js"></script>
+    <script type="module" src="app.js"></script>
+     <script type="module" src="/employee-reservations.js"></script>
+     <script type="module" src="/employee-feedback.js"></script>
+     <script type="module">
+  // Logout functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.querySelector('.logout-btn');
+    
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        // Simply redirect to login page
+        window.location.href = '../CustomerUI/login.html';
+      });
+    }
+  });
+</script>
+</body>
+</html>
