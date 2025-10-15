@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: url(login-page_bg.png);
+            background: url(/assets/login-page_bg.png) no-repeat center center/cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -44,7 +44,7 @@
         .image-placeholder {
             width: 100%;
             height: 100%;
-            background: url(login-page-img.jpeg) center/cover;
+            background: url(/assets/login-page-img.jpeg) center/cover;
             position: relative;
             display: flex;
             align-items: flex-end;
@@ -453,20 +453,20 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             
             alert('Account created successfully! Redirecting to homepage...');
             setTimeout(() => {
-                window.location.href = 'index.html';  // Customer homepage (same folder)
+                window.location.href = 'index.html'; 
             }, 1000);
         } else {
             // Handle customer login
             alert('Customer login successful! Redirecting to homepage...');
             setTimeout(() => {
-                window.location.href = 'index.html';  // Customer homepage (same folder)
+                window.location.href = 'index.html';  
             }, 1000);
         }
     } else {
         // Handle employee login
         alert('Employee login successful! Redirecting to dashboard...');
         setTimeout(() => {
-            window.location.href = '../EmployeeUI/index.html';  // ← CHANGE THIS PATH
+            window.location.href = 'EmployeeUI/index.html';  // Employee dashboard (EmployeeUI folder)
         }, 1000);
     }
 });

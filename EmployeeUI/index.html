@@ -335,14 +335,13 @@
     </main>
 
    
-    <script type="module" src="/firebase.js"></script>
-    <script type="module" src="/inventory.js"></script>
-   <!-- <script type="module" src="/pos.js"></script> -->
-    <script type="module" src="/mix-function.js"></script>
-     <script type="module" src="/transaction.js"></script>
-    <script type="module" src="app.js"></script>
-     <script type="module" src="/employee-reservations.js"></script>
-     <script type="module" src="/employee-feedback.js"></script>
+<script type="module" src="../scripts/firebase.js"></script>
+<script type="module" src="../scripts/inventory.js"></script>
+<script type="module" src="../scripts/mix-function.js"></script>
+<script type="module" src="../scripts/transaction.js"></script>
+<script type="module" src="app.js"></script>
+<script type="module" src="../scripts/employee-reservations.js"></script>
+<script type="module" src="../scripts/employee-feedback.js"></script>
      <script type="module">
   // Logout functionality
   document.addEventListener('DOMContentLoaded', () => {
@@ -351,7 +350,7 @@
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
         // Simply redirect to login page
-        window.location.href = '../CustomerUI/login.html';
+        window.location.href = '../login.html';
       });
     }
   });

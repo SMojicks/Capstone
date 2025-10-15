@@ -10,7 +10,7 @@ import {
   query, 
   orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { loadTransactions } from "../transaction.js";
+import { loadTransactions } from "../scripts/transaction.js"; // Adjust the path as necessary
 
 // Cart state
 let cart = [];

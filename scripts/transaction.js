@@ -1,5 +1,5 @@
 // transaction.js
-import { db } from "../firebase.js"; // adjust path if needed
+import { db } from "./firebase.js"; // adjust path if needed
 import { 
   collection, 
   getDocs, 

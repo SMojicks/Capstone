@@ -14,7 +14,7 @@
     }
     
     .community-background {
-        background: url("community-feedback-page_bg.png") no-repeat center center/cover;
+        background: url("/assets/community-feedback-page_bg.png") no-repeat center center/cover;
         background-attachment: fixed;
         min-height: 100vh;
         display: flex;
@@ -508,7 +508,7 @@
             <!-- Centered Large Bulletin Board -->
             <div class="bulletin-board-main">
                 <div class="bulletin-board-container-large" id="bulletinBoardContainer">
-                    <img src="bulletin_board_bg.png" alt="Cafe Bulletin Board" class="bulletin-board-image" id="bulletinBoardImage" 
+                    <img src="/assets/bulletin_board_bg.png" alt="Cafe Bulletin Board" class="bulletin-board-image" id="bulletinBoardImage" 
                          onload="this.style.display='block'; document.getElementById('bulletinPlaceholder').style.display='none';" 
                          onerror="showBulletinPlaceholder()">
                     
@@ -669,7 +669,7 @@
         </div>
     </footer>
 <script type="module">
-import { db } from "../firebase.js";
+import { db } from "./scripts/firebase.js";
 import {
   collection,
   addDoc,
