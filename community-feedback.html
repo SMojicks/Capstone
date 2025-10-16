@@ -14,7 +14,7 @@
     }
     
     .community-background {
-        background: url("assets/community-feedback-page_bg.png") no-repeat center center/cover;
+        background: url("./assets/community-feedback-page_bg.png") no-repeat center center/cover;
         background-attachment: fixed;
         min-height: 100vh;
         display: flex;
@@ -508,9 +508,9 @@
             <!-- Centered Large Bulletin Board -->
             <div class="bulletin-board-main">
                 <div class="bulletin-board-container-large" id="bulletinBoardContainer">
-                    <img src="assets/bulletin_board_bg.png" alt="Cafe Bulletin Board" class="bulletin-board-image" id="bulletinBoardImage" 
+                    <img src="./assets/bulletin_board_bg.png" alt="Cafe Bulletin Board" class="bulletin-board-image" id="bulletinBoardImage" 
                          onload="this.style.display='block'; document.getElementById('bulletinPlaceholder').style.display='none';" 
-                         onerror="showBulletinPlaceholder()">
+                         onerror="window.showBulletinPlaceholder()">
                     
                     <!-- Placeholder shown when no image or image fails to load -->
                     <div class="bulletin-placeholder" id="bulletinPlaceholder">
@@ -668,6 +668,14 @@
             <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
         </div>
     </footer>
+
+<script>
+window.showBulletinPlaceholder = function() {
+  document.getElementById('bulletinBoardImage').style.display = 'none';
+  document.getElementById('bulletinPlaceholder').style.display = 'flex';
+};
+</script>
+
 <script type="module">
 import { db } from "./scripts/firebase.js";
 import {
@@ -692,11 +700,6 @@ window.serverTimestamp = serverTimestamp;
 let selectedSpot = null;
 let bulletinPhotos = {};
 
-// Function to show placeholder
-function showBulletinPlaceholder() {
-  document.getElementById('bulletinBoardImage').style.display = 'none';
-  document.getElementById('bulletinPlaceholder').style.display = 'block';
-}
 
 // Load bulletin image
 function loadBulletinImage(imageUrl) {
