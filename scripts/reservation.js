@@ -1,10 +1,13 @@
 // js/reservation.js
-import { db } from "./firebase.js";
+import { db, auth } from "./firebase.js";
 import {
   collection,
   addDoc,
-  onSnapshot
+  onSnapshot,
+  doc,       // 👈 ADD THIS
+  getDoc     // 👈 ADD THIS
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 // import { storage } from "./firebase.js";
 // import {
 //   ref,
@@ -39,6 +42,41 @@ let selectedTableId = null;
 let occupiedTables = [];
 let isVipSelected = false;
 let vipPaymentCompleted = false;
+let currentUserId = null; // 👈 ADD THIS
+
+
+async function checkAuthState() {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // User is logged in
+            currentUserId = user.uid;
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const nameInput = document.querySelector('input[name="customerName"]');
+                const contactInput = document.querySelector('input[name="contactNumber"]');
+
+                if (nameInput) {
+                    nameInput.value = userData.fullName;
+                    nameInput.readOnly = true;
+                }
+                if (contactInput) {
+                    contactInput.value = userData.phone;
+                    contactInput.readOnly = true;
+                }
+            }
+        } else {
+            // User is logged out
+            currentUserId = null;
+            const nameInput = document.querySelector('input[name="customerName"]');
+            const contactInput = document.querySelector('input[name="contactNumber"]');
+            if (nameInput) nameInput.readOnly = false;
+            if (contactInput) contactInput.readOnly = false;
+        }
+    });
+}
 
 // ---------- DOM helpers ----------
 function setMinDate() {
@@ -156,8 +194,15 @@ async function handleReservation(event) {
     status: "pending",
     isVip: isVipSelected,
     vipPaymentStatus: vipPaymentCompleted ? "paid" : "n/a",
-    timestamp: new Date()
+    timestamp: new Date(),
+    userId: currentUserId // 👈 ADD THIS: Attach the logged-in user's ID
   };
+  
+  // 🚀 NEW: Check for non-logged-in user
+  if (!reservationData.name || !reservationData.contactNumber) {
+      alert("Please enter your Full Name and Contact Number.");
+      return;
+  }
 
   try {
     const docRef = await addDoc(reservationsRef, reservationData);
@@ -178,6 +223,8 @@ async function handleReservation(event) {
       document.querySelectorAll(".vip-room-btn.selected").forEach((btn) => {
         btn.classList.remove("selected");
       });
+      // Re-run auth check to pre-fill again if user is still logged in
+      checkAuthState();
     }, 1800);
   } catch (err) {
     console.error("Error saving reservation:", err);
@@ -189,6 +236,7 @@ async function handleReservation(event) {
 document.addEventListener("DOMContentLoaded", () => {
   setMinDate();
   initializeTableClicks();
+  checkAuthState(); // 👈 ADD THIS: Check for logged-in user on page load
 // Terms and Conditions modal logic
 const openTerms = document.getElementById("openTerms");
 const closeTerms = document.getElementById("closeTerms");

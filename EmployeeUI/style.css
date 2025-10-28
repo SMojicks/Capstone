@@ -1521,3 +1521,130 @@ label {
     border: 1px solid var(--color-border);
   }
 }
+
+/* --- Replace existing Analytics Styles with these --- */
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns for stat cards */
+    gap: var(--space-20);
+}
+
+.stat-card {
+    background: var(--color-white);
+    padding: var(--space-20);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-card h5 {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-8);
+    text-transform: uppercase;
+}
+
+.stat-card h2 {
+    font-size: var(--font-size-3xl);
+    color: var(--color-green-700);
+    margin: 0;
+}
+
+.chart-card {
+    background: var(--color-white);
+    padding: var(--space-20);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    display: flex; /* Added for better alignment */
+    flex-direction: column; /* Added */
+    height: 400px;
+}
+
+.chart-card h5 {
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    margin-bottom: var(--space-16);
+    text-align: center;
+    flex-shrink: 0; /* Prevent title from shrinking */
+}
+
+.chart-card canvas {
+    flex-grow: 1; /* Allow canvas to fill space */
+    min-height: 0; /* Important for flex layout */
+}
+
+/* --- New styles for layout --- */
+
+/* Span stat cards across the top row */
+.stat-card {
+    grid-column: span 1;
+}
+
+/* Sales chart takes the first ~60% of width below stats */
+.chart-card-medium {
+    grid-column: span 2; /* Adjust span based on your preference */
+    grid-row: 2; /* Place it on the second row */
+}
+
+/* Right column container for smaller charts */
+.right-chart-column {
+    grid-column: span 2; /* Takes remaining width */
+    grid-row: 2; /* Place it on the second row */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-20); /* Space between the two small charts */
+}
+
+/* Adjust height for smaller charts */
+.chart-card-small {
+    height: calc(200px - (var(--space-20) / 2));
+}
+
+
+/* --- Responsive Adjustments --- */
+
+@media (max-width: 992px) { /* Adjust breakpoint if needed */
+    .analytics-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns for stats on medium screens */
+    }
+    .stat-card {
+        grid-column: span 1;
+    }
+    .chart-card-medium {
+        grid-column: span 2; /* Full width */
+        grid-row: 3; /* Move below stats */
+    }
+    .right-chart-column {
+        grid-column: span 2; /* Full width */
+        grid-row: 4; /* Move below sales chart */
+    }
+    .chart-card-small {
+       height: 350px;
+    }
+
+}
+
+@media (max-width: 576px) { /* Mobile screens */
+    .analytics-grid {
+        grid-template-columns: 1fr; /* Single column */
+    }
+    .stat-card,
+    .chart-card-medium,
+    .right-chart-column {
+        grid-column: span 1; /* All items take full width */
+    }
+     .chart-card-medium {
+        grid-row: 5; /* Adjust row based on number of stat cards */
+    }
+     .right-chart-column {
+        grid-row: 6; 
+    }
+    .chart-card {
+       height: 300px; 
+    }
+     .chart-card-small {
+       height: 300px; 
+    }
+}

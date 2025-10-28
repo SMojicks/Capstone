@@ -11,7 +11,7 @@ import {
   orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { loadTransactions } from "../scripts/transaction.js"; // Adjust the path as necessary
-
+import { loadAnalytics } from "../scripts/analytics.js"; // 👈 ADD THIS
 // Cart state
 let cart = [];
 
@@ -38,6 +38,20 @@ function setupNavigation() {
             // Add active class to clicked link and corresponding section
             this.classList.add('active');
             document.getElementById(`${targetSection}-section`).classList.add('active');
+
+            if (targetSection === 'analytics') {
+                // Check if VanillaCalendar is loaded before calling loadAnalytics
+                // Since we removed the calendar, we don't need this check anymore.
+                // Let's just call loadAnalytics directly after a log.
+
+                console.log("Analytics tab clicked, attempting to call loadAnalytics..."); // <-- ADD THIS LINE
+
+                if (typeof loadAnalytics === 'function') { // Check if the function is imported correctly
+                    loadAnalytics();
+                } else {
+                    console.error("loadAnalytics function is not defined or imported correctly!");
+                }
+            }
         });
     });
 }

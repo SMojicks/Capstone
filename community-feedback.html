@@ -669,7 +669,7 @@
         </div>
     </footer>
 
-<script>
+<!-- <script>
 window.showBulletinPlaceholder = function() {
   document.getElementById('bulletinBoardImage').style.display = 'none';
   document.getElementById('bulletinPlaceholder').style.display = 'flex';
@@ -908,7 +908,276 @@ window.previewModalPhoto = previewModalPhoto;
 window.submitPhotoToBulletin = submitPhotoToBulletin;
 window.viewPhotoDetails = viewPhotoDetails;
 
-</script>
+</script> -->
 
+<script type="module">
+import { db } from "./scripts/firebase.js";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  getDocs,
+  query,
+  orderBy,
+  doc,       // 👈 ADD THIS
+  getDoc     // 👈 ADD THIS
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js"; // 👈 ADD THIS
+
+// Global Firestore references
+const feedbackCollection = collection(db, "customerFeedback");
+window.feedbackDb = db;
+window.feedbackCollection = collection;
+window.addFeedbackDoc = addDoc;
+window.serverTimestamp = serverTimestamp;
+
+// ----------------------------
+// Bulletin Board Logic
+// ----------------------------
+let selectedSpot = null;
+let bulletinPhotos = {};
+let loggedInUser = null; // 👈 ADD THIS
+
+// Load bulletin image
+function loadBulletinImage(imageUrl) {
+  const img = document.getElementById('bulletinBoardImage');
+  const placeholder = document.getElementById('bulletinPlaceholder');
+  img.src = imageUrl;
+  img.style.display = 'block';
+  placeholder.style.display = 'none';
+  img.onerror = showBulletinPlaceholder;
+}
+
+// Open upload modal
+function openPhotoModal(spotNumber) {
+  selectedSpot = spotNumber;
+  document.getElementById('photoModal').style.display = 'block';
+  document.getElementById('photoSubmissionForm').reset();
+  document.getElementById('modalPhotoPreview').style.display = 'none';
+  
+  // 🚀 NEW: Pre-fill user name if logged in
+  const userNameInput = document.getElementById('modalUserName');
+  if (loggedInUser) {
+      userNameInput.value = loggedInUser.fullName;
+      userNameInput.readOnly = true;
+  } else {
+      userNameInput.readOnly = false;
+  }
+}
+
+// Close modal
+function closePhotoModal() {
+  document.getElementById('photoModal').style.display = 'none';
+  selectedSpot = null;
+}
+
+// Preview uploaded photo
+function previewModalPhoto(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById('modalPhotoPreview');
+  if (file) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Please choose an image smaller than 5MB.');
+      event.target.value = '';
+      preview.style.display = 'none';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+// ✅ Updated version — saves image to Firestore
+async function submitPhotoToBulletin(event) {
+  event.preventDefault();
+
+  if (!selectedSpot) {
+    alert('Error: No spot selected.');
+    return;
+  }
+
+  const photoInput = document.getElementById('modalPhotoInput');
+  const reviewText = document.getElementById('modalReviewText').value.trim();
+  const userName = document.getElementById('modalUserName').value.trim();
+
+  if (!photoInput.files[0]) {
+    alert('Please select a photo.');
+    return;
+  }
+  if (!reviewText) {
+    alert('Please write a review.');
+    return;
+  }
+  if (!userName) {
+    alert('Please enter your name.');
+    return;
+  }
+
+  const file = photoInput.files[0];
+  const reader = new FileReader();
+
+  reader.onload = async e => {
+    const photoDataUrl = e.target.result;
+
+    bulletinPhotos[selectedSpot] = {
+      image: photoDataUrl,
+      author: userName,
+      review: reviewText,
+      date: new Date().toLocaleDateString()
+    };
+
+    updatePhotoSpot(selectedSpot, bulletinPhotos[selectedSpot]);
+
+    try {
+      const feedbackData = {
+        name: userName,
+        comment: reviewText,
+        image: photoDataUrl,
+        timestamp: serverTimestamp(),
+        status: "pending", // 👈 Set status to pending
+        userId: loggedInUser ? loggedInUser.uid : null // 👈 Attach user ID
+      };
+
+      await addDoc(feedbackCollection, feedbackData);
+      console.log("✅ Feedback saved:", feedbackData);
+    } catch (error) {
+      console.error("❌ Error saving feedback:", error);
+      alert("Error saving review. Try again.");
+    }
+
+    closePhotoModal();
+    showSuccessMessage('Your review was posted!');
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// Update the photo spot UI
+function updatePhotoSpot(spotNumber, photoData) {
+  const spot = document.getElementById(`spot${spotNumber}`);
+  if (!spot) return;
+
+  spot.classList.add('filled');
+  spot.innerHTML = `
+    <div class="photo-placeholder-spot">
+      <img src="${photoData.image}" alt="Community photo" class="submitted-photo">
+      <div class="photo-author">📝 ${photoData.author}</div>
+    </div>
+  `;
+  spot.onclick = () => viewPhotoDetails(spotNumber);
+}
+
+// View photo details
+function viewPhotoDetails(spotNumber) {
+  const photoData = bulletinPhotos[spotNumber];
+  if (!photoData) return;
+
+  const modal = document.createElement('div');
+  modal.className = 'photo-modal';
+  modal.style.display = 'block';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📸 ${photoData.author}'s Experience</h3>
+        <button class="modal-close" onclick="this.closest('.photo-modal').remove()">&times;</button>
+      </div>
+      <div style="padding: 25px 30px 30px;">
+        <img src="${photoData.image}" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 10px; margin-bottom: 20px;">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+          <h4>Review:</h4>
+          <p>${photoData.review}</p>
+          <p style="font-size: 0.9rem; color: #666;">Shared on ${photoData.date}</p>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+}
+
+// Success message
+function showSuccessMessage(message) {
+  const note = document.createElement('div');
+  note.style.cssText = `
+    position: fixed; top: 20px; right: 20px; background: #28a745; color: white;
+    padding: 15px 25px; border-radius: 10px; z-index: 1001; font-weight: bold;
+  `;
+  note.textContent = message;
+  document.body.appendChild(note);
+  setTimeout(() => note.remove(), 3000);
+}
+
+// Load feedbacks from Firestore
+async function loadFeedbacksFromFirestore() {
+  try {
+    const q = query(feedbackCollection, orderBy("timestamp", "desc"));
+    const snapshot = await getDocs(q);
+
+    let spotIndex = 1;
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      // Only show approved feedback on the board
+      if (data.status !== "approved") return;
+      if (spotIndex > 8) return; // Don't overflow the board
+
+      const image = data.image || "https://via.placeholder.com/150/eee/aaa?text=Photo";
+
+      bulletinPhotos[spotIndex] = {
+        image,
+        author: data.name || "Anonymous",
+        review: data.comment || "",
+        date: data.timestamp?.toDate().toLocaleDateString() || "—"
+      };
+
+      updatePhotoSpot(spotIndex, bulletinPhotos[spotIndex]);
+      spotIndex++;
+    });
+
+    console.log("✅ Loaded approved feedbacks:", snapshot.size);
+  } catch (error) {
+    console.error("❌ Error loading feedbacks:", error);
+  }
+}
+
+// 🚀 NEW: Check auth state
+async function checkAuthState() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                loggedInUser = { uid: user.uid, ...userDoc.data() };
+                console.log("User logged in:", loggedInUser);
+            }
+        } else {
+            loggedInUser = null;
+            console.log("User logged out.");
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Bulletin board initialized');
+  checkAuthState(); // 👈 ADD THIS
+  loadFeedbacksFromFirestore();
+});
+
+// Expose some functions for HTML
+window.openPhotoModal = openPhotoModal;
+window.closePhotoModal = closePhotoModal;
+window.previewModalPhoto = previewModalPhoto;
+window.submitPhotoToBulletin = submitPhotoToBulletin;
+window.viewPhotoDetails = viewPhotoDetails;
+
+</script>
+<script type="module" src="scripts/firebase.js"></script>
+    <script type="module" src="scripts/auth-manager.js"></script>
 </body>
 </html>

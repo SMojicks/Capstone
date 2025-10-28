@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CafeSync POS System</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
 </head>
 <body>
     <!-- Top Navigation Bar -->
@@ -61,7 +63,13 @@
                         <span class="nav-icon">⭐</span>
                         Feedback
                     </button>
-                </li>
+
+            <li class="nav-item">
+                <button class="nav-link" data-section="analytics">
+                    <span class="nav-icon">📊</span>
+                    Analytics
+                </button>
+            </li>
             </ul>
         </nav>
     </aside>
@@ -331,17 +339,69 @@
                         </table>
                     </div>
                 </section>
+
+            <section id="analytics-section" class="content-section">
+                <div class="section-header">
+                    <h1>Business Analytics</h1>
+                </div>
+
+                    <div class="analytics-grid">
+
+                        <div class="stat-card">
+                            <h5>Today's Sales</h5>
+                            <h2 id="analytics-today-sales">$0.00</h2>
+                        </div>
+                        <div class="stat-card">
+                            <h5>Today's Reservations</h5>
+                            <h2 id="analytics-today-res">0</h2>
+                        </div>
+                        <div class="stat-card">
+                            <h5>This Week's Sales</h5>
+                            <h2 id="analytics-week-sales">$0.00</h2>
+                        </div>
+                        <div class="stat-card">
+                            <h5>Low Stock Items</h5>
+                            <h2 id="analytics-low-stock">0</h2>
+                        </div>
+
+                        <div class="chart-card chart-card-medium"> <h5>Weekly Sales Overview (Last 7 Days)</h5>
+                            <canvas id="analytics-sales-chart"></canvas>
+                        </div>
+
+                        <div class="right-chart-column">
+                            <div class="chart-card chart-card-small">
+                                <h5>Top 5 Selling Items</h5>
+                                <canvas id="analytics-top-items-chart"></canvas>
+                            </div>
+
+                            <div class="chart-card chart-card-small">
+                                            <h5>Reservation Status</h5>
+                                            <canvas id="analytics-reservation-chart"></canvas>
+                                        </div>
+                            </div>
+                        </div>
+
+                    </div>
+            </section>
         </div>
     </main>
 
-   
-<script type="module" src="../scripts/firebase.js"></script>
-<script type="module" src="../scripts/inventory.js"></script>
-<script type="module" src="../scripts/mix-function.js"></script>
-<script type="module" src="../scripts/transaction.js"></script>
-<script type="module" src="app.js"></script>
-<script type="module" src="../scripts/employee-reservations.js"></script>
-<script type="module" src="../scripts/employee-feedback.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
+    <script type="module" src="../scripts/firebase.js"></script>
+
+    <script type="module" src="../scripts/inventory.js"></script>
+    <script type="module" src="../scripts/mix-function.js"></script>
+    <script type="module" src="../scripts/transaction.js"></script>
+    <script type="module" src="../scripts/employee-reservations.js"></script>
+    <script type="module" src="../scripts/employee-feedback.js"></script>
+    <script type="module" src="../scripts/analytics.js"></script>
+
+    <script type="module" src="app.js"></script>
+
+</body>
+</html>
+
      <script type="module">
   // Logout functionality
   document.addEventListener('DOMContentLoaded', () => {

@@ -361,7 +361,7 @@
         </div>
     </div>
 
-    <script>
+    <!-- <script>
         let currentLoginType = 'customer';
         let isRegisterMode = false;
 
@@ -470,6 +470,71 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         }, 1000);
     }
 });
+    </script> -->
+
+    <script>
+        // This UI-toggling script stays
+        let currentLoginType = 'customer';
+        let isRegisterMode = false;
+
+        function switchLoginType(type) {
+            currentLoginType = type;
+            document.getElementById('customerBtn').classList.toggle('active', type === 'customer');
+            document.getElementById('employeeBtn').classList.toggle('active', type === 'employee');
+            if (type === 'customer') {
+                document.getElementById('welcomeTitle').textContent = 'Welcome Back';
+                document.getElementById('welcomeSubtext').textContent = 'Enter your credentials to view your account';
+                document.getElementById('socialDivider').style.display = 'block';
+                document.getElementById('socialButtons').style.display = 'flex';
+                document.getElementById('employeeLoginLink').style.display = 'block';
+                document.getElementById('registerLink').style.display = 'block';
+                if (isRegisterMode) {
+                    toggleMode();
+                }
+            } else {
+                document.getElementById('welcomeTitle').textContent = 'Employee Login';
+                document.getElementById('welcomeSubtext').textContent = 'Access employee dashboard';
+                document.getElementById('socialDivider').style.display = 'none';
+                document.getElementById('socialButtons').style.display = 'none';
+                document.getElementById('employeeLoginLink').style.display = 'none';
+                document.getElementById('registerLink').style.display = 'none';
+                document.getElementById('mainButton').textContent = 'Employee Login';
+                hideRegistrationFields();
+                isRegisterMode = false;
+            }
+        }
+        function toggleMode() {
+            if (currentLoginType !== 'customer') return;
+            isRegisterMode = !isRegisterMode;
+            if (isRegisterMode) {
+                document.getElementById('welcomeTitle').textContent = 'Create Account';
+                document.getElementById('welcomeSubtext').textContent = 'Join our community today';
+                document.getElementById('mainButton').textContent = 'Sign Up';
+                document.getElementById('registerLink').innerHTML = '<a href="#" onclick="toggleMode()">Already have an account? Log In</a>';
+                document.getElementById('forgotLink').style.display = 'none';
+                showRegistrationFields();
+            } else {
+                document.getElementById('welcomeTitle').textContent = 'Welcome Back';
+                document.getElementById('welcomeSubtext').textContent = 'Enter your credentials to view your account';
+                document.getElementById('mainButton').textContent = 'Log In';
+                document.getElementById('registerLink').innerHTML = '<a href="#" onclick="toggleMode()">Don\'t have an account? Sign Up</a>';
+                document.getElementById('forgotLink').style.display = 'block';
+                hideRegistrationFields();
+            }
+        }
+        function showRegistrationFields() {
+            document.getElementById('confirmPasswordGroup').classList.remove('hidden');
+            document.getElementById('fullNameGroup').classList.remove('hidden');
+            document.getElementById('phoneGroup').classList.remove('hidden');
+        }
+        function hideRegistrationFields() {
+            document.getElementById('confirmPasswordGroup').classList.add('hidden');
+            document.getElementById('fullNameGroup').classList.add('hidden');
+            document.getElementById('phoneGroup').classList.add('hidden');
+        }
     </script>
+    
+    <script type="module" src="scripts/firebase.js"></script>
+    <script type="module" src="scripts/auth-login.js"></script>
 </body>
 </html>
