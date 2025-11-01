@@ -6,11 +6,18 @@
     <title>CafeSync POS System</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
 </head>
 <body>
     <!-- Top Navigation Bar -->
     <nav class="top-navbar">
+        <div class="navbar-left">
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn">
+            <span class="material-icons">menu</span>
+        </button>
+        <h2 class="company-logo">CafeSync</h2>
+    </div>
         <div class="navbar-left">
             <h2 class="company-logo">CafeSync</h2>
         </div>
@@ -22,6 +29,7 @@
             <button class="btn btn--outline btn--sm logout-btn">Logout</button>
         </div>
     </nav>
+    <div class="main-container">
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
@@ -82,67 +90,60 @@
                 <div class="section-header-row">
                     <h1>Point of Sale</h1>
                     <div class="header-actions">
-                        <button id="delete-mode-btn" class="btn btn--secondary">Delete Mode</button>
+                        <button id="display-mode-btn" class="btn btn--secondary">Display Mode</button>
                         <button id="add-menu-item-btn" class="btn btn--primary">Add Menu Item</button>
                     </div>
                 </div>
 
                     <!-- Add Menu Item Modal (Two-Column Layout) -->
-                    <div id="menu-item-modal" class="modal">
-                    <div class="modal-content modal-content--wide">
-                        <h2 id="menu-modal-title">Add Menu Item</h2>
-                        <form id="menu-item-form">
-                        <!-- Two Column Grid -->
-                        <div class="form-grid-two-col">
-                            <!-- Left Column -->
-                            <div class="form-column">
-                                <div class="form-group">
-                                    <label for="menu-name">Product Name:</label>
-                                    <input type="text" id="menu-name" class="form-control" placeholder="e.g., Cappuccino" required>
-                                </div>
+                        <div id="menu-item-modal" class="modal">
+                            <div class="modal-content modal-content--wide">
+                                <h2 id="menu-modal-title">Add Menu Product</h2>
+                                <form id="menu-item-form">
+                                    <input type="hidden" id="menu-product-id" />
+                                    <div class="form-grid-two-col">
+                                        <div class="form-column">
+                                            <div class="form-group">
+                                                <label for="menu-name">Product Name:</label>
+                                                <input type="text" id="menu-name" class="form-control" placeholder="e.g., Cappuccino" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-column">
+                                            <div class="form-group">
+                                                <label for="menu-price">Price (₱):</label>
+                                                <input type="number" id="menu-price" class="form-control" placeholder="0.00" step="0.01" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-column">
+                                                            <div class="form-group">
+                                                                <label for="menu-category">Category:</label>
+                                                                <select id="menu-category" class="form-control" required>
+                                                                    <option value="">Select category...</option>
+                                                                    </select>
+                                                                <input type="text" id="new-category-input" class="form-control" placeholder="Enter new category name..." style="display: none; margin-top: 8px;">
+                                                            </div>
+                                                        </div>
+                                    </div>
 
-                                <div class="form-group">
-                                    <label for="menu-category">Category:</label>
-                                    <select id="menu-category" class="form-control" required>
-                                        <option value="">Select category...</option>
-                                    </select>
-                                    <input type="text" id="new-category-input" class="form-control" placeholder="Enter new category name..." style="display: none; margin-top: 8px;">
-                                </div>
+                                    <div class="form-group">
+                                        <label>Recipe (Ingredients):</label>
+                                        <div id="recipe-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
+                                            </div>
+                                        <button type="button" id="add-ingredient-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Ingredient</button>
+                                    </div>
+
+                                    <div class="modal-buttons">
+                                        <button type="submit" class="btn btn--primary">Save Product & Recipe</button>
+                                        <button type="button" id="cancel-menu-btn" class="btn btn--secondary">Cancel</button>
+                                    </div>
+                                </form>
                             </div>
-
-                            <!-- Right Column -->
-                            <div class="form-column">
-                                <div class="form-group">
-                                    <label for="menu-price">Price (₱):</label>
-                                    <input type="number" id="menu-price" class="form-control" placeholder="0.00" step="0.01" min="0" required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label style="opacity: 0;">Spacer</label>
-                                    <p class="info-box">
-                                        💡 Select a category first, then add ingredients below.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
-
-                        <!-- Recipe Section (Full Width) -->
-                        <div class="form-group">
-                            <label>Recipe (Ingredients):</label>
-                            <div id="recipe-list"></div>
-                            <button type="button" id="add-ingredient-btn" class="btn btn--secondary btn--small">+ Add Ingredient</button>
-                        </div>
-
-                        <div class="modal-buttons">
-                            <button type="submit" class="btn btn--primary">Save</button>
-                            <button type="button" id="cancel-menu-btn" class="btn btn--secondary">Cancel</button>
-                        </div>
-                        </form>
-                    </div>
-                    </div>
 
                 <div class="pos-layout">
                     <div class="pos-left">
+                        <div id="category-tabs-container">
+                         </div>
                         <!-- Search removed -->
                         <div class="product-grid" id="product-grid">
                             <!-- Products will be loaded here -->
@@ -213,34 +214,43 @@
 
 
                 <!-- Product Modal -->
-                <div id="product-modal" class="modal">
-                <div class="modal-content">
-                    <h2 id="modal-title">Add Product</h2>
-                    <form id="product-form">
-                    <input type="hidden" id="product-id" />
+                    <div id="product-modal" class="modal">
+                        <div class="modal-content">
+                            <h2 id="modal-title">Add Ingredient</h2>
+                            <form id="product-form">
+                                <input type="hidden" id="product-id" />
 
-                    <label for="product-name">Name:</label>
-                    <input type="text" id="product-name" required />
+                                <label for="product-name">Ingredient Name:</label>
+                                <input type="text" id="product-name" placeholder="e.g., Coffee Beans" required />
 
-                    <label for="product-category">Category:</label>
-                    <input type="text" id="product-category" required />
+                                <label for="product-category">Category:</label>
+                                <input type="text" id="product-category" placeholder="e.g., Pantry, Dairy" required />
 
-                    <label for="product-stock">Stock:</label>
-                    <input type="number" id="product-stock" min="0" required />
-                    
-                    <label for="product-min-stock">Minimum Stock:</label>
-                    <input type="number" id="product-min-stock" min="0" required />
+                                <label for="product-stock">Stock Quantity:</label>
+                                <input type="number" id="product-stock" min="0" step="any" placeholder="e.g., 10" required />
 
-                    <label for="product-price">Price:</label>
-                    <input type="number" id="product-price" min="0" step="0.01" required />
+                                <label for="product-stock-unit">Stock Unit:</label>
+                                <input type="text" id="product-stock-unit" placeholder="e.g., bag, jug, bottle, g" required />
 
-                    <div class="modal-actions">
-                        <button type="submit" class="btn btn--primary">Save</button>
-                        <button type="button" id="cancel-btn" class="btn btn--secondary">Cancel</button>
+                                <label for="product-base-unit">Base Unit (for deduction):</label>
+                                <input type="text" id="product-base-unit" placeholder="e.g., g, ml" required />
+
+                                <label for="product-conversion">Conversion Factor:</label>
+                                <input type="number" id="product-conversion" min="1" step="any" placeholder="e.g., 1000 (if 1 bag = 1000g)" required />
+                                <p style="font-size: 12px; color: #666; margin-top: -10px; margin-bottom: 10px;">
+                                    How many base units are in 1 stock unit? (If 1 bag = 1000g, enter 1000).
+                                </p>
+
+                                <label for="product-min-stock">Low Stock Alert (in Base Unit):</label>
+                                <input type="number" id="product-min-stock" min="0" placeholder="e.g., 2000 (for 2000g)" required />
+
+                                <div class="modal-actions">
+                                    <button type="submit" class="btn btn--primary">Save</button>
+                                    <button type="button" id="cancel-btn" class="btn btn--secondary">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    </form>
-                </div>
-                </div>
 
                         <!-- Transaction History Section -->
                         <section id="transactions-section" class="content-section hidden">
@@ -385,13 +395,13 @@
             </section>
         </div>
     </main>
-
+</div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
     <script type="module" src="../scripts/firebase.js"></script>
-
+    <script type="module" src="../scripts/advanced-pos.js"></script>
     <script type="module" src="../scripts/inventory.js"></script>
-    <script type="module" src="../scripts/mix-function.js"></script>
+    <!-- <script type="module" src="../scripts/mix-function.js"></script> -->
     <script type="module" src="../scripts/transaction.js"></script>
     <script type="module" src="../scripts/employee-reservations.js"></script>
     <script type="module" src="../scripts/employee-feedback.js"></script>

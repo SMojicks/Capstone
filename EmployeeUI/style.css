@@ -1648,3 +1648,188 @@ label {
        height: 300px; 
     }
 }
+
+
+/* Category Tab Bar */
+#category-tabs-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    background: var(--color-white);
+    border-radius: var(--radius-base);
+    padding: var(--space-8);
+    margin-bottom: var(--space-16);
+    border: 1px solid var(--color-border);
+}
+
+.category-tab {
+    padding: var(--space-8) var(--space-16);
+    margin-right: var(--space-8);
+    border: none;
+    background: var(--color-gray-100);
+    color: var(--color-gray-600);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+    white-space: nowrap; /* Prevent tabs from breaking line */
+}
+
+.category-tab:hover {
+    background: var(--color-gray-200);
+}
+
+.category-tab.active {
+    background: var(--color-green-600);
+    color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Display Mode Styles */
+.product-card.is-hidden {
+    opacity: 0.5;
+    background: var(--color-gray-100);
+    border-style: dashed;
+}
+
+.product-toggle-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--color-orange-500);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 26px;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.product-toggle-btn.is-visible {
+    background: var(--color-green-500);
+}
+
+.product-toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+/* 1. Collapsible Sidebar Styles */
+
+.sidebar-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    cursor: pointer;
+    margin-right: var(--space-12);
+    padding: 0 var(--space-8);
+}
+.sidebar-toggle-btn .material-icons {
+    font-size: 28px;
+    vertical-align: middle;
+}
+
+/* Remove the grid-based body layout */
+body {
+    grid-template-areas: none;
+    grid-template-columns: none;
+    grid-template-rows: none;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make top-navbar fixed */
+.top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 60px; /* Explicit height */
+}
+
+/* New Main Container for sidebar + content */
+.main-container {
+    display: flex;
+    margin-top: 60px; /* Offset for fixed navbar */
+    height: calc(100vh - 60px);
+}
+
+.sidebar {
+    width: 250px;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    transition: margin-left 0.3s ease-in-out;
+    position: relative; /* Keep it in the flow */
+    z-index: 900; /* Below navbar */
+}
+
+.main-content {
+    flex-grow: 1; /* Allow content to grow */
+    transition: all 0.3s ease-in-out;
+    padding: var(--space-24);
+    overflow-y: auto;
+}
+
+/* Collapsed State */
+body.sidebar-collapsed .sidebar {
+    margin-left: -250px;
+}
+
+/* 2. POS Grid Header and Scrolling Styles */
+
+/* Make POS grid scrollable */
+.product-grid {
+    /* Adjust height as needed. 
+       This calc subtracts navbar, pos-header, and category tabs. */
+    max-height: calc(100vh - 60px - 80px - 70px);
+    overflow-y: auto;
+    padding-right: var(--space-8); /* Add space for scrollbar */
+}
+
+/* Category Tab Bar */
+#category-tabs-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    background: var(--color-white);
+    border-radius: var(--radius-base);
+    padding: var(--space-8);
+    margin-bottom: var(--space-16);
+    border: 1px solid var(--color-border);
+}
+
+.category-tab {
+    padding: var(--space-8) var(--space-16);
+    margin-right: var(--space-8);
+    border: none;
+    background: var(--color-gray-100);
+    color: var(--color-gray-600);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.category-tab:hover { background: var(--color-gray-200); }
+.category-tab.active {
+    background: var(--color-green-600);
+    color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+
+/* POS Category Header */
+.product-category-header {
+    grid-column: 1 / -1; /* Span full grid width */
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-green-700);
+    padding: var(--space-12) 0;
+    margin-top: var(--space-16);
+    border-bottom: 2px solid var(--color-border);
+}

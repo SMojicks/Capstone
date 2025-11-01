@@ -1,57 +1,46 @@
+
 // inventory.js
 import { db } from './firebase.js';
 import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  query,
-  orderBy,
-  onSnapshot
+  collection, addDoc, updateDoc, deleteDoc, doc,
+  serverTimestamp, query, orderBy, onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-const inventoryTable = document.getElementById('inventory-table');
+// --- Elements ---
+const inventoryTableBody = document.getElementById('inventory-table');
 const modal = document.getElementById('product-modal');
 const addBtn = document.getElementById('add-product-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const form = document.getElementById('product-form');
 const modalTitle = document.getElementById('modal-title');
 
-// 🔹 Form Fields
+// Form Fields
 const idField = document.getElementById('product-id');
 const nameField = document.getElementById('product-name');
 const categoryField = document.getElementById('product-category');
 const stockField = document.getElementById('product-stock');
-const minStockField = document.getElementById('product-min-stock'); // 🆕 added
-const priceField = document.getElementById('product-price');
+const stockUnitField = document.getElementById('product-stock-unit');
+const baseUnitField = document.getElementById('product-base-unit');
+const conversionField = document.getElementById('product-conversion');
+const minStockField = document.getElementById('product-min-stock');
 
-// 🔹 Pagination controls
-const prevPageBtn = document.getElementById('prevPage');
-const nextPageBtn = document.getElementById('nextPage');
-const pageInfo = document.getElementById('pageInfo');
+const inventoryAlertDot = document.getElementById('inventory-alert-dot');
+const productsRef = collection(db, "ingredients"); // Now points to 'ingredients'
 
-// 🔹 Sidebar red dot
-const inventoryAlertDot = document.getElementById('inventory-alert-dot'); // 🆕 red dot in sidebar
-
-const productsRef = collection(db, "inventory");
-let allProducts = []; // Store all data here
-let currentPage = 1;
-const pageSize = 10; // number of rows per page
-
-// 🔹 Modal Logic
+// --- Modal Logic ---
 function openModal(editMode = false, product = {}) {
+  form.reset();
   modal.style.display = "flex";
-  modalTitle.textContent = editMode ? "Edit Product" : "Add Product";
+  modalTitle.textContent = editMode ? "Edit Ingredient" : "Add Ingredient";
   
   idField.value = product.id || '';
-  nameField.value = product.itemName || '';
+  nameField.value = product.name || '';
   categoryField.value = product.category || '';
-  stockField.value = product.quantity || '';
-  minStockField.value = product.minStock || ''; // 🆕 added
-  priceField.value = product.purchasePrice || '';
+  stockField.value = product.stockQuantity || '';
+  stockUnitField.value = product.stockUnit || '';
+  baseUnitField.value = product.baseUnit || '';
+  conversionField.value = product.conversionFactor || '';
+  minStockField.value = product.minStockThreshold || '';
 }
 
 function closeModal() {
@@ -63,150 +52,138 @@ function closeModal() {
 addBtn.addEventListener('click', () => openModal());
 cancelBtn.addEventListener('click', closeModal);
 
-// 🔹 Render a Page
-function renderPage(page) {
-  inventoryTable.innerHTML = '';
-
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const pageData = allProducts.slice(start, end);
-
-  if (pageData.length === 0) {
-    inventoryTable.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">No items found.</td></tr>`;
-    return;
-  }
-
+// --- Render Table ---
+function renderInventoryTable(snapshot) {
+  inventoryTableBody.innerHTML = '';
   let hasLowStock = false;
 
-  pageData.forEach(({ id, ...product }) => {
+  if (snapshot.empty) {
+    inventoryTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No ingredients found.</td></tr>`;
+    updateInventoryNotification(false);
+    return;
+  }
+  
+  snapshot.forEach(docSnap => {
+    const id = docSnap.id;
+    const ing = docSnap.data();
+    
+    // Calculate current stock in BASE units
+    const currentStockInBase = (ing.stockQuantity || 0) * (ing.conversionFactor || 1);
+    const minStock = ing.minStockThreshold || 0;
+    
+    const isLowStock = currentStockInBase <= minStock;
+    if (isLowStock) hasLowStock = true;
+
     const row = document.createElement('tr');
-    const isLowStock = (product.quantity || 0) <= (product.minStock || 0);
-    if (isLowStock) {
-      row.style.backgroundColor = '#fee2e2';
-      hasLowStock = true;
-    }
+    row.style.backgroundColor = isLowStock ? '#fee2e2' : 'transparent';
+    
+    // Display helper function
+    const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
 
     row.innerHTML = `
       <td>${id}</td>
-      <td>${product.itemName || '-'}</td>
-      <td>${product.category || '-'}</td>
+      <td>${ing.name || '-'}</td>
+      <td>${ing.category || '-'}</td>
       <td style="${isLowStock ? 'color:#dc2626;font-weight:600;' : ''}">
-        ${product.quantity || 0}
+        ${displayStock}
       </td>
-      <td>${product.minStock || 0}</td>
-      <td>₱${product.purchasePrice ? product.purchasePrice.toFixed(2) : '0.00'}</td>
+      <td>${minStock} ${ing.baseUnit}</td>
+      <td>1 ${ing.stockUnit} = ${ing.conversionFactor} ${ing.baseUnit}</td>
       <td>
         <button class="btn btn--small edit-btn">Edit</button>
         <button class="btn btn--small delete-btn">Delete</button>
       </td>
     `;
 
-    // ✏️ Edit
     row.querySelector('.edit-btn').addEventListener('click', () => {
-      openModal(true, { id, ...product });
+      openModal(true, { id, ...ing });
     });
 
-    // 🗑️ Delete
     row.querySelector('.delete-btn').addEventListener('click', async () => {
-      if (confirm(`Delete "${product.itemName}"?`)) {
-        await deleteDoc(doc(db, "inventory", id));
+      if (confirm(`Delete "${ing.name}"? This is permanent.`)) {
+        await deleteDoc(doc(db, "ingredients", id));
       }
     });
 
-    inventoryTable.appendChild(row);
+    inventoryTableBody.appendChild(row);
   });
-
-  // Pagination button states
-  prevPageBtn.disabled = page === 1;
-  nextPageBtn.disabled = end >= allProducts.length;
-  pageInfo.textContent = `Page ${page}`;
-
-  // 🔴 Update sidebar alert dot
+  
   updateInventoryNotification(hasLowStock);
 }
 
-// 🔹 Update Sidebar Notification Dot
+// --- Stock Display Helper ---
+function formatStockDisplay(stockQty, stockUnit, baseUnit, conversion) {
+  if (stockUnit === baseUnit) {
+    return `${stockQty.toFixed(2)} ${baseUnit}`;
+  }
+  
+  const wholeUnits = Math.floor(stockQty);
+  const fractionalPart = stockQty - wholeUnits;
+  const remainingBaseUnits = (fractionalPart * conversion).toFixed(0);
+  
+  if (remainingBaseUnits > 0) {
+    return `${wholeUnits} ${stockUnit} + ${remainingBaseUnits} ${baseUnit}`;
+  } else {
+    return `${wholeUnits} ${stockUnit}`;
+  }
+}
+
+// --- Update Sidebar Notification ---
 function updateInventoryNotification(hasLowStock) {
-  if (!inventoryAlertDot) return;
-  inventoryAlertDot.style.display = hasLowStock ? 'inline-block' : 'none';
-}
-
-// 🔹 Load all inventory (Realtime)
-// 🔹 Load all inventory
-async function loadInventory() {
-  try {
-    const q = query(productsRef, orderBy("itemName"));
-    const snapshot = await getDocs(q);
-    allProducts = snapshot.docs.map(docSnap => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    }));
-
-    // ✅ Fix: use correct property name `minStock`
-    const hasLowStock = allProducts.some(p => {
-      const quantity = p.quantity || 0;
-      const minimum = p.minStock || 0;
-      return quantity <= minimum && minimum > 0;
-    });
-
-    if (inventoryAlertDot) {
-      inventoryAlertDot.style.display = hasLowStock ? 'block' : 'none';
-      inventoryAlertDot.style.animation = hasLowStock ? 'blink 1s infinite' : 'none';
-    }
-
-    renderPage(currentPage);
-  } catch (err) {
-    console.error("❌ Error loading inventory:", err);
+  if (inventoryAlertDot) {
+    inventoryAlertDot.style.display = hasLowStock ? 'inline-block' : 'none';
   }
 }
 
+// --- Load Inventory (Realtime) ---
+function loadInventory() {
+  const q = query(productsRef, orderBy("name"));
+  onSnapshot(q, (snapshot) => {
+    renderInventoryTable(snapshot);
+  }, (error) => {
+    console.error("❌ Error loading inventory:", error);
+    inventoryTableBody.innerHTML = `<tr><td colspan="7">Error loading inventory.</td></tr>`;
+  });
+}
 
-// 🔹 Pagination buttons
-prevPageBtn.addEventListener('click', () => {
-  if (currentPage > 1) {
-    currentPage--;
-    renderPage(currentPage);
-  }
-});
-
-nextPageBtn.addEventListener('click', () => {
-  if ((currentPage * pageSize) < allProducts.length) {
-    currentPage++;
-    renderPage(currentPage);
-  }
-});
-
-// 🔹 Add or Update Product
+// --- Add or Update Ingredient ---
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-
+  
   const id = idField.value;
   const newData = {
-    itemName: nameField.value.trim(),
+    name: nameField.value.trim(),
     category: categoryField.value.trim(),
-    quantity: parseInt(stockField.value),
-    minStock: parseInt(minStockField.value) || 0, // 🆕 added
-    purchasePrice: parseFloat(priceField.value),
-    lastRestocked: serverTimestamp(),
+    stockQuantity: parseFloat(stockField.value),
+    stockUnit: stockUnitField.value.trim(),
+    baseUnit: baseUnitField.value.trim(),
+    conversionFactor: parseFloat(conversionField.value),
+    minStockThreshold: parseInt(minStockField.value) || 0,
+    lastUpdated: serverTimestamp(),
   };
+
+  // Validation
+  if (newData.conversionFactor <= 0) {
+      alert("Conversion Factor must be greater than 0.");
+      return;
+  }
+  if (newData.stockUnit === newData.baseUnit && newData.conversionFactor !== 1) {
+      alert("If Stock Unit and Base Unit are the same, Conversion Factor must be 1.");
+      return;
+  }
 
   try {
     if (id) {
-      await updateDoc(doc(db, "inventory", id), newData);
+      await updateDoc(doc(db, "ingredients", id), newData);
     } else {
       await addDoc(productsRef, newData);
     }
     closeModal();
   } catch (error) {
-    console.error("❌ Error saving product:", error);
-    alert("Failed to save product.");
+    console.error("❌ Error saving ingredient:", error);
+    alert("Failed to save ingredient.");
   }
 });
 
-// 🔹 Close modal when clicking outside
-window.addEventListener('click', (e) => {
-  if (e.target === modal) closeModal();
-});
-
-// 🔹 Initial Load
+// --- Initial Load ---
 document.addEventListener('DOMContentLoaded', loadInventory);

@@ -8,33 +8,7 @@ import {
   getDoc     // 👈 ADD THIS
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-// import { storage } from "./firebase.js";
-// import {
-//   ref,
-//   uploadBytes,
-//   getDownloadURL
-// } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
 
-// // ID Preview logic
-// const idUploadInput = document.getElementById("idUpload");
-// const idPreviewContainer = document.getElementById("idPreviewContainer");
-// const idPreview = document.getElementById("idPreview");
-
-// if (idUploadInput) {
-//   idUploadInput.addEventListener("change", (event) => {
-//     const file = event.target.files[0];
-//     if (file) {
-//       const reader = new FileReader();
-//       reader.onload = (e) => {
-//         idPreview.src = e.target.result;
-//         idPreviewContainer.classList.remove("hidden");
-//       };
-//       reader.readAsDataURL(file);
-//     } else {
-//       idPreviewContainer.classList.add("hidden");
-//     }
-//   });
-// }
 
 const reservationsRef = collection(db, "reservations");
 
