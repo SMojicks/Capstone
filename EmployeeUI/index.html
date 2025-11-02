@@ -102,6 +102,18 @@
                                 <form id="menu-item-form">
                                     <input type="hidden" id="menu-product-id" />
                                     <div class="form-grid-two-col">
+
+                                        <div class="form-column">
+                                            <div class="form-group">
+                                                <label for="menu-waiting-time">Avg. Waiting Time:</label>
+                                                <select id="menu-waiting-time" class="form-control" required>
+                                                    <option value="">Select time...</option>
+                                                    <option value="short">Short (< 5 min)</option>
+                                                    <option value="medium">Medium (5-10 min)</option>
+                                                    <option value="long">Long (15-20 min)</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="form-column">
                                             <div class="form-group">
                                                 <label for="menu-name">Product Name:</label>
@@ -142,6 +154,11 @@
 
                 <div class="pos-layout">
                     <div class="pos-left">
+                                            <div id="orders-line-container">
+                                <h5 class="orders-line-title">Pending Orders</h5>
+                                <div id="orders-line" class="orders-line">
+                                    </div>
+                            </div>
                         <div id="category-tabs-container">
                          </div>
                         <!-- Search removed -->
@@ -392,9 +409,65 @@
                         </div>
 
                     </div>
-            </section>
+            </section> <div id="customer-info-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="customer-info-title">Order Details</h2>
+            <form id="customer-info-form">
+                <div class="form-group">
+                    <label for="customer-name">Customer Name:</label>
+                    <input type="text" id="customer-name" class="form-control" placeholder="e.g., John D." required>
+                </div>
+                <div class="form-group">
+                    <label for="order-type">Order Type:</label>
+                    <select id="order-type" class="form-control" required>
+                        <option value="Dine-In">Dine-In</option>
+                        <option value="Take Out">Take Out</option>
+                        <option value="Delivery">Delivery</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn--primary">Create Order</button>
+                    <button type="button" id="cancel-customer-info-btn" class="btn btn--secondary">Cancel</button>
+                </div>
+            </form>
         </div>
-    </main>
+    </div>
+
+    <div id="order-details-modal" class="modal">
+        <div class="modal-content modal-content--wide">
+            <h2 id="order-modal-title">Order #0000</h2>
+            <div id="order-modal-details" class="order-modal-grid">
+                <div class="order-modal-info">
+                    <p><strong>Customer:</strong> <span id="order-modal-customer"></span></p>
+                    <p><strong>Order Type:</strong> <span id="order-modal-type"></span></p>
+                    <p><strong>Total:</strong> <span id="order-modal-total"></span></p>
+                    <p><strong>Avg. Wait:</strong> <span id="order-modal-wait-time"></span></p>
+
+                    <div class="order-modal-progress">
+                        <label>Status: <span id="order-modal-status-text">Pending</span></label>
+                        <div class="progress-bar">
+                            <div id="order-modal-progress-bar" class="progress-bar-inner" style="width: 10%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-modal-items">
+                    <h5>Items</h5>
+                    <ul id="order-modal-item-list">
+                        </ul>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="button" id="order-modal-void-btn" class="btn btn--secondary" style="background-color: var(--color-red-500); color: white;">Void Order</button>
+                <button type="button" id="order-modal-back-btn" class="btn btn--secondary">Close</button>
+                <button type="button" id="order-modal-progress-btn" class="btn btn--primary">Mark as Preparing</button>
+            </div>
+        </div>
+    </div>
+
+</div> 
+</main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
