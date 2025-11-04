@@ -2564,14 +2564,14 @@ body.sidebar-collapsed .sidebar {
   background: var(--color-green-600);
 }
 
+/* Cancel / Reject / Dark Gray Button */
 .btn--icon-cancel {
-  background: var(--color-orange-500);
-  color: white;
+    background: var(--color-gray-600); /* This is a dark gray */
+    color: white;
 }
 .btn--icon-cancel:hover {
-  background: #f97316;
+    background: var(--color-gray-700); /* This is a darker gray */
 }
-
 .btn--icon-delete {
   background: var(--color-red-500);
   color: white;

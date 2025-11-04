@@ -1,9 +1,9 @@
 
-// inventory.js
+// scripts/inventory.js
 import { db } from './firebase.js';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
-  serverTimestamp, query, orderBy, onSnapshot
+  serverTimestamp, query, orderBy, onSnapshot, getDocs
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // --- Elements ---
@@ -14,6 +14,39 @@ const cancelBtn = document.getElementById('cancel-btn');
 const form = document.getElementById('product-form');
 const modalTitle = document.getElementById('modal-title');
 
+// ... (after const productsRef = collection(db, "ingredients");)
+
+/**
+ * Generates the next sequential ID (e.g., ING-001, ING-002)
+ */
+async function getNextIngredientId() {
+    const prefix = "ING-";
+    let maxId = 0;
+
+    try {
+        const snapshot = await getDocs(productsRef);
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            // Check if the item has our formatted ID
+            if (data.ingredientId && data.ingredientId.startsWith(prefix)) {
+                const numPart = data.ingredientId.substring(prefix.length);
+                const num = parseInt(numPart, 10);
+                if (!isNaN(num) && num > maxId) {
+                    maxId = num; // Found a new highest number
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching max ingredient ID:", error);
+        // Fallback to a random number, though not ideal
+        return `${prefix}${Math.floor(Math.random() * 1000)}`;
+    }
+    
+    const nextIdNum = maxId + 1;
+    // Pad with leading zeros to 3 digits (e.g., 1 -> 001, 15 -> 015, 123 -> 123)
+    const nextId = `${prefix}${String(nextIdNum).padStart(3, '0')}`;
+    return nextId;
+}
 // Form Fields
 const idField = document.getElementById('product-id');
 const nameField = document.getElementById('product-name');
@@ -81,7 +114,7 @@ function renderInventoryTable(snapshot) {
     const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
 
 row.innerHTML = `
-      <td>${id}</td>
+      <td>${ing.ingredientId || id}</td>
       <td>${ing.name || '-'}</td>
       <td>${ing.category || '-'}</td>
       <td style="${isLowStock ? 'color:#dc2626;font-weight:600;' : ''}">
@@ -148,7 +181,7 @@ function loadInventory() {
 }
 
 // --- Add or Update Ingredient ---
-form.addEventListener('submit', async (e) => {
+ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const id = idField.value;
@@ -177,6 +210,7 @@ form.addEventListener('submit', async (e) => {
     if (id) {
       await updateDoc(doc(db, "ingredients", id), newData);
     } else {
+      newData.ingredientId = await getNextIngredientId();
       await addDoc(productsRef, newData);
     }
     closeModal();
