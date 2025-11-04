@@ -10,7 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
     <nav class="top-navbar">
         <div class="navbar-left">
         <button id="sidebar-toggle-btn" class="sidebar-toggle-btn">
@@ -31,7 +30,6 @@
     </nav>
     <div class="main-container">
 
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav-list">
@@ -82,21 +80,18 @@
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
     <main class="main-content">
         <div id="content-area">
-<!-- POS Section (Default) -->
-            <section id="pos-section" class="content-section active">
+<section id="pos-section" class="content-section active">
                 <div class="section-header-row">
                     <h1>Point of Sale</h1>
                     <div class="header-actions">
-                        <button id="display-mode-btn" class="btn btn--secondary">Display Mode</button>
+                        <button id="edit-mode-btn" class="btn btn--secondary">Edit Menu</button>
                         <button id="add-menu-item-btn" class="btn btn--primary">Add Menu Item</button>
                     </div>
                 </div>
 
-                    <!-- Add Menu Item Modal (Two-Column Layout) -->
-                        <div id="menu-item-modal" class="modal">
+                    <div id="menu-item-modal" class="modal">
                             <div class="modal-content modal-content--wide">
                                 <h2 id="menu-modal-title">Add Menu Product</h2>
                                 <form id="menu-item-form">
@@ -143,6 +138,14 @@
                                             </div>
                                         <button type="button" id="add-ingredient-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Ingredient</button>
                                     </div>
+                                    <label>Product Image:</label>
+                <div class="image-upload-container">
+                    <label for="menu-image-upload" class="image-upload-label">
+                        📷 Upload Image
+                    </label>
+                    <input type="file" id="menu-image-upload" accept="image/*">
+                    <img id="menu-image-preview" class="hidden" alt="Image preview">
+                </div>
 
                                     <div class="modal-buttons">
                                         <button type="submit" class="btn btn--primary">Save Product & Recipe</button>
@@ -161,10 +164,8 @@
                             </div>
                         <div id="category-tabs-container">
                          </div>
-                        <!-- Search removed -->
                         <div class="product-grid" id="product-grid">
-                            <!-- Products will be loaded here -->
-                        </div>
+                            </div>
                     </div>
                     <div class="pos-right">
                         <div class="cart-section">
@@ -195,7 +196,6 @@
                 </div>
             </section>
 
-                                <!-- Inventory Section -->
                                 <section id="inventory-section" class="content-section">
                                 <div class="section-header">
                                     <h1>Inventory Management</h1>
@@ -216,12 +216,10 @@
                                         </tr>
                                     </thead>
                                     <tbody id="inventory-table">
-                                        <!-- Inventory data will be loaded here -->
-                                    </tbody>
+                                        </tbody>
                                     </table>
                                 </div>
 
-                                <!-- 🔹 Pagination Controls -->
                                 <div class="pagination">
                                     <button id="prevPage" disabled>Previous</button>
                                     <span id="pageInfo">Page 1</span>
@@ -230,8 +228,7 @@
                                 </section>
 
 
-                <!-- Product Modal -->
-                    <div id="product-modal" class="modal">
+                <div id="product-modal" class="modal">
                         <div class="modal-content">
                             <h2 id="modal-title">Add Ingredient</h2>
                             <form id="product-form">
@@ -269,7 +266,6 @@
                         </div>
                     </div>
 
-                        <!-- Transaction History Section -->
                         <section id="transactions-section" class="content-section hidden">
                         <div class="section-header">
                             <h1>Transaction History</h1>
@@ -298,14 +294,12 @@
                                 </tr>
                             </thead>
                             <tbody id="transactions-list">
-                                <!-- Transactions will load here dynamically -->
-                            </tbody>
+                                </tbody>
                             </table>
                         </div>
                         </section>
 
 
-            <!-- Reservations Section -->
             <section id="reservations-section" class="content-section">
                 <div class="section-header">
                     <h1>Reservations</h1>
@@ -329,7 +323,6 @@
                 </div>
             </section>
 
-            <!-- Accounts Section -->
             <section id="accounts-section" class="content-section">
                 <div class="section-header">
                     <h1>Customer Accounts</h1>
@@ -338,13 +331,11 @@
                 <div class="table-container">
                     <table class="data-table">
                         <tbody id="accounts-table">
-                            <!-- Customer data will be loaded here -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </section>
 
-                <!-- Customer Feedback Section -->
                 <section id="feedback-section" class="content-section">
                     <div class="section-header">
                         <h1>Customer Feedback Management</h1>
@@ -361,8 +352,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Feedback will be populated here -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </section>
@@ -409,72 +399,110 @@
                         </div>
 
                     </div>
-            </section> <div id="customer-info-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="customer-info-title">Order Details</h2>
-            <form id="customer-info-form">
-                <div class="form-group">
-                    <label for="customer-name">Customer Name:</label>
-                    <input type="text" id="customer-name" class="form-control" placeholder="e.g., John D." required>
+            </section> 
+            
+            <div id="customer-info-modal" class="modal">
+                <div class="modal-content">
+                    <h2 id="customer-info-title">Order Details</h2>
+                    <form id="customer-info-form">
+                        <div class="form-group">
+                            <label for="customer-name">Customer Name:</label>
+                            <input type="text" id="customer-name" class="form-control" placeholder="e.g., John D." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="order-type">Order Type:</label>
+                            <select id="order-type" class="form-control" required>
+                                <option value="Dine-In">Dine-In</option>
+                                <option value="Take Out">Take Out</option>
+                                <option value="Delivery">Delivery</option>
+                            </select>
+                        </div>
+                        
+                        <div id="payment-details">
+                            <div class="payment-method">
+                                <strong>Mode of Payment:</strong>
+                                <div>
+                                    <input type="radio" id="pay-cash" name="paymentMethod" value="Cash" checked>
+                                    <label for="pay-cash">Cash</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="pay-online" name="paymentMethod" value="Online">
+                                    <label for="pay-online">Online</label>
+                                </div>
+                            </div>
+                            
+                            <div id="payment-cash-details">
+                                <div class="form-group">
+                                    <label for="payment-amount">Payment Amount (₱):</label>
+                                    <input type="number" id="payment-amount" class="form-control" placeholder="0.00" step="any" min="0">
+                                </div>
+                                <div class="payment-change">
+                                <p style="font-size: 1.1rem; font-weight: 600; color: #333;">
+                                <strong>Total Due:</strong> 
+                                <span id="customer-modal-total" style="color: var(--color-primary);">₱0.00</span>
+                                 </p>
+                                    <strong>Change:</strong>
+                                    <span id="payment-change-display">₱0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-buttons">
+                            <button type="submit" class="btn btn--primary">Create Order</button>
+                            <button type="button" id="cancel-customer-info-btn" class="btn btn--secondary">Cancel</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="order-type">Order Type:</label>
-                    <select id="order-type" class="form-control" required>
-                        <option value="Dine-In">Dine-In</option>
-                        <option value="Take Out">Take Out</option>
-                        <option value="Delivery">Delivery</option>
-                    </select>
-                </div>
-                <div class="modal-buttons">
-                    <button type="submit" class="btn btn--primary">Create Order</button>
-                    <button type="button" id="cancel-customer-info-btn" class="btn btn--secondary">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            </div>
 
-    <div id="order-details-modal" class="modal">
-        <div class="modal-content modal-content--wide">
-            <h2 id="order-modal-title">Order #0000</h2>
-            <div id="order-modal-details" class="order-modal-grid">
-                <div class="order-modal-info">
-                    <p><strong>Customer:</strong> <span id="order-modal-customer"></span></p>
-                    <p><strong>Order Type:</strong> <span id="order-modal-type"></span></p>
-                    <p><strong>Total:</strong> <span id="order-modal-total"></span></p>
-                    <p><strong>Avg. Wait:</strong> <span id="order-modal-wait-time"></span></p>
+            <div id="order-details-modal" class="modal">
+                <div class="modal-content modal-content--wide">
+                    <h2 id="order-modal-title">Order #0000</h2>
+                    
+                    <div id="order-modal-details" class="order-modal-grid">
+                        
+                        <div class="order-modal-info">
+                            <p><strong>Customer:</strong> <span id="order-modal-customer"></span></p>
+                            <p><strong>Order Type:</strong> <span id="order-modal-type"></span></p>
+                            <p><strong>Total:</strong> <span id="order-modal-total"></span></p>
+                            <p><strong>Avg. Wait:</strong> <span id="order-modal-wait-time"></span></p>
+                            <p><strong>Time Left:</strong> <span id="order-modal-estimated-time">Calculating...</span></p>
+                            <p><strong>Status:</strong> <span id="order-modal-status-text" class="status status-pending">Pending</span></p>
+                        </div>
 
-                    <div class="order-modal-progress">
-                        <label>Status: <span id="order-modal-status-text">Pending</span></label>
-                        <div class="progress-bar">
-                            <div id="order-modal-progress-bar" class="progress-bar-inner" style="width: 10%;"></div>
+                        <div class="order-modal-items-payment">
+                            
+                            <div id="order-modal-items-container">
+                                <h5>Items</h5>
+                                <label>Item Checklist Progress:</label>
+                                <div class="progress-bar" style="height: 12px; margin-bottom: 10px;">
+                                    <div id="order-modal-item-progress" class="progress-bar-inner" style="width: 0%; background-color: var(--color-blue-500);"></div>
+                                </div>
+                                <ul id="order-modal-item-list">
+                                    </ul>
+                            </div>
+                            
+                            <div id="payment-details" class="hidden"> 
+                                </div>
+                            
                         </div>
                     </div>
-                </div>
 
-                <div class="order-modal-items">
-                    <h5>Items</h5>
-                    <ul id="order-modal-item-list">
-                        </ul>
+                    <div class="modal-buttons">
+                        <button type="button" id="order-modal-void-btn" class="btn btn--secondary" style="background-color: var(--color-red-500); color: white;">Void Order</button>
+                        <button type="button" id="order-modal-back-btn" class="btn btn--secondary">Close</button>
+                        <button type="button" id="order-modal-progress-btn" class="btn btn--primary">Mark as Preparing</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="modal-buttons">
-                <button type="button" id="order-modal-void-btn" class="btn btn--secondary" style="background-color: var(--color-red-500); color: white;">Void Order</button>
-                <button type="button" id="order-modal-back-btn" class="btn btn--secondary">Close</button>
-                <button type="button" id="order-modal-progress-btn" class="btn btn--primary">Mark as Preparing</button>
-            </div>
-        </div>
-    </div>
-
-</div> 
-</main>
+        </div> 
+    </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
     <script type="module" src="../scripts/firebase.js"></script>
     <script type="module" src="../scripts/advanced-pos.js"></script>
     <script type="module" src="../scripts/inventory.js"></script>
-    <!-- <script type="module" src="../scripts/mix-function.js"></script> -->
     <script type="module" src="../scripts/transaction.js"></script>
     <script type="module" src="../scripts/employee-reservations.js"></script>
     <script type="module" src="../scripts/employee-feedback.js"></script>

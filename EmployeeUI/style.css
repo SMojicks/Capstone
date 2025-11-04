@@ -1977,3 +1977,297 @@ body.sidebar-collapsed .sidebar {
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
 }
+
+/* --- Pending Order Enhancements --- */
+
+/* 1. Overdue Dot on Order Card */
+.order-card {
+    position: relative; /* Needed for dot positioning */
+}
+
+.overdue-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-red-500);
+    border-radius: 50%;
+    border: 2px solid var(--color-white);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+    animation: blink 1.5s infinite;
+}
+
+/* 2. Order Modal Item Checkbox */
+#order-modal-item-list li {
+    gap: 12px;
+    align-items: center;
+}
+
+.item-check-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border: 2px solid var(--color-gray-400);
+    background: var(--color-white);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--color-green-600);
+    transition: all 0.2s ease;
+    padding: 0; /* Ensure text is centered */
+    line-height: 24px; /* Adjust line height */
+}
+
+.item-check-btn.done {
+    background: var(--color-green-500);
+    border-color: var(--color-green-500);
+    color: var(--color-white);
+}
+
+.item-check-btn:disabled,
+.item-check-btn.disabled {
+    background: var(--color-gray-200);
+    border-color: var(--color-gray-300);
+    cursor: not-allowed;
+    color: var(--color-gray-500);
+}
+
+/* 3. Modal Item Text */
+#order-modal-item-list li > span {
+    flex-grow: 1; /* Make name/qty take up space */
+}
+
+#order-modal-item-list li .item-wait-time {
+    flex-shrink: 0;
+    margin-left: auto; /* Push to the end */
+}
+
+/* --- Order Card Status Text --- */
+.order-card-status {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+}
+/* Color-coding for status */
+.order-card-status.status-pending { background: #fef3c7; color: #b45309; }
+.order-card-status.status-preparing { background: #dbeafe; color: #1e40af; }
+.order-card-status.status-ready { background: #dcf4e4; color: #1f7d4a; }
+
+.order-card-wait-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-8);
+}
+.order-card-wait-info .wait-text {
+    /* Styles for wait-short, wait-medium, wait-long are already defined */
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+}
+
+/* Adjust card progress bar margin */
+.order-card .progress-bar {
+    margin-top: var(--space-12);
+}
+
+/* --- Order Modal Payment UI --- */
+.order-modal-items-payment {
+    background: var(--color-gray-50);
+    border-radius: var(--radius-base);
+    padding: var(--space-16);
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+/* Make grid columns more balanced */
+.order-modal-grid {
+    grid-template-columns: 1fr 1.2fr;
+}
+
+/* Style the text-based status */
+#order-modal-status-text {
+    display: inline-block;
+    vertical-align: middle;
+    /* Uses existing .status styles */
+}
+
+/* Payment Details Section */
+.payment-method {
+    margin-bottom: var(--space-20);
+}
+.payment-method label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-8);
+}
+.payment-method > div {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    margin: var(--space-4) 0;
+}
+.payment-method input[type="radio"] {
+    width: 18px;
+    height: 18px;
+}
+
+#payment-cash-details.hidden {
+    display: none;
+}
+
+.payment-change {
+    margin-top: var(--space-16);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+.payment-change span {
+    display: inline-block;
+    margin-left: var(--space-12);
+    color: var(--color-text);
+}
+
+/* --- Product Stock Status Labels (POS Grid) --- */
+.product-stock-label {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 10px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-white);
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    box-shadow: var(--shadow-sm);
+    pointer-events: none; /* Don't interfere with clicks */
+}
+
+.product-stock-label.low-stock {
+    background: var(--color-orange-500);
+}
+
+.product-stock-label.out-of-stock {
+    background: var(--color-red-600);
+}
+
+/* Ensure payment details look right in the customer modal */
+#customer-info-modal .payment-method {
+    margin-top: var(--space-20);
+    padding-top: var(--space-16);
+    border-top: 1px solid var(--color-border);
+}
+#customer-info-modal .payment-change {
+    margin-top: var(--space-12);
+    padding-top: var(--space-12);
+    border-top: 1px solid var(--color-border);
+}
+#customer-info-modal .form-group {
+    margin-bottom: var(--space-12); /* Tighter spacing */
+}
+
+/* --- Product Card Image (Creative Display) --- */
+.product-card-image {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0; /* Rounded corners at the top */
+    margin-bottom: 12px;
+}
+
+.product-card {
+    padding: 0; /* Remove padding to let image fill */
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card-info {
+    padding: 16px;
+    padding-top: 0;
+    text-align: center;
+}
+
+/* --- Add/Edit Menu Modal Image Upload --- */
+.image-upload-container {
+    width: 100%;
+    padding: 16px;
+    background: var(--color-gray-50);
+    border: 2px dashed var(--color-gray-300);
+    border-radius: var(--radius-base);
+    text-align: center;
+}
+
+#menu-image-preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    margin-top: 16px;
+    border: 1px solid var(--color-border);
+}
+
+.image-upload-label {
+    padding: 10px 20px;
+    background: var(--color-secondary);
+    color: white;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    transition: background var(--duration-fast);
+}
+.image-upload-label:hover {
+    background: var(--color-secondary-hover);
+}
+#menu-image-upload {
+    display: none; /* Hide the default input */
+}
+
+/* --- Edit Menu Mode Buttons --- */
+.product-card-edit-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.product-edit-btn,
+.product-toggle-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+/* Edit Button (Pencil) */
+.product-edit-btn {
+    background: var(--color-blue-500);
+    color: white;
+}
+.product-edit-btn:hover {
+    background: #2563eb;
+    transform: scale(1.1);
+}
+
+/* Visibility Toggle Button */
+.product-toggle-btn {
+    background: var(--color-orange-500);
+    color: white;
+}
+.product-toggle-btn.is-visible {
+    background: var(--color-green-500);
+}
+.product-toggle-btn:hover {
+    transform: scale(1.1);
+}
