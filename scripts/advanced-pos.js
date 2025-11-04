@@ -22,7 +22,7 @@ const taxEl = document.getElementById("cart-tax");
 const totalEl = document.getElementById("cart-total");
 const processPaymentBtn = document.querySelector(".payment-buttons .btn--primary");
 const clearCartBtn = document.querySelector(".payment-buttons .btn--secondary");
-const displayModeBtn = document.getElementById("display-mode-btn");
+const editModeBtn = document.getElementById("edit-mode-btn");
 const categoryTabsContainer = document.getElementById("category-tabs-container");
 const menuImageUpload = document.getElementById("menu-image-upload");
 const menuImagePreview = document.getElementById("menu-image-preview");
@@ -65,6 +65,33 @@ let allPendingOrders = [];
 let currentOrderDetails = null;
 let currentImageFile = null;
 let currentImageUrl = null; 
+
+// --- Image Preview & File Handling ---
+if (menuImageUpload) {
+    menuImageUpload.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            currentImageFile = file; // Set the global file variable
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (menuImagePreview) {
+                    menuImagePreview.src = event.target.result;
+                    menuImagePreview.classList.remove("hidden");
+                }
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // No file selected
+            currentImageFile = null;
+            if (menuImagePreview) {
+                menuImagePreview.classList.add("hidden");
+                menuImagePreview.src = "";
+            }
+        }
+    });
+}
 // --- NEW CLOUDINARY UPLOAD FUNCTION ---
 async function uploadToCloudinary(file) {
     // --- ⬇️ ⬇️ VITAL: REPLACE THESE WITH YOUR OWN ⬇️ ⬇️ ---
@@ -297,6 +324,15 @@ function closeMenuModal() {
     if (document.getElementById("menu-product-id")) document.getElementById("menu-product-id").value = "";
     if (newCategoryInput) newCategoryInput.style.display = "none";
     if (addIngredientBtn) addIngredientBtn.disabled = true;
+
+    // --- ADD THESE LINES ---
+    if (menuImagePreview) {
+        menuImagePreview.src = "";
+        menuImagePreview.classList.add("hidden");
+    }
+    currentImageFile = null;
+    currentImageUrl = null;
+    // --- END OF ADDITIONS ---
   }
 }
 
@@ -312,14 +348,19 @@ if (cancelMenuBtn) {
     cancelMenuBtn.addEventListener("click", closeMenuModal);
 }
 
-// --- Display Mode ---
-if (displayModeBtn) {
-    displayModeBtn.addEventListener("click", () => {
-      displayMode = !displayMode;
-      displayModeBtn.textContent = displayMode ? 'Exit Display Mode' : 'Display Mode';
-      displayModeBtn.classList.toggle('btn--danger', displayMode);
-      if (productGrid) productGrid.classList.toggle('display-mode-active', displayMode);
-      renderProducts(); // Re-render with display mode
+// --- Edit Mode Toggle ---
+if (editModeBtn) {
+    editModeBtn.addEventListener("click", () => {
+      editMode = !editMode; // Toggle the global editMode variable
+      editModeBtn.textContent = editMode ? 'Exit Edit Mode' : 'Edit Menu';
+      editModeBtn.classList.toggle('btn--danger', editMode);
+
+      // Hide 'Add Menu Item' button when in edit mode to avoid confusion
+      if (addMenuBtn) {
+        addMenuBtn.style.display = editMode ? 'none' : 'block';
+      }
+
+      renderProducts(); // Re-render the grid to show/hide edit controls
     });
 }
 
@@ -495,7 +536,7 @@ function createProductCard(product) {
   }
   
   // --- NEW EDIT/HIDE BUTTONS ---
-  if (editMode) { // <--- THIS IS THE FIX (was 'displayMode')
+  if (editMode) { //
     const controlsDiv = document.createElement("div");
     controlsDiv.className = "product-card-edit-controls";
 
@@ -523,6 +564,17 @@ function createProductCard(product) {
     
     card.appendChild(controlsDiv);
 
+    // 3. Delete Button (Trash Can)
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "product-delete-btn";
+    deleteBtn.innerHTML = "&#128465;"; // Trash can icon
+    deleteBtn.title = "Delete Item Permanently";
+    deleteBtn.onclick = (e) => { 
+        e.stopPropagation();
+        handleDeleteMenuItem(product); // Call the new validation function
+    };
+    controlsDiv.appendChild(deleteBtn);
+
   } else {
     // Normal mode: check stock and add to cart
     if (stockStatus === "out-of-stock") {
@@ -541,6 +593,66 @@ async function handleToggleVisibility(productId, currentVisibility) {
     // No need to call renderProducts(), listener will handle it.
   } catch (error) {
     console.error("Error toggling visibility:", error);
+  }
+}
+async function openEditModal(product) {
+  // 1. Set modal to "Edit" mode and show it
+  if (menuModal) menuModal.style.display = "flex";
+  document.getElementById("menu-modal-title").textContent = "Edit Menu Product";
+  menuForm.querySelector('button[type="submit"]').textContent = "Update Product";
+
+  // 2. Load fresh category and ingredient data
+  await loadCategories();
+  await loadAllIngredientsCache();
+
+  // 3. Populate product fields
+  document.getElementById("menu-product-id").value = product.id;
+  document.getElementById("menu-name").value = product.name;
+  document.getElementById("menu-price").value = product.price;
+  document.getElementById("menu-waiting-time").value = product.waitingTime;
+  
+  // 4. Set category and trigger ingredient filtering
+  const categoryDropdown = document.getElementById("menu-category");
+  categoryDropdown.value = product.category;
+  // Manually trigger a 'change' event to force the recipe list to update
+  categoryDropdown.dispatchEvent(new Event('change'));
+
+  // 5. Populate Image Preview
+  currentImageFile = null; // Reset any selected file
+  currentImageUrl = product.imageUrl || null; // Set the existing URL
+  if (menuImagePreview) {
+      if (product.imageUrl) {
+          menuImagePreview.src = product.imageUrl;
+          menuImagePreview.classList.remove("hidden");
+      } else {
+          menuImagePreview.classList.add("hidden");
+          menuImagePreview.src = "";
+      }
+  }
+
+  // 6. Populate the recipe list
+  if (recipeList) {
+      recipeList.innerHTML = ""; // Clear list
+      
+      // Find all recipe items for THIS product
+      const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
+      
+      // Find all ingredients that match this product's category
+      const filteredIngredients = allIngredientsCache.filter(ing => ing.category === product.category);
+
+      if (addIngredientBtn) addIngredientBtn.disabled = false;
+
+      // Add a pre-filled row for each recipe item
+      for (const recipeItem of productRecipes) {
+          addIngredientRow(filteredIngredients); // Add a new empty row
+          const newRow = recipeList.lastChild; // Get the row we just added
+          
+          if (newRow) {
+              newRow.querySelector(".ingredient-id").value = recipeItem.ingredientId;
+              newRow.querySelector(".ingredient-qty").value = recipeItem.qtyPerProduct;
+              newRow.querySelector(".ingredient-unit").value = recipeItem.unitUsed;
+          }
+      }
   }
 }
 
@@ -1346,6 +1458,68 @@ async function voidOrder(order) {
     if (orderDetailsModal) orderDetailsModal.style.display = "none";
   } catch (error) {
     console.error("Error voiding order:", error);
+  }
+}
+/**
+ * Prompts the user for confirmation before deleting a menu item.
+ * @param {object} product - The product object to be deleted.
+ */
+function handleDeleteMenuItem(product) {
+  const expectedName = product.name;
+  const confirmation = prompt(`To delete this item, please type its exact name: "${expectedName}"`);
+
+  // User clicked "Cancel"
+  if (confirmation === null) {
+    alert("Deletion canceled.");
+    return;
+  }
+
+  // Check if the typed name matches
+  if (confirmation.trim() === expectedName) {
+    // Call the actual deletion function
+    deleteProductAndRecipe(product.id, product.name);
+  } else {
+    alert(`Name does not match. Deletion canceled.`);
+  }
+}
+
+/**
+ * Deletes a product and its associated recipes from Firestore.
+ * @param {string} productId - The ID of the product to delete.
+ * @param {string} productName - The name of the product (for alerts).
+ */
+async function deleteProductAndRecipe(productId, productName) {
+  if (!productId) {
+    alert("Error: Product ID is missing. Cannot delete.");
+    return;
+  }
+
+  try {
+    const batch = writeBatch(db);
+
+    // 1. Delete the product document
+    const productRef = doc(db, "products", productId);
+    batch.delete(productRef);
+
+    // 2. Find and delete all associated recipe documents
+    const recipesQuery = query(recipesRef, where("productId", "==", productId));
+    const recipeSnapshot = await getDocs(recipesQuery);
+    
+    if (!recipeSnapshot.empty) {
+      recipeSnapshot.forEach(recipeDoc => {
+        batch.delete(recipeDoc.ref);
+      });
+    }
+
+    // 3. Commit the batch
+    await batch.commit();
+
+    alert(`Product "${productName}" and its recipe have been deleted successfully.`);
+    // The real-time listener will automatically update the UI.
+
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    alert(`Failed to delete product: ${error.message}`);
   }
 }
 

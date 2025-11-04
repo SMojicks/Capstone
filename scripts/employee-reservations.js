@@ -13,7 +13,7 @@ onSnapshot(reservationCollection, (snapshot) => {
     const data = docSnap.data();
     const row = document.createElement("tr");
 
-    row.innerHTML = `
+row.innerHTML = `
       <td>${data.name}</td>
       <td>${data.contactNumber}</td>
       <td>${data.tableNumber}</td>
@@ -22,12 +22,14 @@ onSnapshot(reservationCollection, (snapshot) => {
       <td>${data.numOfDiners}</td>
       <td>${data.notes || "—"}</td>
       <td class="status ${data.status || "pending"}">${data.status || "pending"}</td>
-      <td>
-        <button class="complete-btn" data-id="${docSnap.id}">✔️ Complete</button>
-        <button class="cancel-btn" data-id="${docSnap.id}">❌ Cancel</button>
-        <button class="delete-btn" data-id="${docSnap.id}">🗑 Delete</button>
+      <td class="actions-cell">
+        <button class="btn-icon btn--icon-approve complete-btn" title="Complete Reservation" data-id="${docSnap.id}">✔️</button>
+        <button class="btn-icon btn--icon-cancel cancel-btn" title="Cancel Reservation" data-id="${docSnap.id}">❌</button>
+        <button class="btn-icon btn--icon-delete delete-btn" title="Delete Reservation" data-id="${docSnap.id}">🗑</button>
       </td>
-    `;
+      `;
+      
+      console.log(row.children.length);
 
     reservationTableBody.appendChild(row);
   });

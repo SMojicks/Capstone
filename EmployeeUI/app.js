@@ -1,372 +1,173 @@
-// import { 
-//   getFirestore, 
-//   collection, 
-//   getDocs, 
-//   addDoc, 
-//   updateDoc, 
-//   doc, 
-//   getDoc, 
-//   serverTimestamp, 
-//   query, 
-//   orderBy 
-// } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-// import { loadTransactions } from "../scripts/transaction.js"; // Adjust the path as necessary
-// import { loadAnalytics } from "../scripts/analytics.js"; // 👈 ADD THIS
-// // Cart state
-// let cart = [];
-
-// // Initialize the application
-// document.addEventListener('DOMContentLoaded', function() {
-//     setupNavigation();
-//     setupPOSFunctionality();
-//     setupLogout();
-// });
-
-// // Navigation functionality
-// function setupNavigation() {
-//     const navLinks = document.querySelectorAll('.nav-link');
-//     const sections = document.querySelectorAll('.content-section');
-
-//     navLinks.forEach(link => {
-//         link.addEventListener('click', function() {
-//             const targetSection = this.getAttribute('data-section');
-            
-//             // Remove active class from all links and sections
-//             navLinks.forEach(nav => nav.classList.remove('active'));
-//             sections.forEach(section => section.classList.remove('active'));
-            
-//             // Add active class to clicked link and corresponding section
-//             this.classList.add('active');
-//             document.getElementById(`${targetSection}-section`).classList.add('active');
-
-//             if (targetSection === 'analytics') {
-//                 // Check if VanillaCalendar is loaded before calling loadAnalytics
-//                 // Since we removed the calendar, we don't need this check anymore.
-//                 // Let's just call loadAnalytics directly after a log.
-
-//                 console.log("Analytics tab clicked, attempting to call loadAnalytics..."); // <-- ADD THIS LINE
-
-//                 if (typeof loadAnalytics === 'function') { // Check if the function is imported correctly
-//                     loadAnalytics();
-//                 } else {
-//                     console.error("loadAnalytics function is not defined or imported correctly!");
-//                 }
-//             }
-//         });
-//     });
-// }
-
-// // POS Section Functions
-// function loadPOSProducts() {
-//     const productGrid = document.getElementById('product-grid');
-//     productGrid.innerHTML = '';
-    
-//     data.products.forEach(product => {
-//         const productCard = document.createElement('div');
-//         productCard.className = 'product-card';
-//         productCard.innerHTML = `
-//             <div class="product-name">${product.name}</div>
-//             <div class="product-category">${product.category}</div>
-//             <div class="product-price">$${product.price.toFixed(2)}</div>
-//             <div class="product-stock">Stock: ${product.stock}</div>
-//         `;
-        
-//         productCard.addEventListener('click', () => addToCart(product));
-//         productGrid.appendChild(productCard);
-//     });
-// }
-
-// function setupPOSFunctionality() {
-//     const clearCartBtn = document.querySelector('.payment-buttons .btn--secondary');
-//     const processPaymentBtn = document.querySelector('.payment-buttons .btn--primary');
-
-//     if (clearCartBtn) clearCartBtn.addEventListener('click', clearCart);
-//     if (processPaymentBtn) processPaymentBtn.addEventListener('click', processPayment);
-// }
-
-// function addToCart(product) {
-//     const existingItem = cart.find(item => item.id === product.id);
-    
-//     if (existingItem) {
-//         existingItem.quantity += 1;
-//     } else {
-//         cart.push({
-//             ...product,
-//             quantity: 1
-//         });
-//     }
-    
-//     updateCartDisplay();
-// }
-
-// function removeFromCart(productId) {
-//     cart = cart.filter(item => item.id !== productId);
-//     updateCartDisplay();
-// }
-
-// function updateQuantity(productId, change) {
-//     const item = cart.find(item => item.id === productId);
-//     if (item) {
-//         item.quantity += change;
-//         if (item.quantity <= 0) {
-//             removeFromCart(productId);
-//         } else {
-//             updateCartDisplay();
-//         }
-//     }
-// }
-
-// function updateCartDisplay() {
-//     const cartItems = document.getElementById('cart-items');
-//     const subtotalEl = document.getElementById('cart-subtotal');
-//     const taxEl = document.getElementById('cart-tax');
-//     const totalEl = document.getElementById('cart-total');
-    
-//     if (cart.length === 0) {
-//         cartItems.innerHTML = '<p class="empty-cart">Cart is empty</p>';
-//         subtotalEl.textContent = '$0.00';
-//         taxEl.textContent = '$0.00';
-//         totalEl.textContent = '$0.00';
-//         return;
-//     }
-    
-//     let subtotal = 0;
-//     cartItems.innerHTML = '';
-    
-//     cart.forEach(item => {
-//         const itemTotal = item.price * item.quantity;
-//         subtotal += itemTotal;
-        
-//         const cartItem = document.createElement('div');
-//         cartItem.className = 'cart-item';
-//         cartItem.innerHTML = `
-//             <div class="cart-item-info">
-//                 <div class="cart-item-name">${item.name}</div>
-//                 <div class="cart-item-price">$${item.price.toFixed(2)} each</div>
-//             </div>
-//             <div class="cart-item-quantity">
-//                 <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
-//                 <span>${item.quantity}</span>
-//                 <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
-//             </div>
-//         `;
-        
-//         cartItems.appendChild(cartItem);
-//     });
-    
-//     const tax = subtotal * 0.08; // 8% tax
-//     const total = subtotal + tax;
-    
-//     subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-//     taxEl.textContent = `$${tax.toFixed(2)}`;
-//     totalEl.textContent = `$${total.toFixed(2)}`;
-// }
-
-// function clearCart() {
-//     cart = [];
-//     updateCartDisplay();
-// }
-
-// function processPayment() {
-//     if (cart.length === 0) {
-//         alert('Cart is empty!');
-//         return;
-//     }
-    
-//     const total = parseFloat(document.getElementById('cart-total').textContent.replace('$', ''));
-//     alert(`Payment processed successfully! Total: $${total.toFixed(2)}`);
-//     clearCart();
-// }
-
-// // Inventory Section
-// function loadInventoryTable() {
-//     const tbody = document.getElementById('inventory-table');
-//     tbody.innerHTML = '';
-    
-//     data.products.forEach(product => {
-//         const row = document.createElement('tr');
-//         const stockClass = product.stock < 20 ? 'stock-low' : product.stock < 40 ? 'stock-medium' : 'stock-high';
-        
-//         row.innerHTML = `
-//             <td>${product.id}</td>
-//             <td>${product.name}</td>
-//             <td>${product.category}</td>
-//             <td class="${stockClass}">${product.stock}</td>
-//             <td>$${product.price.toFixed(2)}</td>
-//             <td>
-//                 <button class="btn btn--outline action-btn">Edit</button>
-//                 <button class="btn btn--outline action-btn">Delete</button>
-//             </td>
-//         `;
-        
-//         tbody.appendChild(row);
-//     });
-// }
-
-
-// // Reservations Section
-// function loadReservationsTable() {
-//     const tbody = document.getElementById('reservations-table');
-//     tbody.innerHTML = '';
-    
-//     data.reservations.forEach(reservation => {
-//         const row = document.createElement('tr');
-//         row.innerHTML = `
-//             <td>${reservation.id}</td>
-//             <td>${reservation.date}</td>
-//             <td>${reservation.time}</td>
-//             <td>${reservation.party}</td>
-//             <td>${reservation.name}</td>
-//             <td>${reservation.phone}</td>
-//             <td>
-//                 <button class="btn btn--outline action-btn">Edit</button>
-//                 <button class="btn btn--outline action-btn">Cancel</button>
-//             </td>
-//         `;
-        
-//         tbody.appendChild(row);
-//     });
-// }
-
-// // Accounts Section
-// function loadAccountsTable() {
-//     const tbody = document.getElementById('accounts-table');
-//     tbody.innerHTML = '';
-    
-//     data.customers.forEach(customer => {
-//         const row = document.createElement('tr');
-//         row.innerHTML = `
-//             <td>${customer.id}</td>
-//             <td>${customer.name}</td>
-//             <td>${customer.email}</td>
-//             <td>${customer.phone}</td>
-//             <td>${customer.visits}</td>
-//             <td>$${customer.total_spent.toFixed(2)}</td>
-//             <td>
-//                 <button class="btn btn--outline action-btn">View</button>
-//                 <button class="btn btn--outline action-btn">Edit</button>
-//             </td>
-//         `;
-        
-//         tbody.appendChild(row);
-//     });
-// }
-
-// // Feedback Section
-// function loadFeedbackSection() {
-//     const feedbackList = document.getElementById('feedback-list');
-//     const avgRatingEl = document.getElementById('avg-rating');
-    
-//     // Calculate average rating
-//     const totalRating = data.feedback.reduce((sum, item) => sum + item.rating, 0);
-//     const avgRating = (totalRating / data.feedback.length).toFixed(1);
-//     avgRatingEl.textContent = avgRating;
-    
-//     // Load feedback items
-//     feedbackList.innerHTML = '';
-    
-//     data.feedback.forEach(feedback => {
-//         const feedbackItem = document.createElement('div');
-//         feedbackItem.className = 'feedback-item';
-        
-//         const stars = '★'.repeat(feedback.rating) + '☆'.repeat(5 - feedback.rating);
-        
-//         feedbackItem.innerHTML = `
-//             <div class="feedback-header">
-//                 <div class="feedback-customer">${feedback.customer}</div>
-//                 <div class="feedback-rating">${stars}</div>
-//             </div>
-//             <div class="feedback-comment">${feedback.comment}</div>
-//             <div class="feedback-date">${feedback.date}</div>
-//         `;
-        
-//         feedbackList.appendChild(feedbackItem);
-//     });
-// }
-
-// // Logout functionality - Fixed implementation
-// function setupLogout() {
-//     // Wait for DOM to be fully loaded
-//     setTimeout(() => {
-//         const logoutBtn = document.querySelector('.logout-btn');
-        
-//         if (logoutBtn) {
-//             logoutBtn.addEventListener('click', function(event) {
-//                 event.preventDefault();
-//                 event.stopPropagation();
-                
-//                 if (confirm('Are you sure you want to logout?')) {
-//                     alert('Logged out successfully!');
-//                     // In a real application, this would redirect to login page
-//                     // For demo purposes, we'll simulate a logout by clearing cart and showing confirmation
-//                     clearCart();
-//                     // Reset to POS section
-//                     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-//                     document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-//                     document.querySelector('[data-section="pos"]').classList.add('active');
-//                     document.getElementById('pos-section').classList.add('active');
-//                 }
-//             });
-//         } else {
-//             console.error('Logout button not found');
-//         }
-//     }, 100);
-// }
-
-// // Listen for Transactions tab click
-// document.addEventListener("DOMContentLoaded", () => {
-//   const transactionsTab = document.querySelector('button[data-section="transactions"]');
-//   if (transactionsTab) {
-//     transactionsTab.addEventListener("click", loadTransactions);
-//   }
-// });
-
-// // Make functions available globally for onclick handlers
-// window.updateQuantity = updateQuantity;
-// window.removeFromCart = removeFromCart;
+// EmployeeUI/app.js
 
 import { loadTransactions } from "../scripts/transaction.js";
 import { loadAnalytics } from "../scripts/analytics.js";
+import { loadAccounts } from "../scripts/account-management.js";
+import { auth, db } from "../scripts/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
 // We no longer need to import functions from inventory.js or advanced-pos.js
 // as they now listen for 'DOMContentLoaded' and manage themselves.
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
-    setupNavigation();
-    setupLogout();
-    setupSidebarToggle();
+    // This function will handle auth and then load the UI
+    initializeApp();
 });
 
-// Navigation functionality
-function setupNavigation() {
+/**
+ * Main app initializer. Checks for auth state and then builds the UI.
+ */
+function initializeApp() {
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // User is logged in, fetch their permissions
+            const userProfile = await fetchUserProfile(user);
+            
+            if (!userProfile) {
+                // This user is not an employee/admin or their doc is missing
+                alert("Access Denied. You do not have permissions to view this page.");
+                window.location.href = '../login.html';
+                return;
+            }
+            
+            // 1. Apply permissions to hide/show tabs
+            const firstVisibleTab = applyPermissions(userProfile.permissions);
+            
+            // 2. Setup UI (navigation, logout, etc.)
+            setupNavigation(firstVisibleTab); // Pass the first visible tab to set as default
+            setupLogout();
+            setupSidebarToggle();
+            
+            // 3. Update employee info in navbar
+            document.querySelector(".employee-name").textContent = userProfile.fullName || "Employee";
+            const avatar = document.querySelector(".employee-avatar");
+            if (avatar && userProfile.fullName) {
+                const initials = userProfile.fullName.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                avatar.textContent = initials || "CA";
+            }
+
+        } else {
+            // User is not logged in, redirect to login
+            alert("You must be logged in to view this page.");
+            window.location.href = '../login.html';
+        }
+    });
+}
+
+/**
+ * Fetches the user's document from Firestore and checks their role.
+ * @param {object} user - The Firebase Auth user object.
+ * @returns {object|null} The user's profile data (including permissions) or null.
+ */
+async function fetchUserProfile(user) {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+        const userData = userDoc.data();
+        // Check if they are an employee or admin
+        if (userData.role === 'employee' || userData.role === 'admin') {
+            return {
+                fullName: userData.fullName,
+                permissions: userData.permissions || {} // Return permissions map or empty object
+            };
+        }
+    }
+    return null; // Not an employee/admin or no user doc
+}
+
+/**
+ * Hides or shows sidebar items based on the user's permission map.
+ * @param {object} permissions - The user's permissions map (e.g., {pos: true, inventory: false})
+ * @returns {string} The 'data-section' of the first tab the user can see.
+ */
+function applyPermissions(permissions) {
+    const navItems = document.querySelectorAll('.nav-item[data-permission]');
+    let firstVisibleTab = null;
+
+    navItems.forEach(item => {
+        const permissionKey = item.dataset.permission;
+        
+        // Admins (with 'accounts' permission) see everything.
+        // Otherwise, check the specific permission.
+        const canSee = permissions['accounts'] === true || permissions[permissionKey] === true;
+
+        if (canSee) {
+            item.style.display = 'list-item'; // Show the tab
+            if (!firstVisibleTab) {
+                firstVisibleTab = permissionKey; // Store the first one we find
+            }
+        } else {
+            item.style.display = 'none'; // Hide the tab
+        }
+    });
+
+    // Fallback in case no permissions are set
+    if (!firstVisibleTab && permissions['accounts'] !== true) {
+         // If no tabs are visible and not admin, maybe default to POS if it exists
+         const posTab = document.querySelector('.nav-item[data-permission="pos"]');
+         if (posTab) {
+             posTab.style.display = 'list-item';
+             firstVisibleTab = 'pos';
+         }
+    }
+    
+    return firstVisibleTab || 'pos'; // Default to 'pos' if something goes wrong
+}
+
+/**
+ * Sets up the sidebar navigation clicks and default active tab.
+ * @param {string} defaultSection - The 'data-section' to show by default.
+ */
+function setupNavigation(defaultSection) {
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('.content-section');
-    const defaultSection = 'pos-section'; // Show POS by default
+    
+    // Deactivate all first
+    navLinks.forEach(nav => nav.classList.remove('active'));
+    sections.forEach(section => section.classList.remove('active'));
 
-    // Ensure default section is active on load
-    document.getElementById(defaultSection).classList.add('active');
-    document.querySelector(`.nav-link[data-section="pos"]`).classList.add('active');
+    // Activate default section based on permissions
+    const defaultSectionEl = document.getElementById(`${defaultSection}-section`);
+    const defaultLinkEl = document.querySelector(`.nav-link[data-section="${defaultSection}"]`);
 
+    if (defaultSectionEl && defaultLinkEl) {
+        defaultSectionEl.classList.add('active');
+        defaultLinkEl.classList.add('active');
+        
+        // --- LAZY LOAD DEFAULT TAB DATA ---
+        if (defaultSection === 'transactions') loadTransactions();
+        if (defaultSection === 'analytics') loadAnalytics();
+        if (defaultSection === 'accounts') loadAccounts(); // ⬅️ ADD THIS
+    } else {
+        // Fallback if the default doesn't exist (e.g., no permissions)
+        document.getElementById('pos-section').classList.add('active');
+        document.querySelector('.nav-link[data-section="pos"]').classList.add('active');
+    }
+
+
+    // Add nav link click listeners
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
             const targetSectionId = this.getAttribute('data-section');
             
-            // Remove active class from all links and sections
             navLinks.forEach(nav => nav.classList.remove('active'));
             sections.forEach(section => section.classList.remove('active'));
             
-            // Add active class to clicked link and corresponding section
             this.classList.add('active');
             document.getElementById(`${targetSectionId}-section`).classList.add('active');
 
-            // --- Lazy load data for tabs ---
             if (targetSectionId === 'transactions') {
-                loadTransactions(); // From transaction.js
+                loadTransactions();
             }
             if (targetSectionId === 'analytics') {
-                loadAnalytics(); // From analytics.js
+                loadAnalytics();
             }
-            // Note: POS and Inventory load themselves on DOMContentLoaded
+            if (targetSectionId === 'accounts') { // ⬅️ ADD THIS
+                loadAccounts();
+            }
         });
     });
 }
@@ -378,10 +179,13 @@ function setupLogout() {
         logoutBtn.addEventListener('click', function(event) {
             event.preventDefault();
             if (confirm('Are you sure you want to logout?')) {
-                // In a real app, you'd call firebase.auth().signOut()
-                // For now, just redirect to login
-                alert('Logged out successfully!');
-                window.location.href = '../login.html';
+                auth.signOut().then(() => {
+                    alert('Logged out successfully!');
+                    window.location.href = '../login.html';
+                }).catch((error) => {
+                    console.error("Logout error:", error);
+                    window.location.href = '../login.html';
+                });
             }
         });
     }

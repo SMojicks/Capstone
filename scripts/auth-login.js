@@ -1,4 +1,4 @@
-// smojicks/capstone/Capstone-a41e211d34513ead335274eeb7694bc93e7453e6/scripts/auth-login.js
+// scripts/auth-login.js
 
 import { auth, db } from "./firebase.js";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
@@ -34,7 +34,8 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    const userDocRef = doc(db, "users", user.uid);
+                    // --- IMPORTANT: This creates the doc with the Auth UID ---
+                    const userDocRef = doc(db, "users", user.uid); 
                     
                     setDoc(userDocRef, {
                         fullName: fullName,
@@ -97,26 +98,34 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
                 });
         }
     } else {
-        // --- Handle Employee Login (NEW LOGIC) ---
+        // --- Handle Employee Login (FIXED LOGIC) ---
         signInWithEmailAndPassword(auth, email, password)
             .then(async (userCredential) => {
                 const user = userCredential.user;
-                // 1. User is signed in, now check their role
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
 
-                if (userDoc.exists() && userDoc.data().role === 'employee') {
-                    // 2. User exists AND has the 'employee' role
-                    alert('Employee login successful! Redirecting to dashboard...');
-                    window.location.href = 'EmployeeUI/index.html';
+                if (userDoc.exists()) {
+                    const userRole = userDoc.data().role;
+                    
+                    // --- THIS IS THE FIX ---
+                    // Check if the role is 'employee' OR 'admin'
+                    if (userRole === 'employee' || userRole === 'admin') {
+                        alert('Login successful! Redirecting to dashboard...');
+                        window.location.href = 'EmployeeUI/index.html';
+                    } else {
+                        // This person is a 'customer' or has no role
+                        alert('Access Denied: This is not an authorized employee or admin account.');
+                        signOut(auth);
+                    }
                 } else {
-                    // 3. User is a customer or has no role
-                    alert('Access Denied: This is not an authorized employee account.');
-                    signOut(auth); // Log them out immediately
+                    // This user has an Auth account but no Firestore document
+                    alert('Access Denied: User data not found.');
+                    signOut(auth);
                 }
             })
             .catch((error) => {
-                // 4. Login failed (wrong password, etc.)
+                // Login failed (wrong password, etc.)
                 alert('Invalid employee email or password.');
             });
     }

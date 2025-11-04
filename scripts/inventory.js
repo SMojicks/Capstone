@@ -80,7 +80,7 @@ function renderInventoryTable(snapshot) {
     // Display helper function
     const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
 
-    row.innerHTML = `
+row.innerHTML = `
       <td>${id}</td>
       <td>${ing.name || '-'}</td>
       <td>${ing.category || '-'}</td>
@@ -89,11 +89,12 @@ function renderInventoryTable(snapshot) {
       </td>
       <td>${minStock} ${ing.baseUnit}</td>
       <td>1 ${ing.stockUnit} = ${ing.conversionFactor} ${ing.baseUnit}</td>
-      <td>
-        <button class="btn btn--small edit-btn">Edit</button>
-        <button class="btn btn--small delete-btn">Delete</button>
+
+      <td class="actions-cell">
+        <button class="btn-icon btn--icon-edit edit-btn" title="Edit Ingredient">✎</button>
+        <button class="btn-icon btn--icon-delete delete-btn" title="Delete Ingredient">🗑</button>
       </td>
-    `;
+      `;
 
     row.querySelector('.edit-btn').addEventListener('click', () => {
       openModal(true, { id, ...ing });

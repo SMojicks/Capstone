@@ -37,18 +37,17 @@ onSnapshot(feedbackCollection, (snapshot) => {
       dateStr = date.toLocaleDateString() + " " + date.toLocaleTimeString();
     }
 
-    row.innerHTML = `
+row.innerHTML = `
       <td>${data.name || "Anonymous"}</td>
       <td>${data.comment || "—"}</td>
       <td>${dateStr}</td>
       <td class="status ${data.status || "pending"}">${data.status || "pending"}</td>
-      <td>
-        <button class="approve-btn" data-id="${docSnap.id}">✔️ Approve</button>
-        <button class="reject-btn" data-id="${docSnap.id}">❌ Reject</button>
-        <button class="delete-btn" data-id="${docSnap.id}">🗑 Delete</button>
+      <td class="actions-cell">
+        <button class="btn-icon btn--icon-approve approve-btn" title="Approve Feedback" data-id="${docSnap.id}">✔️</button>
+        <button class="btn-icon btn--icon-cancel reject-btn" title="Reject Feedback" data-id="${docSnap.id}">❌</button>
+        <button class="btn-icon btn--icon-delete delete-btn" title="Delete Feedback" data-id="${docSnap.id}">🗑</button>
       </td>
-    `;
-
+      `;
     feedbackTableBody.appendChild(row);
   });
 

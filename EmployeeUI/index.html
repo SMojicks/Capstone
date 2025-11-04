@@ -30,52 +30,52 @@
     </nav>
     <div class="main-container">
 
-    <aside class="sidebar">
+<aside class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav-list">
-                <li class="nav-item">
+                <li class="nav-item" data-permission="pos">
                     <button class="nav-link active" data-section="pos">
                         <span class="nav-icon">🛒</span>
                         POS
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" data-permission="inventory">
                         <button class="nav-link" data-section="inventory" style="position: relative;">
                             <span class="nav-icon">📦</span>
                             Inventory
                             <span id="inventory-alert-dot"></span>
                         </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" data-permission="transactions">
                     <button id="transactions-tab" button class="nav-link" data-section="transactions">
                         <span class="nav-icon">💳</span>
                         Transactions
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" data-permission="reservations">
                     <button class="nav-link" data-section="reservations">
                         <span class="nav-icon">📅</span>
                         Reservations
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" data-permission="accounts">
                     <button class="nav-link" data-section="accounts">
                         <span class="nav-icon">👥</span>
                         Accounts
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" data-permission="feedback">
                     <button class="nav-link" data-section="feedback">
                         <span class="nav-icon">⭐</span>
                         Feedback
                     </button>
-
-            <li class="nav-item">
-                <button class="nav-link" data-section="analytics">
-                    <span class="nav-icon">📊</span>
-                    Analytics
-                </button>
-            </li>
+                </li>
+                <li class="nav-item" data-permission="analytics">
+                    <button class="nav-link" data-section="analytics">
+                        <span class="nav-icon">📊</span>
+                        Analytics
+                    </button>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -320,19 +320,53 @@
                             </tr>
                         </thead>
                         <tbody></tbody>
+                        </table>
                 </div>
             </section>
 
-            <section id="accounts-section" class="content-section">
+                <section id="accounts-section" class="content-section">
                 <div class="section-header">
-                    <h1>Customer Accounts</h1>
-                    <button class="btn btn--primary">Add Customer</button>
+                    <h1>Account Management</h1>
+                    </div>
+                
+                <div class="account-tabs">
+                    <button class="account-tab-btn active" data-target="customer-accounts">Customers</button>
+                    <button class="account-tab-btn" data-target="employee-accounts">Employees</button>
                 </div>
-                <div class="table-container">
-                    <table class="data-table">
-                        <tbody id="accounts-table">
-                            </tbody>
-                    </table>
+    
+                <div id="customer-accounts" class="account-table-container active">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customer-accounts-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+    
+                <div id="employee-accounts" class="account-table-container">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Permissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employee-accounts-table-body">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -494,7 +528,72 @@
                     </div>
                 </div>
             </div>
+<div id="employee-modal" class="modal">
+            <div class="modal-content modal-content--wide">
+                <h2 id="employee-modal-title">Edit User Permissions</h2>
+                <form id="employee-form">
+                    <input type="hidden" id="employee-id">
+                    <div class="form-grid-two-col">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="employee-name">Full Name</label>
+                                <input type="text" id="employee-name" class="form-control" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="employee-email">Email</label>
+                                <input type="email" id="employee-email" class="form-control" readonly>
+                            </div>
 
+                            <div class="form-group">
+                                <label for="role-select">User Role</label>
+                                <select id="role-select" class="form-control">
+                                    <option value="customer">Customer</option>
+                                    <option value="employee">Employee</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            </div>
+                        <div class="form-column">
+                            <label>Access Matrix (Permissions)</label>
+                            <div class="permissions-grid">
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-pos" data-permission="pos">
+                                    <label for="perm-pos">Point of Sale (POS)</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-inventory" data-permission="inventory">
+                                    <label for="perm-inventory">Inventory</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-transactions" data-permission="transactions">
+                                    <label for="perm-transactions">Transactions</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-reservations" data-permission="reservations">
+                                    <label for="perm-reservations">Reservations</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-feedback" data-permission="feedback">
+                                    <label for="perm-feedback">Feedback</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-analytics" data-permission="analytics">
+                                    <label for="perm-analytics">Analytics</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-accounts" data-permission="accounts">
+                                    <label for="perm-accounts" title="Grants admin access">Account Mgmt (Admin)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn btn--primary">Save Changes</button>
+                        <button type="button" id="cancel-employee-btn" class="btn btn--secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         </div> 
     </main>
 </div>
@@ -507,7 +606,6 @@
     <script type="module" src="../scripts/employee-reservations.js"></script>
     <script type="module" src="../scripts/employee-feedback.js"></script>
     <script type="module" src="../scripts/analytics.js"></script>
-
     <script type="module" src="app.js"></script>
 
 </body>
