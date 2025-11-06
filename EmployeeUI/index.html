@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -134,6 +135,12 @@
 
                                     <div class="form-group">
                                         <label>Recipe (Ingredients):</label>
+                                        <div class="form-group" style="margin-bottom: 10px;">
+                                            <label for="ingredient-category-filter" style="font-weight: 500;">Filter by Inventory Category:</label>
+                                            <select id="ingredient-category-filter" class="form-control">
+                                                <option value="">All Inventory Categories</option>
+                                                </select>
+                                        </div>
                                         <div id="recipe-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
                                             </div>
                                         <button type="button" id="add-ingredient-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Ingredient</button>
@@ -199,7 +206,9 @@
                                 <section id="inventory-section" class="content-section">
                                 <div class="section-header">
                                     <h1>Inventory Management</h1>
-                                    <button id="add-product-btn" class="btn btn--primary">Add Product</button>
+                                    <div class="header-actions"> <button id="manage-categories-btn" class="btn btn--secondary">Manage Categories</button>
+                                            <button id="add-product-btn" class="btn btn--primary">Add Product</button>
+                                    </div>
                                 </div>
 
                                 <div class="table-container">
@@ -237,8 +246,10 @@
                                 <label for="product-name">Ingredient Name:</label>
                                 <input type="text" id="product-name" placeholder="e.g., Coffee Beans" required />
 
-                                <label for="product-category">Category:</label>
-                                <input type="text" id="product-category" placeholder="e.g., Pantry, Dairy" required />
+                                <label for="product-category-dropdown">Category:</label>
+                                <select id="product-category-dropdown" class="form-control" required>
+                                    <option value="">Loading categories...</option>
+                                    </select>
 
                                 <label for="product-stock">Stock Quantity:</label>
                                 <input type="number" id="product-stock" min="0" step="any" placeholder="e.g., 10" required />
@@ -503,8 +514,6 @@
                             <p><strong>Status:</strong> <span id="order-modal-status-text" class="status status-pending">Pending</span></p>
                         </div>
 
-                        <div class="order-modal-items-payment">
-                            
                             <div id="order-modal-items-container">
                                 <h5>Items</h5>
                                 <label>Item Checklist Progress:</label>
@@ -515,10 +524,7 @@
                                     </ul>
                             </div>
                             
-                            <div id="payment-details" class="hidden"> 
-                                </div>
-                            
-                        </div>
+
                     </div>
 
                     <div class="modal-buttons">
@@ -586,14 +592,37 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                     <div class="modal-buttons">
                         <button type="submit" class="btn btn--primary">Save Changes</button>
                         <button type="button" id="cancel-employee-btn" class="btn btn--secondary">Cancel</button>
                     </div>
+
                 </form>
             </div>
         </div>
+        <div id="inventory-category-modal" class="modal">
+            <div class="modal-content">
+                <h2>Manage Inventory Categories</h2>
+                <div class="form-group">
+                    <label for="new-inv-category-name">New Category Name:</label>
+                    <input type="text" id="new-inv-category-name" class="form-control" placeholder="e.g., Dairy, Produce...">
+                </div>
+                <button id="add-inv-category-btn" class="btn btn--primary btn--full-width">Add Category</button>
+                
+                <hr style="margin: 20px 0;">
+                
+                <label>Existing Categories:</label>
+                <div id="existing-inv-categories-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
+                    </div>
+                
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button type="button" id="close-inv-category-btn" class="btn btn--secondary">Close</button>
+                </div>
+            </div>
+        </div>
+
         </div> 
     </main>
 </div>
@@ -601,6 +630,7 @@
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
     <script type="module" src="../scripts/firebase.js"></script>
     <script type="module" src="../scripts/advanced-pos.js"></script>
+    <script type="module" src="../scripts/inventory-categories.js"></script>
     <script type="module" src="../scripts/inventory.js"></script>
     <script type="module" src="../scripts/transaction.js"></script>
     <script type="module" src="../scripts/employee-reservations.js"></script>

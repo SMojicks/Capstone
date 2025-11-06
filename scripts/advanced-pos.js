@@ -1,3 +1,4 @@
+
 import { db } from './firebase.js';
 import {
   collection, addDoc, getDocs, onSnapshot, doc,
@@ -182,17 +183,29 @@ async function loadAllIngredientsCache() {
 
 function updateIngredientCacheForRecipeModal(selectedCategory) {
   if (!recipeList) return;
-  if (!selectedCategory) {
-    recipeList.innerHTML = "<p style='color: #666;'>Please select a product category to add ingredients.</p>";
-    if (addIngredientBtn) addIngredientBtn.disabled = true;
-    return;
+  
+  let filteredIngredients;
+  
+  if (!selectedCategory || selectedCategory === "") {
+    // If "All" is selected, show all ingredients
+    filteredIngredients = allIngredientsCache;
+  } else {
+    // Filter by the selected inventory category
+    filteredIngredients = allIngredientsCache.filter(ing => ing.category === selectedCategory);
   }
-  const filteredIngredients = allIngredientsCache.filter(ing => ing.category === selectedCategory);
-  recipeList.innerHTML = "";
+  
+  recipeList.innerHTML = ""; // Clear existing rows
   if (addIngredientBtn) addIngredientBtn.disabled = false;
+  
   if (filteredIngredients.length === 0) {
-     recipeList.innerHTML = `<p style='color: #888;'>No ingredients in "${selectedCategory}" category.</p>`;
+     if(selectedCategory) {
+        recipeList.innerHTML = `<p style='color: #888;'>No ingredients found in "${selectedCategory}" category.</p>`;
+     } else {
+        recipeList.innerHTML = `<p style='color: #888;'>No ingredients in inventory. Add some in the Inventory tab.</p>`;
+     }
   }
+  
+  // Set the "Add" button to use the currently filtered list
   if (addIngredientBtn) addIngredientBtn.onclick = () => addIngredientRow(filteredIngredients);
 }
 
@@ -339,8 +352,11 @@ function closeMenuModal() {
 if (addMenuBtn) {
     addMenuBtn.addEventListener("click", () => {
         closeMenuModal();
-        loadCategories(); // Reload categories for the modal
-        loadAllIngredientsCache(); // Reload ingredients for the modal
+        loadCategories(); // Load menu categories
+        loadAllIngredientsCache().then(() => { // Load ingredients
+            // After ingredients are loaded, populate the filter
+            updateIngredientCacheForRecipeModal(""); // Show "All" by default
+        });
         if (menuModal) menuModal.style.display = "flex";
     });
 }
@@ -601,7 +617,7 @@ async function openEditModal(product) {
   document.getElementById("menu-modal-title").textContent = "Edit Menu Product";
   menuForm.querySelector('button[type="submit"]').textContent = "Update Product";
 
-  // 2. Load fresh category and ingredient data
+  // 2. Load fresh menu category and ingredient data
   await loadCategories();
   await loadAllIngredientsCache();
 
@@ -611,15 +627,13 @@ async function openEditModal(product) {
   document.getElementById("menu-price").value = product.price;
   document.getElementById("menu-waiting-time").value = product.waitingTime;
   
-  // 4. Set category and trigger ingredient filtering
+  // 4. Set menu category
   const categoryDropdown = document.getElementById("menu-category");
   categoryDropdown.value = product.category;
-  // Manually trigger a 'change' event to force the recipe list to update
-  categoryDropdown.dispatchEvent(new Event('change'));
 
   // 5. Populate Image Preview
-  currentImageFile = null; // Reset any selected file
-  currentImageUrl = product.imageUrl || null; // Set the existing URL
+  currentImageFile = null; 
+  currentImageUrl = product.imageUrl || null; 
   if (menuImagePreview) {
       if (product.imageUrl) {
           menuImagePreview.src = product.imageUrl;
@@ -637,15 +651,15 @@ async function openEditModal(product) {
       // Find all recipe items for THIS product
       const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
       
-      // Find all ingredients that match this product's category
-      const filteredIngredients = allIngredientsCache.filter(ing => ing.category === product.category);
-
+      // We show ALL ingredients by default in edit mode
+      updateIngredientCacheForRecipeModal(""); 
       if (addIngredientBtn) addIngredientBtn.disabled = false;
 
       // Add a pre-filled row for each recipe item
       for (const recipeItem of productRecipes) {
-          addIngredientRow(filteredIngredients); // Add a new empty row
-          const newRow = recipeList.lastChild; // Get the row we just added
+          // We pass ALL ingredients to addIngredientRow
+          addIngredientRow(allIngredientsCache); 
+          const newRow = recipeList.lastChild;
           
           if (newRow) {
               newRow.querySelector(".ingredient-id").value = recipeItem.ingredientId;
@@ -1194,9 +1208,9 @@ function updateModalProgress(status) {
   const voidBtn = document.getElementById("order-modal-void-btn");
   
   const itemsContainer = document.getElementById("order-modal-items-container");
-  const paymentContainer = document.getElementById("payment-details");
+  // const paymentContainer = document.getElementById("payment-details");
 
-  if (!statusText || !progressBtn || !voidBtn || !itemsContainer || !paymentContainer) return;
+  if (!statusText || !progressBtn || !voidBtn || !itemsContainer) return;
 
   statusText.textContent = status;
   statusText.className = `status status-${status.toLowerCase()}`;
@@ -1207,14 +1221,14 @@ function updateModalProgress(status) {
     voidBtn.disabled = false; // Void ENABLED
     
     itemsContainer.classList.remove('hidden');
-    paymentContainer.classList.add('hidden'); // Hide payment
+ 
     
   } else if (status === "Preparing") {
     progressBtn.textContent = "Mark as Ready";
     voidBtn.disabled = true; // Void DISABLED
     
     itemsContainer.classList.remove('hidden');
-    paymentContainer.classList.add('hidden'); // Hide payment
+
     
     // Check if all items are done
     if (currentOrderDetails && currentOrderDetails.items) {
@@ -1236,8 +1250,6 @@ function updateModalProgress(status) {
     // --- THIS IS THE FIX ---
     // We KEEP the items container visible
     itemsContainer.classList.remove('hidden'); 
-    // We HIDE the payment container (which isn't here anyway)
-    paymentContainer.classList.add('hidden'); 
     // --- END FIX ---
   }
 }
@@ -1533,6 +1545,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Start the background timer
   setInterval(checkOverdueStatus, 30000); 
+  
   
   // Note: We no longer call renderProducts() or loadCategories().
   // The listeners will automatically trigger the first render.

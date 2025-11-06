@@ -68,7 +68,15 @@ function openModal(editMode = false, product = {}) {
   
   idField.value = product.id || '';
   nameField.value = product.name || '';
-  categoryField.value = product.category || '';
+  // --- THIS IS THE CHANGE ---
+  // Wait a tick for the dropdown to be populated by inventory-categories.js
+  setTimeout(() => {
+      const categoryDropdown = document.getElementById("product-category-dropdown");
+      if (categoryDropdown) {
+          categoryDropdown.value = product.category || '';
+      }
+  }, 100); // 100ms delay to ensure list is loaded
+  // --- END OF CHANGE ---
   stockField.value = product.stockQuantity || '';
   stockUnitField.value = product.stockUnit || '';
   baseUnitField.value = product.baseUnit || '';
@@ -187,7 +195,7 @@ function loadInventory() {
   const id = idField.value;
   const newData = {
     name: nameField.value.trim(),
-    category: categoryField.value.trim(),
+    category: document.getElementById("product-category-dropdown").value, 
     stockQuantity: parseFloat(stockField.value),
     stockUnit: stockUnitField.value.trim(),
     baseUnit: baseUnitField.value.trim(),
