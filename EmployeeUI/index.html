@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
 </head>
 <body>
@@ -16,10 +17,10 @@
         <button id="sidebar-toggle-btn" class="sidebar-toggle-btn">
             <span class="material-icons">menu</span>
         </button>
-        <h2 class="company-logo">CafeSync</h2>
+        <h2 class="company-logo"></h2>
     </div>
         <div class="navbar-left">
-            <h2 class="company-logo">CafeSync</h2>
+            <h2 class="company-logo">Acaccia Bistro Cafe POS</h2>
         </div>
         <div class="navbar-right">
             <div class="employee-info">
@@ -37,7 +38,7 @@
                 <li class="nav-item" data-permission="pos">
                     <button class="nav-link active" data-section="pos">
                         <span class="nav-icon">🛒</span>
-                        POS
+                        Orders
                     </button>
                 </li>
                 <li class="nav-item" data-permission="inventory">
@@ -530,6 +531,7 @@
                     <div class="modal-buttons">
                         <button type="button" id="order-modal-void-btn" class="btn btn--secondary" style="background-color: var(--color-red-500); color: white;">Void Order</button>
                         <button type="button" id="order-modal-back-btn" class="btn btn--secondary">Close</button>
+                        <button type="button" id="order-modal-print-btn" class="btn btn--info" style="display: none;">Print Receipt</button>
                         <button type="button" id="order-modal-progress-btn" class="btn btn--primary">Mark as Preparing</button>
                     </div>
                 </div>

@@ -2579,3 +2579,15 @@ body.sidebar-collapsed .sidebar {
 .btn--icon-delete:hover {
   background: #dc2626;
 }
+
+/* --- New Info Button Style --- */
+.btn--info {
+  background-color: var(--color-blue-500);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+.btn--info:hover {
+  background-color: #2563eb; /* Darker blue */
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}

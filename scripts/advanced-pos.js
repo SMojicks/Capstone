@@ -49,6 +49,8 @@ const orderDetailsModal = document.getElementById("order-details-modal");
 const orderModalBackBtn = document.getElementById("order-modal-back-btn");
 const orderModalVoidBtn = document.getElementById("order-modal-void-btn");
 const orderModalProgressBtn = document.getElementById("order-modal-progress-btn");
+const orderModalPrintBtn = document.getElementById("order-modal-print-btn");
+
 
 // --- Pending Orders Line ---
 const ordersLine = document.getElementById("orders-line");
@@ -165,7 +167,7 @@ if (menuCategoryDropdown) {
       } else {
         newCategoryInput.style.display = "none";
         newCategoryInput.value = "";
-        updateIngredientCacheForRecipeModal(this.value);
+
       }
     });
 }
@@ -1206,14 +1208,16 @@ function updateModalProgress(status) {
   const statusText = document.getElementById("order-modal-status-text");
   const progressBtn = document.getElementById("order-modal-progress-btn");
   const voidBtn = document.getElementById("order-modal-void-btn");
+  const printBtn = document.getElementById("order-modal-print-btn");
   
   const itemsContainer = document.getElementById("order-modal-items-container");
   // const paymentContainer = document.getElementById("payment-details");
 
-  if (!statusText || !progressBtn || !voidBtn || !itemsContainer) return;
+  if (!statusText || !progressBtn || !voidBtn || !itemsContainer || !printBtn) return;
 
   statusText.textContent = status;
   statusText.className = `status status-${status.toLowerCase()}`;
+  printBtn.style.display = "none";
 
   if (status === "Pending") {
     progressBtn.textContent = "Mark as Preparing";
@@ -1246,11 +1250,9 @@ function updateModalProgress(status) {
     progressBtn.textContent = "Complete Order";
     progressBtn.disabled = false;
     voidBtn.disabled = true; // Void DISABLED
-    
-    // --- THIS IS THE FIX ---
-    // We KEEP the items container visible
+    printBtn.style.display = "inline-flex";
     itemsContainer.classList.remove('hidden'); 
-    // --- END FIX ---
+
   }
 }
 
@@ -1535,9 +1537,237 @@ async function deleteProductAndRecipe(productId, productName) {
   }
 }
 
+/**
+ * Generates and prints a receipt for the current order.
+ * @param {object} order - The order object.
+ */
+function printReceipt(order) {
+    // --- 1. Format Order Items ---
+    let itemRows = order.items.map(item => {
+        const qty = String(item.quantity).padEnd(3);
+        let name = item.name;
+        if (name.length > 23) name = name.substring(0, 22) + ".";
+        name = name.padEnd(23);
+        const unitPrice = item.pricePerItem.toFixed(2).padStart(10);
+        const amount = (item.quantity * item.pricePerItem).toFixed(2).padStart(10);
+        return `${qty}  ${name} ${unitPrice} ${amount}`;
+    }).join('\n');
+
+    // --- 2. Format Totals ---
+    const subtotal = `${'Subtotal:'.padEnd(30)}${order.subtotal.toFixed(2).padStart(10)}`;
+    const tax = `${'VAT (12%):'.padEnd(30)}${order.tax.toFixed(2).padStart(10)}`;
+    const total = `${'Total Amount:'.padEnd(30)}${order.totalAmount.toFixed(2).padStart(10)}`;
+    
+    // --- 3. Format Date/Time ---
+    const dateTime = order.createdAt ? 
+                   order.createdAt.toDate().toLocaleString('en-US', {
+                       year: 'numeric', month: '2-digit', day: '2-digit', 
+                       hour: '2-digit', minute: '2-digit', hour12: true 
+                   }) : 
+                   new Date().toLocaleString();
+                   
+    // --- 4. Create the Receipt HTML ---
+    const receiptHTML = `
+      <html>
+        <head>
+          <title>Official Receipt #${order.orderId}</title>
+          
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+          
+          <style>
+            /* --- ⬇️ CHANGE 1: Style the wrapper, not the body ⬇️ --- */
+            .receipt-container {
+              font-family: 'Courier New', Courier, monospace;
+              font-size: 10pt;
+              width: 80mm; 
+              padding: 5mm;
+              margin: 0;
+              color: #000;
+              background: #fff; /* White background for the JPG */
+            }
+            body.receipt-body {
+              margin: 0;
+              padding: 0;
+              background: #fff; /* White background for the new window */
+            }
+            .center { text-align: center; }
+            .line { padding: 0; margin: 5px 0; border-top: 1px dashed #000; }
+            .header { font-weight: bold; font-size: 12pt; }
+            .info { font-size: 10pt; }
+            pre {
+              font-family: 'Courier New', Courier, monospace;
+              font-size: 10pt;
+              margin: 0;
+              padding: 0;
+              white-space: pre-wrap;
+            }
+            .totals-line { font-weight: bold; }
+            .footer { font-size: 9pt; margin-top: 5px; }
+            .bir-info { font-size: 8pt; text-align: center; margin-top: 10px; }
+            
+            .button-bar {
+              display: flex;
+              gap: 10px;
+              margin-top: 20px;
+            }
+            .print-receipt-btn {
+              flex: 1;
+              padding: 10px;
+              background: #333;
+              color: white;
+              border: none;
+              font-size: 14px;
+              font-weight: bold;
+              cursor: pointer;
+            }
+            .download-receipt-btn {
+              flex: 1;
+              padding: 10px;
+              background: #007bff;
+              color: white;
+              border: none;
+              font-size: 14px;
+              font-weight: bold;
+              cursor: pointer;
+            }
+
+            /* --- ⬇️ CHANGE 2: Add new print styles ⬇️ --- */
+            @media print {
+              .button-bar { display: none !important; }
+              @page { margin: 0; }
+              
+              body.receipt-body {
+                background-color: #f0f0f0; /* Light gray "paper" background */
+                display: flex;
+                justify-content: center; /* Center horizontally */
+                align-items: flex-start; /* Align to the top */
+                padding-top: 20px;
+              }
+              .receipt-container {
+                box-shadow: 0 0 10px rgba(0,0,0,0.3); /* Add a shadow */
+                margin: 0;
+              }
+            }
+          </style>
+        </head>
+        
+        <body class="receipt-body">
+          
+          <div class="receipt-container" id="receipt-container">
+            <div class="center">
+              <div class="header">ACACCIA BISTRO CAFE</div>
+              <div class="info">Brgy. San Agustin, Alaminos, Laguna</div>
+              <div class="info">TIN: 123-456-789-00000</div>
+              <div class="info">BIR Permit to Use No: CAS-2025-001</div>
+            </div>
+            
+            <div class="line"></div>
+            <pre>Official Receipt No: ${order.orderId}</pre>
+            <pre>Date/Time: ${dateTime}</pre>
+            <pre>Cashier: ${order.processedBy || 'Cashier'}</pre>
+            <pre>Order Type: ${order.orderType}</pre>
+            
+            <div class="line"></div>
+            <pre>Qty  Description           Unit Price     Amount</pre>
+            <div class="line"></div>
+            <pre>${itemRows}</pre>
+            <div class="line"></div>
+            
+            <pre>${subtotal}</pre>
+            <pre>${tax}</pre>
+            <div class="line"></div>
+            <pre class="totals-line">${total}</pre>
+            <div class="line"></div>
+            
+            <pre>Payment Method: ${order.paymentMethod}</pre>
+            <pre>Customer Name:  ${order.customerName}</pre>
+            
+            <div class="center footer">
+              <strong>This serves as your OFFICIAL RECEIPT</strong>
+              <br>
+              Thank you for dining with us!
+            </div>
+            
+            <div class="line"></div>
+            <div class="bir-info">
+              POS Provider: CafeSync System v1.0<br>
+              Accredited Developer: Team Cafesync<br>
+              BIR Accreditation No.: CASDEV-2025-045
+            </div>
+            <div class="line"></div>
+            
+            <br>
+            <div class="button-bar">
+              <button class="print-receipt-btn" onclick="window.print()">Print Receipt</button>
+              <button class="download-receipt-btn" onclick="downloadAsJpg()">Download JPG</button>
+            </div>
+          </div> <script>
+            function downloadAsJpg() {
+              const buttonBar = document.querySelector('.button-bar');
+              buttonBar.style.display = 'none'; // Hide buttons
+
+              // --- ⬇️ CHANGE 4: Target the new ID ⬇️ ---
+              const receiptElement = document.getElementById('receipt-container');
+              
+              html2canvas(receiptElement, {
+                scale: 2, // Increase resolution
+                useCORS: true,
+                backgroundColor: '#ffffff'
+              }).then(canvas => {
+                // Convert canvas to JPG
+                const imgData = canvas.toDataURL('image/jpeg', 0.9); // 0.9 = 90% quality
+                
+                // Create a temporary link to trigger download
+                const link = document.createElement('a');
+                link.href = imgData;
+                // Fix for template literal
+                link.download = \`receipt-${order.orderId}.jpg\`;
+                
+                // Trigger the download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show the buttons again
+                buttonBar.style.display = 'flex';
+              });
+            }
+          <\/script>
+          
+        </body>
+      </html>
+    `;
+
+    // --- 5. Open the new window ---
+    const printWindow = window.open('', '_blank', 'width=350,height=650,resizable=yes,scrollbars=yes');
+    if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(receiptHTML);
+        printWindow.document.close();
+        printWindow.focus();
+    } else {
+        alert("Popup blocked. Please allow popups to print the receipt.");
+    }
+}
 // --- Initial Load ---
 document.addEventListener("DOMContentLoaded", () => {
   // Start all data listeners
+    const ingredientCategoryFilter = document.getElementById("ingredient-category-filter");
+  if (ingredientCategoryFilter) {
+    ingredientCategoryFilter.addEventListener("change", function() {
+      const selectedCategory = this.value;
+      updateIngredientCacheForRecipeModal(selectedCategory);
+    });
+  }
+  if (orderModalPrintBtn) {
+    orderModalPrintBtn.addEventListener("click", () => {
+      if (currentOrderDetails) {
+        printReceipt(currentOrderDetails);
+      } else {
+        alert("Error: No order details found to print.");
+      }
+    });
+  }
   listenForProducts();
   listenForIngredients();
   listenForRecipes();
