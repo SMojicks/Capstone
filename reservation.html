@@ -487,7 +487,49 @@
 .hidden {
     display: none !important;
 }
+/* --- NEW STYLES for Date Check --- */
+.date-check-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.date-check-group input[type="date"] {
+    flex-grow: 1;
+}
+.date-check-group .submit-btn {
+    flex-shrink: 0; /* Prevent button from shrinking */
+    width: auto;
+}
 
+/* Loader animation */
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+.hidden {
+    display: none;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Disabled state for form */
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled,
+.terms-container input:disabled,
+.submit-btn:disabled {
+    background-color: #eee !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.terms-container input:disabled + label {
+    cursor: not-allowed;
+}
 /* Footer - separate from menu background */
 #iv3be5 {
     background-color: #f8f8f8;
@@ -673,10 +715,238 @@
     font-size: 14px;
     margin: 20px 0;
 }
+/* --- NEW: PRE-ORDER MODAL STYLES --- */
+.preorder-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px);
+    overflow-y: auto;
+}
+
+.preorder-modal-content {
+    background: #f5f5f5;
+    margin: 2% auto; /* 2% from top */
+    border-radius: 15px;
+    width: 90%;
+    max-width: 1000px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease-out;
+    min-height: 80vh;
+}
+
+.preorder-header {
+    background: linear-gradient(45deg, var(--color-green-700, #1a633c), var(--color-green-600, #1f7d4a));
+    color: white;
+    padding: 20px 30px;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.preorder-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+.preorder-header .skip-btn {
+    background: var(--color-brown-500, #8b6f47);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.preorder-header .skip-btn:hover {
+    background: var(--color-brown-600, #725a39);
+}
+
+.preorder-body {
+    display: flex;
+    width: 100%;
+    min-height: 70vh;
+}
+
+/* Menu Sidebar */
+.preorder-sidebar {
+    width: 200px;
+    background: #e9ecef;
+    border-right: 1px solid #ddd;
+}
+.preorder-sidebar h3 {
+    padding: 20px;
+    margin: 0;
+    background: #ddd;
+    font-size: 1.2rem;
+}
+.preorder-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.preorder-sidebar li {
+    padding: 15px 20px;
+    cursor: pointer;
+    font-weight: 500;
+    border-bottom: 1px solid #ddd;
+}
+.preorder-sidebar li:hover {
+    background: #f8f9fa;
+}
+.preorder-sidebar li.active {
+    background: #fff;
+    color: #1a633c;
+    border-right: 4px solid #1a633c;
+}
+
+/* Menu Product Grid */
+.preorder-main {
+    flex: 2;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+.preorder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+.preorder-product-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.preorder-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.preorder-product-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+.preorder-product-card-info {
+    padding: 10px;
+}
+.preorder-product-card-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+}
+.preorder-product-card-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+.preorder-product-card.out-of-stock {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f0f0f0;
+}
+
+/* Pre-order Cart */
+.preorder-cart {
+    flex: 1;
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.preorder-cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 50vh;
+}
+.preorder-cart-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+.preorder-cart-item .name { flex-grow: 1; }
+.preorder-cart-item .qty { margin: 0 10px; }
+.preorder-cart-item .price { font-weight: 500; }
+
+.preorder-total {
+    border-top: 2px solid #333;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+.preorder-total div {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+.preorder-total .total-final {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+#preorder-checkout-btn {
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+/* Payment Modal */
+.payment-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+.payment-body {
+    padding: 30px;
+}
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.payment-qr-code {
+    text-align: center;
+}
+.payment-qr-code img {
+    width: 100%;
+    max-width: 250px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+.payment-qr-code p {
+    font-weight: 500;
+}
+.payment-upload .form-group label {
+    font-weight: bold;
+}
+#receipt-preview {
+    display: none;
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+#upload-receipt-btn {
+    width: 100%;
+    padding: 15px;
+}
 
 </style>
 <body>
-        <!-- Header -->
     <div id="i6po" class="gjs-grid-row">
         <div id="itjq" class="gjs-grid-column">
             <div id="iyd2">
@@ -688,7 +958,6 @@
                 <div id="it00l">
                     <div class="nav-links">
                         <a href="index.html">Home</a>
-                        <!-- <a href="#">About</a>                     -->
                         <a href="menu.html">Menu</a>
                         <a href="reservation.html">Reservation</a>
                         <a href="community-feedback.html">Community</a>
@@ -704,13 +973,11 @@
  <div class="reservation-background">
     <div class="reservation-section">
         <div class="reservation-grid">
-            <!-- Cafe Layout Section -->
             <div class="cafe-section">
                 <h2 style="color: rgba(255, 255, 255, 1); text-shadow: 1px 1px 5px black; font-size: 30px;">Cafe Floor Plan</h2>
                 
  <div class="cafe-layout">
     <div class="floor-container">
-        <!-- First Floor -->
         <div class="cafe-image-container" id="cafeImageContainer">
             <img src='assets/cafe_layout_2d_real.png' alt="Cafe Floor Plan" class="cafe-image" id="cafeImage" onload="this.style.display='block'; document.getElementById('imagePlaceholder').style.display='none';">
             
@@ -722,7 +989,6 @@
                 <p>Replace the image URL in the code to display your cafe layout</p>
             </div>
             
-            <!-- Table overlays -->
             <div class="table-overlays" id="tableOverlays">
                 <div class="table-spot" data-id="1" style="top: 25%; left: 10%;"></div>
                 <div class="table-spot" data-id="2" style="top: 23%; left: 38%;"></div>
@@ -738,7 +1004,6 @@
             </div>
         </div>
 
-        <!-- Second Floor (Hidden by default) -->
         <div class="cafe-image-container hidden" id="secondFloorContainer">
             <img src='assets/cafe_layout_2d_2ndfloor.png' alt="Cafe Floor Plan - Upstairs" class="cafe-image" onload="this.style.display='block';">
             
@@ -749,7 +1014,6 @@
                 <p><strong>Upstairs Floor Plan</strong></p>
             </div>
             
-            <!-- Table overlays for 2nd floor -->
             <div class="table-overlays" id="tableOverlaysUpstairs">
                 <button class="vip-room-btn" data-id="12" style="top: 35%; left: 35%;">VIP ROOM</button>
                 <div class="table-spot" data-id="13" style="top: 90%; left: 80%;"></div>
@@ -759,7 +1023,6 @@
         </div>
     </div>
 </div>
-                <!-- Legend Container (moved inside cafe-section but outside cafe-layout) -->
                 <div class="legend-container">
                     <button id="floorToggle" class="floor-toggle-btn">See Upstairs</button>
                     
@@ -780,10 +1043,7 @@
                 </div>
             </div>
 
-            <!-- Reservation Form Section (add your form here) -->
-
-                    <!-- Reservation Form Section -->
-                    <div class="reservation-form">
+            <div class="reservation-form">
 
                     <div class="success-message" id="successMessage">
                         <strong>🎉 Reservation Confirmed!</strong><br>
@@ -811,52 +1071,55 @@
                         <input type="tel" name="contactNumber" placeholder="Contact Number" required>
                         </div>
 
-                            <div class="form-group">
-                                <label for="numberOfDiners">Number of Diners</label>
-                                <select name="numberOfDiners" id="numberOfDiners" required>
-                                    <option value="">Select number of diners</option>
-                                    <option value="1">1 Diner</option>
-                                    <option value="2">2 Diners</option>
-                                    <option value="3">3 Diners</option>
-                                    <option value="4">4 Diners</option>
-                                    <option value="5">5 Diners</option>
-                                    <option value="6">6 Diners</option>
-                                    <option value="7">7 Diners</option>
-                                    <option value="8">8 Diners</option>
-                                    <option value="9">9 Diners</option>
-                                    <option value="10+">10+ Diners</option>
-                                </select>
+                        <div class="form-group">
+                            <label for="reservationDate">1. Select a Date</label>
+                            <div class="date-check-group">
+                                <input type="date" id="reservationDate" name="reservationDate" required>
+                                <button type="button" id="checkAvailabilityBtn" class="submit-btn" style="padding: 12px; font-size: 14px; min-width: 100px;">
+                                    Check
+                                </button>
+                                <span id="availabilityLoader" class="loader hidden"></span>
                             </div>
-
-                        <!-- 🔹 Date and Time in one line -->
-                        <div class="form-row">
-                        <div class="form-group half-width">
-                            <label for="reservationDate">Date</label>
-                            <input type="date" id="reservationDate" name="reservationDate" required>
-                        </div>
-
-                        <div class="form-group half-width">
-                            <label for="reservationTime">Time</label>
-                            <input type="time" name="reservationTime" required>
-                        </div>
+                            <small id="availability-message" style="color: white; display: block; margin-top: 8px; text-shadow: 1px 1px 2px black;"></small>
                         </div>
 
                         <div class="form-group">
-                        <label for="notes">Special Requests</label>
-                        <textarea name="notes" placeholder="Special Requests (optional)"></textarea>
+                            <label for="reservationTime">2. Select a Time</label>
+                            <input type="time" id="reservationTime" name="reservationTime" required disabled min="11:00" max="23:00">
                         </div>
-                        <!-- 🔹 Terms & Conditions beside checkbox -->
+
+                        <div class="form-group">
+                            <label for="numberOfDiners">3. Number of Diners</label>
+                            <select name="numberOfDiners" id="numberOfDiners" required disabled>
+                                <option value="">Select number of diners</option>
+                                <option value="1">1 Diner</option>
+                                <option value="2">2 Diners</option>
+                                <option value="3">3 Diners</option>
+                                <option value="4">4 Diners</option>
+                                <option value="5">5 Diners</option>
+                                <option value="6">6 Diners</option>
+                                <option value="7">7 Diners</option>
+                                <option value="8">8 Diners</option>
+                                <option value="9">9 Diners</option>
+                                <option value="10+">10+ Diners</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                        <label for="notes">Special Requests (Optional)</label>
+                        <textarea name="notes" id="notes" placeholder="e.g., anniversary, near window" disabled></textarea>
+                        </div>
+                        
                         <div class="terms-container">
-                            <input type="checkbox" id="agreeTerms" required>
+                            <input type="checkbox" id="agreeTerms" required disabled>
                             <label for="agreeTerms">
                                 I agree to the
                                 <a href="#" id="openTerms">Terms and Conditions</a>.
                             </label>
                         </div>
-                        <button type="submit" class="submit-btn">Confirm Reservation</button>
+                        <button type="submit" class="submit-btn" id="confirmReservationBtn" disabled>Confirm Reservation</button>
                     </form>
 
-                        <!-- 🔹 Terms & Conditions Modal -->
                         <div id="termsModal" class="modal hidden">
                             <div class="modal-content">
                                 <span class="close-modal" id="closeTerms">&times;</span>
@@ -872,8 +1135,7 @@
                                 <p>For more details, please contact our staff at <b>Acaccia Bistro Café</b>.</p>
                             </div>
                         </div>
-                        <!-- VIP Room Modal -->
-<div id="vipModal" class="modal hidden">
+                        <div id="vipModal" class="modal hidden">
     <div class="modal-content">
         <span class="close-modal" id="closeVip">&times;</span>
         <h2>VIP Room Reservation</h2>
@@ -900,7 +1162,6 @@
     </div>
 </div>
 
-<!-- Payment QR Code Modal -->
 <div id="paymentModal" class="modal hidden">
     <div class="modal-content">
         <span class="close-modal" id="closePayment">&times;</span>
@@ -921,6 +1182,89 @@
         <button class="modal-btn proceed-btn" id="closePaymentBtn">Close</button>
     </div>
 </div>
+
+<div id="preorder-modal" class="preorder-modal">
+    <div class="preorder-modal-content">
+        <div class="preorder-header">
+            <h2>Pre-Order Your Food</h2>
+            <button id="skip-preorder-btn" class="skip-btn">Skip for now</button>
+        </div>
+        <div class="preorder-body">
+            <div class="preorder-sidebar">
+                <h3>Categories</h3>
+                <ul id="preorder-categories">
+                    <li class="active" data-category="All">All</li>
+                    </ul>
+            </div>
+            <div class="preorder-main">
+                <div id="preorder-grid" class="preorder-grid">
+                    </div>
+            </div>
+            <div class="preorder-cart">
+                <h4>Your Pre-Order</h4>
+                <div id="preorder-cart-items" class="preorder-cart-items">
+                    <p style="color: #888; text-align: center;">Your cart is empty.</p>
+                </div>
+                <div class="preorder-total">
+                    <div class="total-line">
+                        <span>Subtotal:</span>
+                        <span id="preorder-subtotal">₱0.00</span>
+                    </div>
+                    <div class="total-line">
+                        <span>Tax (12%):</span>
+                        <span id="preorder-tax">₱0.00</span>
+                    </div>
+                    <div class="total-line total-final">
+                        <span>Total:</span>
+                        <span id="preorder-total">₱0.00</span>
+                    </div>
+                </div>
+                <button id="preorder-checkout-btn" class="submit-btn" disabled>Checkout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="preorder-variation-modal" class="modal hidden" style="z-index: 1001;">
+    <div class="modal-content" style="width: 400px;">
+        <h2 id="preorder-variation-title">Select Variation</h2>
+        <div id="preorder-variation-options" style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+            </div>
+        <div class="modal-buttons" style="margin-top: 20px;">
+            <button type="button" id="cancel-preorder-variation" class="btn btn--secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="preorder-payment-modal" class="preorder-modal" style="z-index: 1002;">
+    <div class="payment-modal-content">
+        <div class="preorder-header">
+            <h2>Pay for Pre-Order</h2>
+            <button id="cancel-payment-btn" class="skip-btn">Cancel</button>
+        </div>
+        <div class="payment-body">
+            <div class="payment-grid">
+                <div class="payment-qr-code">
+                    <h4>Pay with GCash</h4>
+                    <p>Total Amount: <strong id="payment-total-amount" style="font-size: 1.2rem;">₱0.00</strong></p>
+                    <img src="assets/qr-code.png" alt="GCash QR Code">
+                    <p>Scan this QR code with your GCash app.</p>
+                </div>
+                <div class="payment-upload">
+                    <h4>Upload Receipt</h4>
+                    <p>After paying, please upload a screenshot of your e-receipt.</p>
+                    <div class="form-group">
+                        <label for="receipt-file-input">Proof of Payment:</label>
+                        <input type="file" id="receipt-file-input" class="file-input" accept="image/*" required>
+                        <label for="receipt-file-input" class="file-input-label">📷 Select Screenshot</label>
+                        <img id="receipt-preview" alt="Receipt preview">
+                    </div>
+                    <button id="upload-receipt-btn" class="submit-btn" disabled>Confirm Pre-Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                     </div>
                     </div>
 
@@ -930,8 +1274,7 @@
         </div>
     </div>
 
-<!-- Footer - separate section with its own styling -->
-    <footer id="iv3be5" class="gjs-grid-row">
+<footer id="iv3be5" class="gjs-grid-row">
         <div id="ilriti" class="gjs-grid-column">
             <div id="im0rle">
                 <div>

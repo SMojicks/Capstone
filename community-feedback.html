@@ -414,6 +414,32 @@
     .modal-content form {
         padding: 25px 30px 30px;
     }
+    
+    /* ==== NEW: EMOJI RATING STYLES ==== */
+    .emoji-rating-container {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+    }
+    .emoji-rating-container input {
+        display: none; /* Hide the radio button */
+    }
+    .emoji-rating-container label {
+        font-size: 2.5rem;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: all 0.2s ease-in-out;
+    }
+    .emoji-rating-container label:hover {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    /* Style for the selected emoji */
+    .emoji-rating-container input:checked + label {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    /* ==== END: EMOJI RATING STYLES ==== */
 
     /* Footer styles */
     #iv3be5 {
@@ -476,7 +502,6 @@
     }
 </style>
 <body>
-    <!-- Header -->
     <div id="i6po" class="gjs-grid-row">
         <div id="itjq" class="gjs-grid-column">
             <div id="iyd2">
@@ -488,7 +513,6 @@
                 <div id="it00l">
                     <div class="nav-links">
                         <a href="index.html">Home</a>
-                        <!-- <a href="#">About</a>                     -->
                         <a href="menu.html">Menu</a>
                         <a href="reservation.html">Reservation</a>
                         <a href="community-feedback.html">Community</a>
@@ -505,99 +529,67 @@
         <div class="community-section">
             <h2>Community Bulletin Board</h2>
             
-            <!-- Centered Large Bulletin Board -->
             <div class="bulletin-board-main">
                 <div class="bulletin-board-container-large" id="bulletinBoardContainer">
                     <img src="./assets/bulletin_board_bg.png" alt="Cafe Bulletin Board" class="bulletin-board-image" id="bulletinBoardImage" 
                          onload="this.style.display='block'; document.getElementById('bulletinPlaceholder').style.display='none';" 
                          onerror="window.showBulletinPlaceholder()">
                     
-                    <!-- Placeholder shown when no image or image fails to load -->
                     <div class="bulletin-placeholder" id="bulletinPlaceholder">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-1 16H9V7h9v14z"/>
                         </svg>
                         <h3>Community Bulletin Board</h3>
                         <p>Share your cafe experiences and photos here!</p>
-                        <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">Your submitted photos will appear as pinned notes on this board</p>
+                        <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">Showing approved feedback from the last 7 days</p>
                     </div>
                     
-                    <!-- Invisible photo spots that will show user submissions -->
                     <div class="photo-spots" id="photoSpots">
-                        <!-- Photo Spot 1 - Top Left -->
-                        <div class="photo-spot" id="spot1" style="top: 15%; left: 12%; transform: rotate(-8deg);" onclick="openPhotoModal(1)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot1" style="top: 20%; left: 30%; transform: translate(-50%, -50%) rotate(-8deg);" onclick="openPhotoModal(1)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
-                        
-                        <!-- Photo Spot 2 - Top Right -->
-                        <div class="photo-spot" id="spot2" style="top: 10%; right: 15%; transform: rotate(5deg);" onclick="openPhotoModal(2)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot2" style="top: 25%; left: 50%; transform: translate(-50%, -50%) rotate(5deg);" onclick="openPhotoModal(2)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
-                        
-                        <!-- Photo Spot 3 - Center Left -->
-                        <div class="photo-spot" id="spot3" style="top: 35%; left: 8%; transform: rotate(12deg);" onclick="openPhotoModal(3)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot3" style="top: 22%; left: 70%; transform: translate(-50%, -50%) rotate(-5deg);" onclick="openPhotoModal(3)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
-                        
-                        <!-- Photo Spot 4 - Center -->
-                        <div class="photo-spot" id="spot4" style="top: 45%; left: 50%; transform: translate(-50%, -50%) rotate(-3deg);" onclick="openPhotoModal(4)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot4" style="top: 45%; left: 20%; transform: translate(-50%, -50%) rotate(10deg);" onclick="openPhotoModal(4)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
-                        
-                        <!-- Photo Spot 5 - Center Right -->
-                        <div class="photo-spot" id="spot5" style="top: 30%; right: 10%; transform: rotate(-7deg);" onclick="openPhotoModal(5)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot5" style="top: 40%; left: 40%; transform: translate(-50%, -50%) rotate(-3deg);" onclick="openPhotoModal(5)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
-                        
-                        <!-- Photo Spot 6 - Bottom Left -->
-                        <div class="photo-spot" id="spot6" style="bottom: 20%; left: 15%; transform: rotate(4deg);" onclick="openPhotoModal(6)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot6" style="top: 42%; left: 60%; transform: translate(-50%, -50%) rotate(4deg);" onclick="openPhotoModal(6)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
-                        
-                        <!-- Photo Spot 7 - Bottom Right -->
-                        <div class="photo-spot" id="spot7" style="bottom: 15%; right: 12%; transform: rotate(-5deg);" onclick="openPhotoModal(7)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot7" style="top: 48%; left: 80%; transform: translate(-50%, -50%) rotate(-7deg);" onclick="openPhotoModal(7)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
-                        
-                        <!-- Photo Spot 8 - Bottom Center -->
-                        <div class="photo-spot" id="spot8" style="bottom: 25%; left: 45%; transform: rotate(8deg);" onclick="openPhotoModal(8)">
-                            <div class="photo-placeholder-spot">
-                                <span>📷</span>
-                                <p>Click to add photo</p>
-                            </div>
+                        <div class="photo-spot" id="spot8" style="top: 65%; left: 30%; transform: translate(-50%, -50%) rotate(-5deg);" onclick="openPhotoModal(8)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
+                        </div>
+                        <div class="photo-spot" id="spot9" style="top: 68%; left: 50%; transform: translate(-50%, -50%) rotate(8deg);" onclick="openPhotoModal(9)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
+                        </div>
+                        <div class="photo-spot" id="spot10" style="top: 70%; left: 70%; transform: translate(-50%, -50%) rotate(-2deg);" onclick="openPhotoModal(10)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
+                        </div>
+                        <div class="photo-spot" id="spot11" style="top: 85%; left: 40%; transform: translate(-50%, -50%) rotate(6deg);" onclick="openPhotoModal(11)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
+                        </div>
+                        <div class="photo-spot" id="spot12" style="top: 82%; left: 60%; transform: translate(-50%, -50%) rotate(-9deg);" onclick="openPhotoModal(12)">
+                            <div class="photo-placeholder-spot"><span>📷</span><p>Click to add photo</p></div>
                         </div>
                     </div>
-                </div>
+                    </div>
                 
-                <!-- Instructions -->
                 <div class="bulletin-instructions">
                     <p>🖼️ Click on any empty spot to add your photo and review!</p>
                     <p>📌 Share your cafe moments with the community</p>
                 </div>
             </div>
             
-            <!-- Photo Upload Modal -->
             <div class="photo-modal" id="photoModal">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -616,7 +608,17 @@
                                 <img id="modalPhotoPreview" class="photo-preview-modal" alt="Photo preview">
                             </div>
                         </div>
-                        
+
+                        <div class="form-group">
+                            <label>Your Rating:</label>
+                            <div class="emoji-rating-container" id="emoji-rating">
+                                <input type="radio" name="rating" id="rating-1" value="😠" required><label for="rating-1" title="Angry">😠</label>
+                                <input type="radio" name="rating" id="rating-2" value="🙁" required><label for="rating-2" title="Sad">🙁</label>
+                                <input type="radio" name="rating" id="rating-3" value="😐" required><label for="rating-3" title="Neutral">😐</label>
+                                <input type="radio" name="rating" id="rating-4" value="🙂" required><label for="rating-4" title="Happy">🙂</label>
+                                <input type="radio" name="rating" id="rating-5" value="😍" required><label for="rating-5" title="Love">😍</label>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label for="modalReviewText">Your Review:</label>
                             <textarea id="modalReviewText" placeholder="Share your experience at Acaccia Bistro Cafe..." required></textarea>
@@ -627,14 +629,13 @@
                             <input type="text" id="modalUserName" placeholder="How should we credit you?" required>
                         </div>
                         
-                        <button type="submit" class="submit-btn">Pin to Bulletin Board</button>
+                        <button type="submit" class="submit-btn" id="photo-submit-btn">Pin to Bulletin Board</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer - separate section with its own styling -->
     <footer id="iv3be5" class="gjs-grid-row">
         <div id="ilriti" class="gjs-grid-column">
             <div id="im0rle">
@@ -669,247 +670,6 @@
         </div>
     </footer>
 
-<!-- <script>
-window.showBulletinPlaceholder = function() {
-  document.getElementById('bulletinBoardImage').style.display = 'none';
-  document.getElementById('bulletinPlaceholder').style.display = 'flex';
-};
-</script>
-
-<script type="module">
-import { db } from "./scripts/firebase.js";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  getDocs,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
-// Global Firestore references
-const feedbackCollection = collection(db, "customerFeedback");
-window.feedbackDb = db;
-window.feedbackCollection = collection;
-window.addFeedbackDoc = addDoc;
-window.serverTimestamp = serverTimestamp;
-
-// ----------------------------
-// Bulletin Board Logic
-// ----------------------------
-let selectedSpot = null;
-let bulletinPhotos = {};
-
-
-// Load bulletin image
-function loadBulletinImage(imageUrl) {
-  const img = document.getElementById('bulletinBoardImage');
-  const placeholder = document.getElementById('bulletinPlaceholder');
-  img.src = imageUrl;
-  img.style.display = 'block';
-  placeholder.style.display = 'none';
-  img.onerror = showBulletinPlaceholder;
-}
-
-// Open upload modal
-function openPhotoModal(spotNumber) {
-  selectedSpot = spotNumber;
-  document.getElementById('photoModal').style.display = 'block';
-  document.getElementById('photoSubmissionForm').reset();
-  document.getElementById('modalPhotoPreview').style.display = 'none';
-}
-
-// Close modal
-function closePhotoModal() {
-  document.getElementById('photoModal').style.display = 'none';
-  selectedSpot = null;
-}
-
-// Preview uploaded photo
-function previewModalPhoto(event) {
-  const file = event.target.files[0];
-  const preview = document.getElementById('modalPhotoPreview');
-  if (file) {
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Please choose an image smaller than 5MB.');
-      event.target.value = '';
-      preview.style.display = 'none';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = e => {
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  } else {
-    preview.style.display = 'none';
-  }
-}
-
-// ✅ Updated version — saves image to Firestore
-async function submitPhotoToBulletin(event) {
-  event.preventDefault();
-
-  if (!selectedSpot) {
-    alert('Error: No spot selected.');
-    return;
-  }
-
-  const photoInput = document.getElementById('modalPhotoInput');
-  const reviewText = document.getElementById('modalReviewText').value.trim();
-  const userName = document.getElementById('modalUserName').value.trim();
-
-  if (!photoInput.files[0]) {
-    alert('Please select a photo.');
-    return;
-  }
-  if (!reviewText) {
-    alert('Please write a review.');
-    return;
-  }
-  if (!userName) {
-    alert('Please enter your name.');
-    return;
-  }
-
-  const file = photoInput.files[0];
-  const reader = new FileReader();
-
-  reader.onload = async e => {
-    const photoDataUrl = e.target.result;
-
-    bulletinPhotos[selectedSpot] = {
-      image: photoDataUrl,
-      author: userName,
-      review: reviewText,
-      date: new Date().toLocaleDateString()
-    };
-
-    updatePhotoSpot(selectedSpot, bulletinPhotos[selectedSpot]);
-
-    try {
-      const feedbackData = {
-        name: userName,
-        comment: reviewText,
-        image: photoDataUrl,
-        timestamp: serverTimestamp(),
-        status: "approved"
-      };
-
-      await addDoc(feedbackCollection, feedbackData);
-      console.log("✅ Feedback saved:", feedbackData);
-    } catch (error) {
-      console.error("❌ Error saving feedback:", error);
-      alert("Error saving review. Try again.");
-    }
-
-    closePhotoModal();
-    showSuccessMessage('Your review was posted!');
-  };
-
-  reader.readAsDataURL(file);
-}
-
-// Update the photo spot UI
-function updatePhotoSpot(spotNumber, photoData) {
-  const spot = document.getElementById(`spot${spotNumber}`);
-  if (!spot) return;
-
-  spot.classList.add('filled');
-  spot.innerHTML = `
-    <div class="photo-placeholder-spot">
-      <img src="${photoData.image}" alt="Community photo" class="submitted-photo">
-      <div class="photo-author">📝 ${photoData.author}</div>
-    </div>
-  `;
-  spot.onclick = () => viewPhotoDetails(spotNumber);
-}
-
-// View photo details
-function viewPhotoDetails(spotNumber) {
-  const photoData = bulletinPhotos[spotNumber];
-  if (!photoData) return;
-
-  const modal = document.createElement('div');
-  modal.className = 'photo-modal';
-  modal.style.display = 'block';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>📸 ${photoData.author}'s Experience</h3>
-        <button class="modal-close" onclick="this.closest('.photo-modal').remove()">&times;</button>
-      </div>
-      <div style="padding: 25px 30px 30px;">
-        <img src="${photoData.image}" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 10px; margin-bottom: 20px;">
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
-          <h4>Review:</h4>
-          <p>${photoData.review}</p>
-          <p style="font-size: 0.9rem; color: #666;">Shared on ${photoData.date}</p>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  modal.onclick = e => { if (e.target === modal) modal.remove(); };
-}
-
-// Success message
-function showSuccessMessage(message) {
-  const note = document.createElement('div');
-  note.style.cssText = `
-    position: fixed; top: 20px; right: 20px; background: #28a745; color: white;
-    padding: 15px 25px; border-radius: 10px; z-index: 1001; font-weight: bold;
-  `;
-  note.textContent = message;
-  document.body.appendChild(note);
-  setTimeout(() => note.remove(), 3000);
-}
-
-// Load feedbacks from Firestore
-async function loadFeedbacksFromFirestore() {
-  try {
-    const q = query(feedbackCollection, orderBy("timestamp", "desc"));
-    const snapshot = await getDocs(q);
-
-    snapshot.forEach((docSnap, index) => {
-      const data = docSnap.data();
-      if (data.status !== "approved") return;
-
-      const spotNumber = index + 1;
-      const image = data.image || "https://via.placeholder.com/150/eee/aaa?text=Photo";
-
-      bulletinPhotos[spotNumber] = {
-        image,
-        author: data.name || "Anonymous",
-        review: data.comment || "",
-        date: data.timestamp?.toDate().toLocaleDateString() || "—"
-      };
-
-      updatePhotoSpot(spotNumber, bulletinPhotos[spotNumber]);
-    });
-
-    console.log("✅ Loaded feedbacks:", snapshot.size);
-  } catch (error) {
-    console.error("❌ Error loading feedbacks:", error);
-  }
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Bulletin board initialized');
-  loadFeedbacksFromFirestore();
-});
-
-// Expose some functions for HTML
-window.openPhotoModal = openPhotoModal;
-window.closePhotoModal = closePhotoModal;
-window.previewModalPhoto = previewModalPhoto;
-window.submitPhotoToBulletin = submitPhotoToBulletin;
-window.viewPhotoDetails = viewPhotoDetails;
-
-</script> -->
-
 <script type="module">
 import { db } from "./scripts/firebase.js";
 import {
@@ -919,48 +679,91 @@ import {
   getDocs,
   query,
   orderBy,
-  doc,       // 👈 ADD THIS
-  getDoc     // 👈 ADD THIS
+  doc,
+  getDoc,
+  Timestamp,
+  where // <-- Make sure this is imported
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js"; // 👈 ADD THIS
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
 // Global Firestore references
 const feedbackCollection = collection(db, "customerFeedback");
-window.feedbackDb = db;
-window.feedbackCollection = collection;
-window.addFeedbackDoc = addDoc;
-window.serverTimestamp = serverTimestamp;
+
+// Global state
+let selectedSpot = null;
+let bulletinPhotos = {}; // Stores data for the spots
+let loggedInUser = null;
+let selectedRating = null; // Stores the selected emoji (e.g., "😍")
+let currentImageFile = null; // Stores the file object
+
+// --- Constant for total spots ---
+const TOTAL_SPOTS = 12; // <-- MODIFIED
+
+// ----------------------------
+// Cloudinary Upload Function
+// ----------------------------
+async function uploadToCloudinary(file) {
+    // --- ⬇️ ⬇️ VITAL: REPLACE THESE WITH YOUR OWN ⬇️ ⬇️ ---
+    const CLOUD_NAME = "dofyjwhlu"; // <-- REPLACE WITH YOUR CLOUD_NAME
+    const UPLOAD_PRESET = "cafesync"; // <-- REPLACE WITH YOUR UPLOAD_PRESET
+    // --- ⬆️ ⬆️ VITAL: REPLACE THESE WITH YOUR OWN ⬆️ ⬆️ ---
+
+    const URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    try {
+        const response = await fetch(URL, {
+            method: "POST",
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error(`Cloudinary upload failed with status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.secure_url; // This is the URL to save to Firestore
+    } catch (error) {
+        console.error("Error uploading to Cloudinary:", error);
+        throw error;
+    }
+}
 
 // ----------------------------
 // Bulletin Board Logic
 // ----------------------------
-let selectedSpot = null;
-let bulletinPhotos = {};
-let loggedInUser = null; // 👈 ADD THIS
 
-// Load bulletin image
-function loadBulletinImage(imageUrl) {
-  const img = document.getElementById('bulletinBoardImage');
-  const placeholder = document.getElementById('bulletinPlaceholder');
-  img.src = imageUrl;
-  img.style.display = 'block';
-  placeholder.style.display = 'none';
-  img.onerror = showBulletinPlaceholder;
-}
+// Fallback for broken bulletin board image
+window.showBulletinPlaceholder = function() {
+  document.getElementById('bulletinBoardImage').style.display = 'none';
+  document.getElementById('bulletinPlaceholder').style.display = 'flex';
+};
 
 // Open upload modal
 function openPhotoModal(spotNumber) {
+  // Don't open modal if spot is already filled
+  if (bulletinPhotos[spotNumber]) {
+      viewPhotoDetails(spotNumber);
+      return;
+  }
+  
   selectedSpot = spotNumber;
   document.getElementById('photoModal').style.display = 'block';
   document.getElementById('photoSubmissionForm').reset();
   document.getElementById('modalPhotoPreview').style.display = 'none';
+  currentImageFile = null;
+  selectedRating = null;
+
+  // Reset emoji selection
+  document.querySelectorAll('#emoji-rating input').forEach(radio => radio.checked = false);
   
-  // 🚀 NEW: Pre-fill user name if logged in
+  // Pre-fill user name if logged in
   const userNameInput = document.getElementById('modalUserName');
   if (loggedInUser) {
       userNameInput.value = loggedInUser.fullName;
       userNameInput.readOnly = true;
   } else {
+      userNameInput.value = "";
       userNameInput.readOnly = false;
   }
 }
@@ -976,12 +779,14 @@ function previewModalPhoto(event) {
   const file = event.target.files[0];
   const preview = document.getElementById('modalPhotoPreview');
   if (file) {
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
       alert('Please choose an image smaller than 5MB.');
       event.target.value = '';
       preview.style.display = 'none';
+      currentImageFile = null;
       return;
     }
+    currentImageFile = file; // Store the file
     const reader = new FileReader();
     reader.onload = e => {
       preview.src = e.target.result;
@@ -990,10 +795,11 @@ function previewModalPhoto(event) {
     reader.readAsDataURL(file);
   } else {
     preview.style.display = 'none';
+    currentImageFile = null;
   }
 }
 
-// ✅ Updated version — saves image to Firestore
+// Submit Photo (NOW with Cloudinary + Rating)
 async function submitPhotoToBulletin(event) {
   event.preventDefault();
 
@@ -1002,11 +808,18 @@ async function submitPhotoToBulletin(event) {
     return;
   }
 
-  const photoInput = document.getElementById('modalPhotoInput');
+  // Get rating
+  const ratingInput = document.querySelector('#emoji-rating input:checked');
+  if (!ratingInput) {
+      alert('Please select a rating.');
+      return;
+  }
+  selectedRating = ratingInput.value;
+
   const reviewText = document.getElementById('modalReviewText').value.trim();
   const userName = document.getElementById('modalUserName').value.trim();
 
-  if (!photoInput.files[0]) {
+  if (!currentImageFile) {
     alert('Please select a photo.');
     return;
   }
@@ -1019,43 +832,40 @@ async function submitPhotoToBulletin(event) {
     return;
   }
 
-  const file = photoInput.files[0];
-  const reader = new FileReader();
+  const submitBtn = document.getElementById('photo-submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Uploading Image...";
 
-  reader.onload = async e => {
-    const photoDataUrl = e.target.result;
-
-    bulletinPhotos[selectedSpot] = {
-      image: photoDataUrl,
-      author: userName,
-      review: reviewText,
-      date: new Date().toLocaleDateString()
+  try {
+    // 1. Upload image to Cloudinary
+    const imageUrl = await uploadToCloudinary(currentImageFile);
+    
+    submitBtn.textContent = "Saving Feedback...";
+    
+    // 2. Save data (including URL and rating) to Firestore
+    const feedbackData = {
+      name: userName,
+      comment: reviewText,
+      imageUrl: imageUrl, // <-- Save Cloudinary URL
+      rating: selectedRating, // <-- Save Emoji rating
+      timestamp: serverTimestamp(),
+      status: "pending", // All new feedback is pending approval
+      userId: loggedInUser ? loggedInUser.uid : null
     };
 
-    updatePhotoSpot(selectedSpot, bulletinPhotos[selectedSpot]);
-
-    try {
-      const feedbackData = {
-        name: userName,
-        comment: reviewText,
-        image: photoDataUrl,
-        timestamp: serverTimestamp(),
-        status: "pending", // 👈 Set status to pending
-        userId: loggedInUser ? loggedInUser.uid : null // 👈 Attach user ID
-      };
-
-      await addDoc(feedbackCollection, feedbackData);
-      console.log("✅ Feedback saved:", feedbackData);
-    } catch (error) {
-      console.error("❌ Error saving feedback:", error);
-      alert("Error saving review. Try again.");
-    }
+    await addDoc(feedbackCollection, feedbackData);
+    console.log("✅ Feedback saved (pending approval):", feedbackData);
 
     closePhotoModal();
-    showSuccessMessage('Your review was posted!');
-  };
+    showSuccessMessage('Your review was submitted for approval!');
 
-  reader.readAsDataURL(file);
+  } catch (error) {
+    console.error("❌ Error submitting feedback:", error);
+    alert("Error submitting review. Please try again.");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Pin to Bulletin Board";
+  }
 }
 
 // Update the photo spot UI
@@ -1066,8 +876,8 @@ function updatePhotoSpot(spotNumber, photoData) {
   spot.classList.add('filled');
   spot.innerHTML = `
     <div class="photo-placeholder-spot">
-      <img src="${photoData.image}" alt="Community photo" class="submitted-photo">
-      <div class="photo-author">📝 ${photoData.author}</div>
+      <img src="${photoData.imageUrl}" alt="Community photo" class="submitted-photo">
+      <div class="photo-author">${photoData.rating} ${photoData.author}</div>
     </div>
   `;
   spot.onclick = () => viewPhotoDetails(spotNumber);
@@ -1088,8 +898,9 @@ function viewPhotoDetails(spotNumber) {
         <button class="modal-close" onclick="this.closest('.photo-modal').remove()">&times;</button>
       </div>
       <div style="padding: 25px 30px 30px;">
-        <img src="${photoData.image}" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 10px; margin-bottom: 20px;">
+        <img src="${photoData.imageUrl}" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 10px; margin-bottom: 20px;">
         <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+          <h4>Rating: <span style="font-size: 1.5rem;">${photoData.rating}</span></h4>
           <h4>Review:</h4>
           <p>${photoData.review}</p>
           <p style="font-size: 0.9rem; color: #666;">Shared on ${photoData.date}</p>
@@ -1107,31 +918,68 @@ function showSuccessMessage(message) {
   note.style.cssText = `
     position: fixed; top: 20px; right: 20px; background: #28a745; color: white;
     padding: 15px 25px; border-radius: 10px; z-index: 1001; font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   `;
   note.textContent = message;
   document.body.appendChild(note);
   setTimeout(() => note.remove(), 3000);
 }
 
-// Load feedbacks from Firestore
+// Reset all spots to their placeholder state
+function clearBulletinBoard() {
+    bulletinPhotos = {}; // Clear the data cache
+    // ==== MODIFICATION: Loop to 12 ====
+    for (let i = 1; i <= TOTAL_SPOTS; i++) {
+        const spot = document.getElementById(`spot${i}`);
+        if (spot) {
+            spot.classList.remove('filled');
+            spot.innerHTML = `
+                <div class="photo-placeholder-spot">
+                    <span>📷</span>
+                    <p>Click to add photo</p>
+                </div>
+            `;
+            // Re-attach the original openPhotoModal listener
+            spot.onclick = () => openPhotoModal(i);
+        }
+    }
+}
+
+// Load feedbacks from Firestore (NOW with 7-Day filter)
 async function loadFeedbacksFromFirestore() {
+  clearBulletinBoard(); // Clear old posts first
+  
   try {
-    const q = query(feedbackCollection, orderBy("timestamp", "desc"));
+    // 1. Calculate the date 7 days ago
+    const today = new Date();
+    const sevenDaysAgoDate = new Date(today.setDate(today.getDate() - 7));
+    const sevenDaysAgoTimestamp = Timestamp.fromDate(sevenDaysAgoDate);
+
+    // 2. Query for approved feedback, ordered by date, newer than 7 days
+    const q = query(
+        feedbackCollection, 
+        where("status", "==", "approved"),
+        where("timestamp", ">=", sevenDaysAgoTimestamp),
+        orderBy("timestamp", "desc")
+    );
     const snapshot = await getDocs(q);
 
     let spotIndex = 1;
     snapshot.forEach((docSnap) => {
+      // ==== MODIFICATION: Check against 12 ====
+      if (spotIndex > TOTAL_SPOTS) return; // Don't overflow the spots
+      
       const data = docSnap.data();
-      // Only show approved feedback on the board
-      if (data.status !== "approved") return;
-      if (spotIndex > 8) return; // Don't overflow the board
-
-      const image = data.image || "https://via.placeholder.com/150/eee/aaa?text=Photo";
+      const image = data.imageUrl; // <-- Use imageUrl from Cloudinary
+      
+      // If there's no image, skip (board should only show photos)
+      if (!image) return;
 
       bulletinPhotos[spotIndex] = {
-        image,
+        imageUrl: image,
         author: data.name || "Anonymous",
         review: data.comment || "",
+        rating: data.rating || "🙂", // Default to smile
         date: data.timestamp?.toDate().toLocaleDateString() || "—"
       };
 
@@ -1139,13 +987,13 @@ async function loadFeedbacksFromFirestore() {
       spotIndex++;
     });
 
-    console.log("✅ Loaded approved feedbacks:", snapshot.size);
+    console.log(`✅ Loaded ${snapshot.size} approved feedbacks from the last 7 days.`);
   } catch (error) {
     console.error("❌ Error loading feedbacks:", error);
   }
 }
 
-// 🚀 NEW: Check auth state
+// Check auth state
 async function checkAuthState() {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
@@ -1165,11 +1013,18 @@ async function checkAuthState() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Bulletin board initialized');
-  checkAuthState(); // 👈 ADD THIS
-  loadFeedbacksFromFirestore();
+  checkAuthState();
+  loadFeedbacksFromFirestore(); // This now filters for the last 7 days
+  
+  // Add listener for emoji selection
+  document.getElementById('emoji-rating').addEventListener('change', (e) => {
+      if (e.target.name === 'rating') {
+          selectedRating = e.target.value;
+      }
+  });
 });
 
-// Expose some functions for HTML
+// Expose functions for HTML onclick
 window.openPhotoModal = openPhotoModal;
 window.closePhotoModal = closePhotoModal;
 window.previewModalPhoto = previewModalPhoto;

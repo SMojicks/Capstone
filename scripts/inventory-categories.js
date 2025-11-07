@@ -1,13 +1,17 @@
-
 // scripts/inventory-categories.js
 import { db } from './firebase.js';
-import { doc, getDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { 
+    doc, getDoc, setDoc, arrayUnion, arrayRemove, 
+    collection, query, where, getDocs, writeBatch 
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // Reference to the Firestore document that stores the category list
 const invCategoriesRef = doc(db, "settings", "inventoryCategories");
+// Reference to the ingredients collection
+const ingredientsRef = collection(db, "ingredients");
 
 // --- DOM Elements ---
-let manageBtn, modal, closeBtn, addBtn, newCategoryInput, categoryListDiv, ingredientCategoryDropdown, posIngredientFilterDropdown;
+let manageBtn, modal, closeBtn, addBtn, newCategoryInput, categoryListTbody, ingredientCategoryDropdown, posIngredientFilterDropdown, addCategoryForm;
 
 let allInvCategories = [];
 
@@ -26,27 +30,29 @@ async function loadCategories() {
         console.error("Error loading inventory categories:", error);
     }
     
-    populateCategoryList();
+    populateCategoryTable();
     populateDropdowns();
 }
 
-// --- Populate the list in the "Manage" modal ---
-function populateCategoryList() {
-    if (!categoryListDiv) return;
-    categoryListDiv.innerHTML = "";
+// --- Populate the table in the "Manage" modal ---
+function populateCategoryTable() {
+    if (!categoryListTbody) return;
+    categoryListTbody.innerHTML = "";
     if (allInvCategories.length === 0) {
-        categoryListDiv.innerHTML = "<p>No categories created yet.</p>";
+        categoryListTbody.innerHTML = "<tr><td colspan='2' style='text-align: center;'>No categories created yet.</td></tr>";
         return;
     }
     
     allInvCategories.forEach(category => {
-        const item = document.createElement("div");
-        item.className = "category-list-item";
-        item.innerHTML = `
-            <span>${category}</span>
-            <button class="btn-icon btn--icon-delete delete-cat-btn" data-category="${category}" title="Delete Category">🗑</button>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${category}</td>
+            <td class="actions-cell" style="text-align: right;">
+                <button class="btn-icon btn--icon-edit edit-cat-btn" data-category="${category}" title="Edit Category">✎</button>
+                <button class="btn-icon btn--icon-delete delete-cat-btn" data-category="${category}" title="Delete Category">🗑</button>
+            </td>
         `;
-        categoryListDiv.appendChild(item);
+        categoryListTbody.appendChild(row);
     });
 }
 
@@ -72,7 +78,9 @@ function populateDropdowns() {
 }
 
 // --- Add a new category ---
-async function addCategory() {
+async function addCategory(event) {
+    if(event) event.preventDefault(); // Prevent form submission
+    
     const newCategory = newCategoryInput.value.trim();
     if (!newCategory) {
         alert("Please enter a category name.");
@@ -92,19 +100,94 @@ async function addCategory() {
     }
 }
 
-// --- Delete a category ---
+// --- Delete a category (and update ingredients) ---
 async function deleteCategory(categoryName) {
-    if (!confirm(`Are you sure you want to delete the category "${categoryName}"? This cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete "${categoryName}"? This will remove the category from all ingredients using it. This cannot be undone.`)) {
         return;
     }
     
     try {
+        // 1. Remove category from the settings list
         await setDoc(invCategoriesRef, { list: arrayRemove(categoryName) }, { merge: true });
-        await loadCategories(); // Reload
+        
+        // 2. Batch update all ingredients using this category
+        const batch = writeBatch(db);
+        const q = query(ingredientsRef, where("category", "==", categoryName));
+        const snapshot = await getDocs(q);
+        
+        snapshot.forEach(doc => {
+            batch.update(doc.ref, { category: "" }); // Set to uncategorized
+        });
+        
+        await batch.commit();
+        
+        // 3. Reload everything
+        await loadCategories(); 
+        alert(`Category "${categoryName}" deleted and ingredients updated.`);
     } catch (error) {
         console.error("Error deleting category:", error);
+        alert(`Error deleting category: ${error.message}`);
     }
 }
+
+// --- NEW: Edit a category (and update ingredients) ---
+async function editCategory(oldName) {
+    const newName = prompt(`Enter a new name for "${oldName}":`, oldName);
+    
+    if (!newName || newName.trim() === "") {
+        alert("Edit canceled: Name cannot be empty.");
+        return;
+    }
+    
+    const trimmedNewName = newName.trim();
+    
+    if (trimmedNewName === oldName) {
+        return; // No change
+    }
+    
+    if (allInvCategories.includes(trimmedNewName)) {
+        alert(`Error: The category "${trimmedNewName}" already exists.`);
+        return;
+    }
+    
+    if (!confirm(`This will rename "${oldName}" to "${trimmedNewName}" and update all associated ingredients. Continue?`)) {
+        return;
+    }
+    
+    try {
+        // 1. Update the category list in settings
+        const docSnap = await getDoc(invCategoriesRef);
+        let currentList = docSnap.data().list || [];
+        const index = currentList.indexOf(oldName);
+        
+        if (index > -1) {
+            currentList[index] = trimmedNewName; // Replace old name with new
+            await setDoc(invCategoriesRef, { list: currentList });
+        } else {
+            throw new Error("Category not found in list.");
+        }
+        
+        // 2. Batch update all ingredients using the old category
+        const batch = writeBatch(db);
+        const q = query(ingredientsRef, where("category", "==", oldName));
+        const snapshot = await getDocs(q);
+        
+        snapshot.forEach(doc => {
+            batch.update(doc.ref, { category: trimmedNewName }); // Set to new name
+        });
+        
+        await batch.commit();
+        
+        // 3. Reload everything
+        await loadCategories();
+        alert(`Category "${oldName}" successfully renamed to "${trimmedNewName}".`);
+        
+    } catch (error) {
+        console.error("Error editing category:", error);
+        alert(`Error editing category: ${error.message}`);
+    }
+}
+
 
 // --- Event Listeners ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -113,8 +196,9 @@ document.addEventListener("DOMContentLoaded", () => {
     modal = document.getElementById("inventory-category-modal");
     closeBtn = document.getElementById("close-inv-category-btn");
     addBtn = document.getElementById("add-inv-category-btn");
+    addCategoryForm = document.getElementById("add-inv-category-form");
     newCategoryInput = document.getElementById("new-inv-category-name");
-    categoryListDiv = document.getElementById("existing-inv-categories-list");
+    categoryListTbody = document.getElementById("existing-inv-categories-tbody"); // <-- Changed ID
 
     if (manageBtn) {
         manageBtn.addEventListener("click", () => {
@@ -124,12 +208,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     if (closeBtn) closeBtn.addEventListener("click", () => modal.style.display = "none");
-    if (addBtn) addBtn.addEventListener("click", addCategory);
     
-    if (categoryListDiv) {
-        categoryListDiv.addEventListener("click", (e) => {
-            if (e.target.classList.contains("delete-cat-btn")) {
-                deleteCategory(e.target.dataset.category);
+    // Listen to form submit event
+    if (addCategoryForm) addCategoryForm.addEventListener("submit", addCategory);
+    
+    if (categoryListTbody) {
+        categoryListTbody.addEventListener("click", (e) => {
+            const targetButton = e.target.closest('button');
+            if (!targetButton) return; // Click wasn't on a button
+
+            if (targetButton.classList.contains("delete-cat-btn")) {
+                deleteCategory(targetButton.dataset.category);
+            }
+            if (targetButton.classList.contains("edit-cat-btn")) {
+                editCategory(targetButton.dataset.category);
             }
         });
     }

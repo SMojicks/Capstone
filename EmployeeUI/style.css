@@ -879,6 +879,26 @@ label {
   color: var(--color-red-500);
   border: 1px solid var(--color-red-500);
 }
+.status.pending,
+.status-pending {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--color-yellow-500);
+  border: 1px solid var(--color-yellow-500);
+}
+
+.status.approved,
+.status-reviewed {
+  background-color: rgba(45, 157, 95, 0.15);
+  color: var(--color-green-600);
+  border: 1px solid var(--color-green-600);
+}
+
+.status.rejected,
+.status-blocked {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-red-500);
+  border: 1px solid var(--color-red-500);
+}
 
 /* Stock Status */
 .stock-low {
@@ -2590,4 +2610,282 @@ body.sidebar-collapsed .sidebar {
   background-color: #2563eb; /* Darker blue */
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+}
+
+/* Inventory Filter Bar */
+.inventory-filter-bar {
+  display: flex;
+  flex-wrap: wrap; /* Allows filters to wrap on smaller screens */
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  margin-bottom: 24px;
+  align-items: flex-end; /* Aligns button with inputs */
+}
+
+.inventory-filter-bar .filter-group {
+  flex: 1; /* Each filter group will grow */
+  min-width: 180px; /* Prevents them from becoming too small */
+}
+
+.inventory-filter-bar .filter-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.inventory-filter-bar .form-control {
+  width: 100%; /* Make inputs/selects fill the group */
+  padding: var(--space-8) var(--space-12); /* Slightly smaller padding */
+}
+
+/* Ensure the reset button doesn't stretch */
+.inventory-filter-bar .btn {
+  flex-shrink: 0; 
+}
+/* --- Discount Controls --- */
+.discount-controls {
+  padding: 16px;
+  background-color: var(--color-brown-100);
+  border-radius: var(--radius-base);
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.discount-controls .form-group {
+  margin-bottom: 0; /* Remove default margin */
+}
+
+/* Specific style for the discount line in cart totals */
+.cart-total .total-line.discount-line span:last-child {
+  color: var(--color-red-600); /* Make discount red */
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Hide custom input wrapper */
+.discount-controls .form-group.hidden {
+  display: none;
+}
+#custom-discount-wrapper {
+  margin-top: 10px;
+}
+/* --- Transaction Export Buttons --- */
+#transactions-section .header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* Ensure buttons use the right colors */
+.export-buttons .btn--secondary {
+  background: var(--color-brown-200);
+  color: var(--color-brown-800);
+}
+.export-buttons .btn--secondary:hover {
+  background: var(--color-brown-300);
+}
+/* --- Feedback Image Thumbnail & Rating --- */
+.feedback-image-thumb {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.feedback-image-thumb:hover {
+    transform: scale(1.1);
+}
+.feedback-rating {
+    font-size: 1.5rem;
+    vertical-align: middle;
+}
+
+/* Close button for image modal */
+.close-modal {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+}
+.close-modal:hover {
+    color: #ff4444;
+}
+/* --- Analytics Chart Header --- */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.chart-header h5 {
+    margin: 0; /* Remove default margin */
+    flex-grow: 1; /* Allow title to take space */
+    text-align: left; /* Align title left */
+}
+
+.chart-header .filter-container {
+    flex-shrink: 0;
+    min-width: 150px;
+    margin: 0; /* Reset margin */
+}
+
+.chart-header .filter-container .form-control {
+    padding: var(--space-8) var(--space-12);
+    font-size: var(--font-size-sm);
+    /* Make it look like a standard form-control */
+    line-height: 1.5;
+    color: var(--color-text);
+    background-color: var(--color-white);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-base);
+    transition: all var(--duration-fast) var(--ease-standard);
+}
+/* --- Analytics Section Header --- */
+#analytics-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#analytics-section .header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* --- Product Variation Styles (Admin Modal) --- */
+#variations-wrapper.hidden {
+    display: none;
+}
+#single-price-wrapper.hidden {
+    display: none;
+}
+
+#product-variations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    padding: 10px;
+    border-radius: var(--radius-base);
+}
+
+.variation-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.variation-row .form-control {
+    margin: 0;
+}
+.variation-row input[placeholder="Name"] {
+    flex: 2; /* e.g., "8oz" */
+}
+.variation-row input[placeholder="Price"] {
+    flex: 1; /* e.g., "120" */
+}
+.variation-row .remove-variation-btn {
+    padding: 6px 12px;
+    background: var(--color-red-500);
+    color: white;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    font-weight: bold;
+}
+.variation-row .remove-variation-btn:hover {
+    background: var(--color-red-600);
+}
+
+
+/* --- Variation Choice Modal (POS) --- */
+#variation-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.variation-btn {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    text-align: left;
+    
+    /* Use primary button style */
+    background: linear-gradient(135deg, var(--color-green-600) 0%, var(--color-green-700) 100%);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.variation-btn:hover {
+    background: linear-gradient(135deg, var(--color-green-700) 0%, var(--color-green-800) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.variation-btn .variation-price {
+    float: right;
+    font-weight: var(--font-weight-bold);
+}
+/* --- Pre-Order List in Reservation Table --- */
+.pre-order-item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+.pre-order-item-list li {
+    padding: 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* Adjust as needed */
+}
+
+/* --- Updated Ingredient Row Styles --- */
+.ingredient-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+.ingredient-row .inv-category-filter {
+    flex: 1.5; /* Give category dropdown slightly more space */
+    min-width: 150px;
+}
+.ingredient-row .ingredient-id {
+    flex: 2; /* Give ingredient dropdown the most space */
+    min-width: 180px;
+}
+.ingredient-row .ingredient-qty {
+    flex: 0.5;
+    min-width: 60px;
+}
+.ingredient-row .ingredient-unit {
+    flex: 0.5;
+    min-width: 80px;
+}
+.ingredient-row .remove-ingredient {
+    flex-shrink: 0;
 }

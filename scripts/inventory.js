@@ -1,4 +1,3 @@
-
 // scripts/inventory.js
 import { db } from './firebase.js';
 import {
@@ -14,7 +13,28 @@ const cancelBtn = document.getElementById('cancel-btn');
 const form = document.getElementById('product-form');
 const modalTitle = document.getElementById('modal-title');
 
-// ... (after const productsRef = collection(db, "ingredients");)
+// Form Fields
+const idField = document.getElementById('product-id');
+const nameField = document.getElementById('product-name');
+const stockField = document.getElementById('product-stock');
+const stockUnitField = document.getElementById('product-stock-unit');
+const baseUnitField = document.getElementById('product-base-unit');
+const conversionField = document.getElementById('product-conversion');
+const minStockField = document.getElementById('product-min-stock');
+const expiryField = document.getElementById('product-expiry');
+
+const inventoryAlertDot = document.getElementById('inventory-alert-dot');
+const productsRef = collection(db, "ingredients");
+
+// --- NEW: Filter Elements ---
+const inventorySearchName = document.getElementById('inventory-search-name');
+const inventoryFilterCategory = document.getElementById('inventory-filter-category');
+const inventoryFilterStatus = document.getElementById('inventory-filter-status');
+const inventoryFilterExpiry = document.getElementById('inventory-filter-expiry');
+const inventoryResetFilters = document.getElementById('inventory-reset-filters');
+
+// --- NEW: Local Cache for all ingredients ---
+let allIngredients = [];
 
 /**
  * Generates the next sequential ID (e.g., ING-001, ING-002)
@@ -22,43 +42,26 @@ const modalTitle = document.getElementById('modal-title');
 async function getNextIngredientId() {
     const prefix = "ING-";
     let maxId = 0;
-
     try {
-        const snapshot = await getDocs(productsRef);
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            // Check if the item has our formatted ID
+        // Use the cached list if available, otherwise fetch
+        const listToScan = allIngredients.length > 0 ? allIngredients : (await getDocs(productsRef)).docs.map(d => d.data());
+        
+        listToScan.forEach(data => {
             if (data.ingredientId && data.ingredientId.startsWith(prefix)) {
                 const numPart = data.ingredientId.substring(prefix.length);
                 const num = parseInt(numPart, 10);
                 if (!isNaN(num) && num > maxId) {
-                    maxId = num; // Found a new highest number
+                    maxId = num;
                 }
             }
         });
     } catch (error) {
         console.error("Error fetching max ingredient ID:", error);
-        // Fallback to a random number, though not ideal
         return `${prefix}${Math.floor(Math.random() * 1000)}`;
     }
-    
     const nextIdNum = maxId + 1;
-    // Pad with leading zeros to 3 digits (e.g., 1 -> 001, 15 -> 015, 123 -> 123)
-    const nextId = `${prefix}${String(nextIdNum).padStart(3, '0')}`;
-    return nextId;
+    return `${prefix}${String(nextIdNum).padStart(3, '0')}`;
 }
-// Form Fields
-const idField = document.getElementById('product-id');
-const nameField = document.getElementById('product-name');
-const categoryField = document.getElementById('product-category');
-const stockField = document.getElementById('product-stock');
-const stockUnitField = document.getElementById('product-stock-unit');
-const baseUnitField = document.getElementById('product-base-unit');
-const conversionField = document.getElementById('product-conversion');
-const minStockField = document.getElementById('product-min-stock');
-
-const inventoryAlertDot = document.getElementById('inventory-alert-dot');
-const productsRef = collection(db, "ingredients"); // Now points to 'ingredients'
 
 // --- Modal Logic ---
 function openModal(editMode = false, product = {}) {
@@ -68,20 +71,20 @@ function openModal(editMode = false, product = {}) {
   
   idField.value = product.id || '';
   nameField.value = product.name || '';
-  // --- THIS IS THE CHANGE ---
-  // Wait a tick for the dropdown to be populated by inventory-categories.js
+  
   setTimeout(() => {
       const categoryDropdown = document.getElementById("product-category-dropdown");
       if (categoryDropdown) {
           categoryDropdown.value = product.category || '';
       }
-  }, 100); // 100ms delay to ensure list is loaded
-  // --- END OF CHANGE ---
+  }, 100);
+  
   stockField.value = product.stockQuantity || '';
   stockUnitField.value = product.stockUnit || '';
   baseUnitField.value = product.baseUnit || '';
   conversionField.value = product.conversionFactor || '';
   minStockField.value = product.minStockThreshold || '';
+  expiryField.value = product.expiryDate || '';
 }
 
 function closeModal() {
@@ -90,47 +93,187 @@ function closeModal() {
   idField.value = '';
 }
 
-addBtn.addEventListener('click', () => openModal());
-cancelBtn.addEventListener('click', closeModal);
+// --- NEW: Helper function to get status object ---
+function getIngredientStatus(ing) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today for expiry comparison
 
-// --- Render Table ---
-function renderInventoryTable(snapshot) {
+    let status = "in_stock"; // Default value
+    let statusDisplay = "In Stock";
+    let statusClass = "status-approved"; // Green
+    let isExpired = false;
+
+    // 1. Check expiry date
+    if (ing.expiryDate) {
+        try {
+            const expiry = new Date(ing.expiryDate + 'T00:00:00');
+            if (!isNaN(expiry) && expiry < today) {
+                status = "expired";
+                statusDisplay = "Expired";
+                statusClass = "status-blocked"; // Red
+                isExpired = true;
+            }
+        } catch (e) { /* ignore invalid date */ }
+    }
+
+    // 2. Check stock status (only if not expired)
+    if (!isExpired) {
+        const currentStockInBase = (ing.stockQuantity || 0) * (ing.conversionFactor || 1);
+        const minStock = ing.minStockThreshold || 0;
+
+        if (currentStockInBase <= 0) {
+            status = "out_of_stock";
+            statusDisplay = "Out of Stock";
+            statusClass = "status-blocked"; // Red
+        } else if (currentStockInBase <= minStock) {
+            status = "low_stock";
+            statusDisplay = "Low Stock";
+            statusClass = "status-pending"; // Yellow
+        }
+    }
+    
+    return { status, statusDisplay, statusClass, isExpired };
+}
+
+
+// --- NEW: Populate Category Filter Dropdown ---
+function populateCategoryFilter() {
+    if (!inventoryFilterCategory) return;
+    
+    const currentVal = inventoryFilterCategory.value; // Save current selection
+    
+    // Get unique categories from the cached list
+    const categories = [...new Set(allIngredients.map(ing => ing.category).filter(Boolean))];
+    categories.sort();
+    
+    inventoryFilterCategory.innerHTML = `<option value="">All Categories</option>`; // Reset
+    
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        inventoryFilterCategory.appendChild(option);
+    });
+    
+    inventoryFilterCategory.value = currentVal; // Restore selection
+}
+
+
+// --- NEW: Main Filter and Render Function ---
+function filterAndRenderInventory() {
+    const searchName = inventorySearchName.value.toLowerCase();
+    const searchCategory = inventoryFilterCategory.value;
+    const searchStatus = inventoryFilterStatus.value;
+    const searchExpiry = inventoryFilterExpiry.value;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const sevenDaysFromNow = new Date(today);
+    sevenDaysFromNow.setDate(today.getDate() + 7);
+
+    let filteredList = allIngredients.filter(ing => {
+        // 1. Filter by Name
+        if (searchName && !ing.name.toLowerCase().includes(searchName)) {
+            return false;
+        }
+
+        // 2. Filter by Category
+        if (searchCategory && ing.category !== searchCategory) {
+            return false;
+        }
+
+        // Get status for filters
+        const { status } = getIngredientStatus(ing);
+
+        // 3. Filter by Status
+        if (searchStatus && status !== searchStatus) {
+            return false;
+        }
+        
+        // 4. Filter by Expiry
+        if (searchExpiry) {
+            if (!ing.expiryDate) return false; // Hide items with no expiry date
+            
+            try {
+                const expiry = new Date(ing.expiryDate + 'T00:00:00');
+                if (isNaN(expiry)) return false; // Hide invalid dates
+
+                if (searchExpiry === 'expired' && expiry >= today) {
+                    return false; // Not expired
+                }
+                
+                if (searchExpiry === 'expiring_soon' && (expiry < today || expiry > sevenDaysFromNow)) {
+                    return false; // Not in the "expiring soon" window
+                }
+            } catch (e) {
+                return false; // Hide on error
+            }
+        }
+        
+        return true; // Item passes all filters
+    });
+
+    renderInventoryTable(filteredList);
+}
+
+
+// --- MODIFIED: Renders a pre-filtered list ---
+function renderInventoryTable(ingredientsToRender) {
   inventoryTableBody.innerHTML = '';
   let hasLowStock = false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  if (snapshot.empty) {
-    inventoryTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No ingredients found.</td></tr>`;
-    updateInventoryNotification(false);
+  if (ingredientsToRender.length === 0) {
+    inventoryTableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No ingredients match your filters.</td></tr>`;
+    updateInventoryNotification(false); // No items, so no low stock
     return;
   }
   
-  snapshot.forEach(docSnap => {
-    const id = docSnap.id;
-    const ing = docSnap.data();
+  ingredientsToRender.forEach(ing => {
+    const id = ing.id;
     
-    // Calculate current stock in BASE units
-    const currentStockInBase = (ing.stockQuantity || 0) * (ing.conversionFactor || 1);
-    const minStock = ing.minStockThreshold || 0;
+    // --- Get status from helper function ---
+    const { statusDisplay, statusClass, isExpired } = getIngredientStatus(ing);
     
-    const isLowStock = currentStockInBase <= minStock;
-    if (isLowStock) hasLowStock = true;
+    if (statusDisplay === "Low Stock" || statusDisplay === "Out of Stock" || isExpired) {
+        hasLowStock = true;
+    }
 
-    const row = document.createElement('tr');
-    row.style.backgroundColor = isLowStock ? '#fee2e2' : 'transparent';
+    // Format Expiry Date
+    let expiryStr = "N/A";
+    if (ing.expiryDate) {
+        expiryStr = new Date(ing.expiryDate + 'T00:00:00').toLocaleDateString();
+        if (isExpired) {
+             expiryStr = `<span style="color:var(--color-red-600);font-weight:600;">${expiryStr}</span>`;
+        }
+    }
+
+    // Format Last Updated Date
+    let lastUpdatedStr = "N/A";
+    if (ing.lastUpdated && ing.lastUpdated.toDate) {
+        lastUpdatedStr = ing.lastUpdated.toDate().toLocaleDateString();
+    }
     
-    // Display helper function
     const displayStock = formatStockDisplay(ing.stockQuantity, ing.stockUnit, ing.baseUnit, ing.conversionFactor);
 
-row.innerHTML = `
+    const row = document.createElement('tr');
+    if (statusClass === 'status-pending' || statusClass === 'status-blocked') {
+         row.style.backgroundColor = (statusClass === 'status-pending') ? 'var(--color-brown-50)' : '#fee2e2';
+    }
+
+    row.innerHTML = `
       <td>${ing.ingredientId || id}</td>
       <td>${ing.name || '-'}</td>
       <td>${ing.category || '-'}</td>
-      <td style="${isLowStock ? 'color:#dc2626;font-weight:600;' : ''}">
+      <td><span class="status ${statusClass}">${statusDisplay}</span></td>
+      <td style="${(statusClass === 'status-blocked' || statusClass === 'status-pending') ? 'color:var(--color-red-600);font-weight:600;' : ''}">
         ${displayStock}
       </td>
-      <td>${minStock} ${ing.baseUnit}</td>
+      <td>${(ing.minStockThreshold || 0)} ${ing.baseUnit}</td>
+      <td>${expiryStr}</td>
+      <td>${lastUpdatedStr}</td>
       <td>1 ${ing.stockUnit} = ${ing.conversionFactor} ${ing.baseUnit}</td>
-
       <td class="actions-cell">
         <button class="btn-icon btn--icon-edit edit-btn" title="Edit Ingredient">✎</button>
         <button class="btn-icon btn--icon-delete delete-btn" title="Delete Ingredient">🗑</button>
@@ -144,6 +287,7 @@ row.innerHTML = `
     row.querySelector('.delete-btn').addEventListener('click', async () => {
       if (confirm(`Delete "${ing.name}"? This is permanent.`)) {
         await deleteDoc(doc(db, "ingredients", id));
+        // No need to reload, snapshot will update
       }
     });
 
@@ -155,19 +299,11 @@ row.innerHTML = `
 
 // --- Stock Display Helper ---
 function formatStockDisplay(stockQty, stockUnit, baseUnit, conversion) {
-  if (stockUnit === baseUnit) {
-    return `${stockQty.toFixed(2)} ${baseUnit}`;
+  const qty = stockQty || 0;
+  if (stockUnit === baseUnit || !conversion) {
+    return `${qty.toFixed(2)} ${baseUnit || stockUnit || 'units'}`;
   }
-  
-  const wholeUnits = Math.floor(stockQty);
-  const fractionalPart = stockQty - wholeUnits;
-  const remainingBaseUnits = (fractionalPart * conversion).toFixed(0);
-  
-  if (remainingBaseUnits > 0) {
-    return `${wholeUnits} ${stockUnit} + ${remainingBaseUnits} ${baseUnit}`;
-  } else {
-    return `${wholeUnits} ${stockUnit}`;
-  }
+  return `${qty.toFixed(2)} ${stockUnit || 'units'}`;
 }
 
 // --- Update Sidebar Notification ---
@@ -177,14 +313,26 @@ function updateInventoryNotification(hasLowStock) {
   }
 }
 
-// --- Load Inventory (Realtime) ---
+// --- MODIFIED: Load Inventory (Realtime) ---
 function loadInventory() {
   const q = query(productsRef, orderBy("name"));
   onSnapshot(q, (snapshot) => {
-    renderInventoryTable(snapshot);
+    
+    // 1. Update the cache
+    allIngredients = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+    }));
+    
+    // 2. (Re)populate the category filter dropdown
+    populateCategoryFilter();
+
+    // 3. Apply filters and render
+    filterAndRenderInventory();
+
   }, (error) => {
     console.error("❌ Error loading inventory:", error);
-    inventoryTableBody.innerHTML = `<tr><td colspan="7">Error loading inventory.</td></tr>`;
+    inventoryTableBody.innerHTML = `<tr><td colspan="10">Error loading inventory.</td></tr>`;
   });
 }
 
@@ -201,6 +349,7 @@ function loadInventory() {
     baseUnit: baseUnitField.value.trim(),
     conversionFactor: parseFloat(conversionField.value),
     minStockThreshold: parseInt(minStockField.value) || 0,
+    expiryDate: expiryField.value || null,
     lastUpdated: serverTimestamp(),
   };
 
@@ -212,6 +361,9 @@ function loadInventory() {
   if (newData.stockUnit === newData.baseUnit && newData.conversionFactor !== 1) {
       alert("If Stock Unit and Base Unit are the same, Conversion Factor must be 1.");
       return;
+  }
+  if (newData.expiryDate === "") {
+      newData.expiryDate = null;
   }
 
   try {
@@ -228,5 +380,25 @@ function loadInventory() {
   }
 });
 
-// --- Initial Load ---
-document.addEventListener('DOMContentLoaded', loadInventory);
+// --- Initial Load & NEW Event Listeners ---
+document.addEventListener('DOMContentLoaded', () => {
+    loadInventory(); // Main function to load data
+    
+    // Add button listeners
+    addBtn.addEventListener('click', () => openModal());
+    cancelBtn.addEventListener('click', closeModal);
+
+    // --- NEW: Filter Listeners ---
+    inventorySearchName.addEventListener('input', filterAndRenderInventory);
+    inventoryFilterCategory.addEventListener('change', filterAndRenderInventory);
+    inventoryFilterStatus.addEventListener('change', filterAndRenderInventory);
+    inventoryFilterExpiry.addEventListener('change', filterAndRenderInventory);
+    
+    inventoryResetFilters.addEventListener('click', () => {
+        inventorySearchName.value = '';
+        inventoryFilterCategory.value = '';
+        inventoryFilterStatus.value = '';
+        inventoryFilterExpiry.value = '';
+        filterAndRenderInventory(); // Re-run with cleared filters
+    });
+});

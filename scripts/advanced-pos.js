@@ -1,4 +1,3 @@
-
 import { db } from './firebase.js';
 import {
   collection, addDoc, getDocs, onSnapshot, doc,
@@ -14,6 +13,9 @@ const salesRef = collection(db, "sales"); // For COMPLETED orders
 const pendingOrdersRef = collection(db, "pending_orders"); // For KITCHEN QUEUE
 const stockMovementsRef = collection(db, "stock_movements");
 const categoriesRef = doc(db, "settings", "categories");
+// --- NEW: Inventory Categories Reference ---
+const invCategoriesRef = doc(db, "settings", "inventoryCategories");
+
 
 // --- Page Elements ---
 const productGrid = document.getElementById("product-grid");
@@ -39,6 +41,19 @@ const menuCategoryDropdown = document.getElementById("menu-category");
 const newCategoryInput = document.getElementById("new-category-input");
 const menuWaitTimeSelect = document.getElementById("menu-waiting-time");
 
+// --- Variation Elements (Admin) ---
+const variationToggle = document.getElementById("product-variation-toggle");
+const singlePriceWrapper = document.getElementById("single-price-wrapper");
+const variationsWrapper = document.getElementById("variations-wrapper");
+const addVariationBtn = document.getElementById("add-variation-btn");
+const variationListContainer = document.getElementById("product-variations-list");
+
+// --- Variation Choice Modal (POS) ---
+const variationModal = document.getElementById("variation-modal");
+const variationModalTitle = document.getElementById("variation-modal-title");
+const variationOptionsContainer = document.getElementById("variation-options-container");
+const cancelVariationBtn = document.getElementById("cancel-variation-btn");
+
 // --- Customer Info Modal ---
 const customerInfoModal = document.getElementById("customer-info-modal");
 const customerInfoForm = document.getElementById("customer-info-form");
@@ -51,32 +66,38 @@ const orderModalVoidBtn = document.getElementById("order-modal-void-btn");
 const orderModalProgressBtn = document.getElementById("order-modal-progress-btn");
 const orderModalPrintBtn = document.getElementById("order-modal-print-btn");
 
-
 // --- Pending Orders Line ---
 const ordersLine = document.getElementById("orders-line");
+
+// --- Discount Elements ---
+const discountTypeSelect = document.getElementById("discount-type");
+const customDiscountWrapper = document.getElementById("custom-discount-wrapper");
+const customDiscountAmount = document.getElementById("custom-discount-amount");
+const applyDiscountBtn = document.getElementById("apply-discount-btn");
+const cartDiscountEl = document.getElementById("cart-discount");
 
 // --- State Variables ---
 let cart = [];
 let allProducts = [];
-let allIngredientsCache = [];
+let allIngredientsCache = []; // All raw ingredients
+let allInventoryCategories = []; // All inventory categories
 let allRecipesCache = [];
 let productStockStatus = new Map();
-let allCategories = [];
+let allCategories = []; // Menu categories
 let currentCategory = "All";
 let editMode = false;
 let allPendingOrders = [];
 let currentOrderDetails = null;
 let currentImageFile = null;
 let currentImageUrl = null; 
+let currentDiscount = { type: "none", amount: 0 };
 
 // --- Image Preview & File Handling ---
 if (menuImageUpload) {
     menuImageUpload.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (file) {
-            currentImageFile = file; // Set the global file variable
-            
-            // Show preview
+            currentImageFile = file; 
             const reader = new FileReader();
             reader.onload = (event) => {
                 if (menuImagePreview) {
@@ -86,7 +107,6 @@ if (menuImageUpload) {
             };
             reader.readAsDataURL(file);
         } else {
-            // No file selected
             currentImageFile = null;
             if (menuImagePreview) {
                 menuImagePreview.classList.add("hidden");
@@ -95,29 +115,19 @@ if (menuImageUpload) {
         }
     });
 }
-// --- NEW CLOUDINARY UPLOAD FUNCTION ---
+// --- CLOUDINARY UPLOAD FUNCTION ---
 async function uploadToCloudinary(file) {
-    // --- ⬇️ ⬇️ VITAL: REPLACE THESE WITH YOUR OWN ⬇️ ⬇️ ---
     const CLOUD_NAME = "dofyjwhlu"; 
     const UPLOAD_PRESET = "cafesync";
-    // --- ⬆️ ⬆️ VITAL: REPLACE THESE WITH YOUR OWN ⬆️ ⬆️ ---
-
     const URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", UPLOAD_PRESET);
-
     try {
-        const response = await fetch(URL, {
-            method: "POST",
-            body: formData
-        });
-        if (!response.ok) {
-            throw new Error(`Cloudinary upload failed with status: ${response.status}`);
-        }
+        const response = await fetch(URL, { method: "POST", body: formData });
+        if (!response.ok) throw new Error(`Cloudinary upload failed`);
         const data = await response.json();
-        return data.secure_url; // This is the URL to save to Firestore
+        return data.secure_url;
     } catch (error) {
         console.error("Error uploading to Cloudinary:", error);
         throw error;
@@ -135,16 +145,12 @@ async function loadCategories() {
       allCategories = [];
     }
     allCategories.sort();
-    
     renderCategoryTabs();
-    
-    // Update the modal dropdown
     if (menuCategoryDropdown) {
         menuCategoryDropdown.innerHTML = `<option value="">Select category...</option>`;
         allCategories.forEach(cat => menuCategoryDropdown.add(new Option(cat, cat)));
         menuCategoryDropdown.add(new Option("+ Create New Category...", "__new__"));
     }
-    
   } catch (error) {
     console.error("Error loading categories:", error);
   }
@@ -155,7 +161,7 @@ async function addCategoryIfNew(categoryName) {
     allCategories.push(categoryName);
     allCategories.sort();
     await setDoc(categoriesRef, { list: allCategories });
-    loadCategories(); // Reload all category UI
+    loadCategories();
   }
 }
 
@@ -167,14 +173,27 @@ if (menuCategoryDropdown) {
       } else {
         newCategoryInput.style.display = "none";
         newCategoryInput.value = "";
-
       }
     });
 }
 
 // --- Recipe & Ingredient Filtering ---
+
+// --- NEW: Load Inventory Categories ---
+async function loadInventoryCategories() {
+    try {
+        const docSnap = await getDoc(invCategoriesRef);
+        if (docSnap.exists()) {
+            allInventoryCategories = docSnap.data().list.sort() || [];
+        } else {
+            allInventoryCategories = [];
+        }
+    } catch (error) {
+        console.error("Error loading inventory categories:", error);
+    }
+}
+
 async function loadAllIngredientsCache() {
-  // This function is now called by the listener 'listenForIngredients'
   try {
     const snapshot = await getDocs(ingredientsRef);
     allIngredientsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -183,53 +202,103 @@ async function loadAllIngredientsCache() {
   }
 }
 
-function updateIngredientCacheForRecipeModal(selectedCategory) {
-  if (!recipeList) return;
-  
-  let filteredIngredients;
-  
-  if (!selectedCategory || selectedCategory === "") {
-    // If "All" is selected, show all ingredients
-    filteredIngredients = allIngredientsCache;
-  } else {
-    // Filter by the selected inventory category
-    filteredIngredients = allIngredientsCache.filter(ing => ing.category === selectedCategory);
-  }
-  
-  recipeList.innerHTML = ""; // Clear existing rows
-  if (addIngredientBtn) addIngredientBtn.disabled = false;
-  
-  if (filteredIngredients.length === 0) {
-     if(selectedCategory) {
-        recipeList.innerHTML = `<p style='color: #888;'>No ingredients found in "${selectedCategory}" category.</p>`;
-     } else {
-        recipeList.innerHTML = `<p style='color: #888;'>No ingredients in inventory. Add some in the Inventory tab.</p>`;
-     }
-  }
-  
-  // Set the "Add" button to use the currently filtered list
-  if (addIngredientBtn) addIngredientBtn.onclick = () => addIngredientRow(filteredIngredients);
-}
+// --- REMOVED: updateIngredientCacheForRecipeModal() function is no longer needed ---
 
-function addIngredientRow(filteredIngredients) {
+// --- MODIFIED: addIngredientRowUI ---
+// This function now builds the row with its own internal filters
+function addIngredientRowUI(ingredient = {}) {
   const row = document.createElement("div");
   row.className = "ingredient-row";
-  const selectOptions = filteredIngredients.map(ing => `<option value="${ing.id}" data-base-unit="${ing.baseUnit}">${ing.name} (${ing.baseUnit})</option>`).join('');
-  row.innerHTML = `
-    <select class="ingredient-id form-control" required><option value="">Select Ingredient...</option>${selectOptions}</select>
-    <input type="number" class="ingredient-qty form-control" placeholder="Qty" required step="any" min="0">
-    <input type="text" class="ingredient-unit form-control" placeholder="Unit (g, ml)" required readonly>
-    <button type="button" class="btn btn--secondary remove-ingredient">X</button>
-  `;
-  row.querySelector(".remove-ingredient").addEventListener("click", () => row.remove());
-  row.querySelector(".ingredient-id").addEventListener("change", (e) => {
-    const baseUnit = e.target.options[e.target.selectedIndex].dataset.baseUnit;
-    row.querySelector(".ingredient-unit").value = baseUnit || '';
+
+  // 1. Create Category Dropdown
+  const categorySelect = document.createElement("select");
+  categorySelect.className = "inv-category-filter form-control";
+  categorySelect.innerHTML = `<option value="">All Categories</option>`;
+  allInventoryCategories.forEach(cat => {
+      categorySelect.add(new Option(cat, cat));
   });
+
+  // 2. Create Ingredient Dropdown
+  const ingredientSelect = document.createElement("select");
+  ingredientSelect.className = "ingredient-id form-control";
+  ingredientSelect.required = true;
+  
+  // 3. Create Qty, Unit, and Delete Button
+  const qtyInput = document.createElement("input");
+  qtyInput.type = "number";
+  qtyInput.className = "ingredient-qty form-control";
+  qtyInput.placeholder = "Qty";
+  qtyInput.step = "any";
+  qtyInput.min = "0";
+  qtyInput.required = true;
+
+  const unitInput = document.createElement("input");
+  unitInput.type = "text";
+  unitInput.className = "ingredient-unit form-control";
+  unitInput.placeholder = "Unit";
+  unitInput.readOnly = true;
+  unitInput.required = true;
+  
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "btn btn--secondary remove-ingredient";
+  deleteBtn.textContent = "X";
+  deleteBtn.onclick = () => row.remove();
+
+  // 4. Function to populate ingredients based on category
+  const populateIngredients = (category) => {
+      let filtered = (category)
+          ? allIngredientsCache.filter(ing => ing.category === category)
+          : allIngredientsCache; // "All Categories"
+      
+      ingredientSelect.innerHTML = `<option value="">Select Ingredient...</option>`;
+      filtered.forEach(ing => {
+          ingredientSelect.add(new Option(`${ing.name} (${ing.baseUnit})`, ing.id));
+          // Store baseUnit on the option
+          ingredientSelect.options[ingredientSelect.options.length - 1].dataset.baseUnit = ing.baseUnit;
+      });
+  };
+
+  // 5. Add Event Listeners
+  categorySelect.addEventListener("change", () => {
+      populateIngredients(categorySelect.value);
+      unitInput.value = ""; // Clear unit when category changes
+  });
+
+  ingredientSelect.addEventListener("change", () => {
+      const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
+      unitInput.value = selectedOption.dataset.baseUnit || "";
+  });
+
+  // 6. Append all elements
+  row.appendChild(categorySelect);
+  row.appendChild(ingredientSelect);
+  row.appendChild(qtyInput);
+  row.appendChild(unitInput);
+  row.appendChild(deleteBtn);
   recipeList.appendChild(row);
+
+  // 7. Pre-fill logic (for editing)
+  if (ingredient.ingredientId) {
+      const fullIngredient = allIngredientsCache.find(ing => ing.id === ingredient.ingredientId);
+      if (fullIngredient) {
+          // Set category and trigger ingredient population
+          categorySelect.value = fullIngredient.category;
+          populateIngredients(fullIngredient.category);
+          
+          // Set selected ingredient, qty, and unit
+          ingredientSelect.value = ingredient.ingredientId;
+          qtyInput.value = ingredient.qtyPerProduct;
+          unitInput.value = ingredient.unitUsed;
+      }
+  } else {
+      // If adding new row, just populate with all ingredients
+      populateIngredients("");
+  }
 }
 
-// --- Save Product and Recipe (NOW WITH CLOUDINARY) ---
+
+// --- Save Product, Variations, and Recipe ---
 menuForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   
@@ -239,29 +308,43 @@ menuForm.addEventListener("submit", async (e) => {
   let productCategory = menuCategoryDropdown.value;
   if (productCategory === "__new__") {
     productCategory = newCategoryInput.value.trim();
-    if (productCategory) {
-      await addCategoryIfNew(productCategory);
-    } else {
-      alert("Please enter a name for the new category.");
-      return;
-    }
+    if (productCategory) await addCategoryIfNew(productCategory);
+    else { alert("Please enter a name for the new category."); return; }
   }
 
   const productData = {
     name: document.getElementById("menu-name").value,
-    price: parseFloat(document.getElementById("menu-price").value),
     category: productCategory,
     waitingTime: menuWaitTimeSelect.value,
     isVisible: true,
-    imageUrl: currentImageUrl || null, // Start with the existing URL
-    // We no longer need 'imagePath'
+    imageUrl: currentImageUrl || null,
+    price: 0, 
+    variations: []
   };
   
-  if (!productData.waitingTime) {
-      alert("Please select an average waiting time."); return;
+  if (!productData.waitingTime) { alert("Please select an average waiting time."); return; }
+
+  if (variationToggle.checked) {
+      const variationRows = variationListContainer.querySelectorAll(".variation-row");
+      if (variationRows.length === 0) { alert("Please add at least one product variation."); return; }
+      
+      let variationError = false;
+      variationRows.forEach(row => {
+          const name = row.querySelector('input[placeholder="Name"]').value;
+          const price = parseFloat(row.querySelector('input[placeholder="Price"]').value);
+          if (!name || isNaN(price) || price <= 0) variationError = true;
+          productData.variations.push({ name: name, price: price });
+      });
+      if (variationError) { alert("Please check your variations. All must have a name and a valid price."); return; }
+      productData.price = productData.variations[0].price;
+
+  } else {
+      const singlePrice = parseFloat(document.getElementById("menu-price").value);
+      if (isNaN(singlePrice) || singlePrice <= 0) { alert("Please enter a valid price for the product."); return; }
+      productData.price = singlePrice;
+      productData.variations = [];
   }
   
-  // ... (Recipe data logic remains the same) ...
   const recipeData = [];
   const ingredientRows = recipeList.querySelectorAll(".ingredient-row");
   if (ingredientRows.length === 0) { alert("A product must have at least one ingredient..."); return; }
@@ -271,33 +354,20 @@ menuForm.addEventListener("submit", async (e) => {
     const qty = parseFloat(row.querySelector(".ingredient-qty").value);
     const unit = row.querySelector(".ingredient-unit").value;
     if (!unit || qty <= 0 || !ingredientId) { recipeError = true; }
-    recipeData.push({
-      productId: productId,
-      ingredientId: ingredientId,
-      qtyPerProduct: qty,
-      unitUsed: unit
-    });
+    recipeData.push({ productId: productId, ingredientId: ingredientId, qtyPerProduct: qty, unitUsed: unit });
   });
   if (recipeError) { alert("Please check your recipe..."); return; }
   
-  // --- NEW UPLOAD LOGIC ---
   try {
     const saveBtn = menuForm.querySelector('button[type="submit"]');
-
-    // Step 1: Upload Image (if a new one was selected)
     if (currentImageFile) {
         saveBtn.disabled = true;
         saveBtn.textContent = "Uploading Image...";
-
-        // --- Use Cloudinary function ---
         const downloadURL = await uploadToCloudinary(currentImageFile);
         productData.imageUrl = downloadURL;
-        // --- End Cloudinary logic ---
-        
         saveBtn.textContent = "Saving Product...";
     }
 
-    // Step 2: Save Product and Recipe to Firestore
     const batch = writeBatch(db);
     const productDocRef = doc(db, "products", productId);
     batch.set(productDocRef, productData, { merge: true });
@@ -314,7 +384,6 @@ menuForm.addEventListener("submit", async (e) => {
     });
 
     await batch.commit();
-    
     alert(`Product ${isEditing ? 'updated' : 'saved'} successfully!`);
     closeMenuModal();
   
@@ -322,7 +391,6 @@ menuForm.addEventListener("submit", async (e) => {
     console.error("Error saving product:", error);
     alert(`Failed to save product: ${error.message}`);
   } finally {
-    // Re-enable button
     const saveBtn = menuForm.querySelector('button[type="submit"]');
     if (saveBtn) {
         saveBtn.disabled = false;
@@ -336,49 +404,55 @@ function closeMenuModal() {
     menuModal.style.display = "none";
     if (menuForm) menuForm.reset();
     if (recipeList) recipeList.innerHTML = "";
+    if (variationListContainer) variationListContainer.innerHTML = "";
     if (document.getElementById("menu-product-id")) document.getElementById("menu-product-id").value = "";
     if (newCategoryInput) newCategoryInput.style.display = "none";
     if (addIngredientBtn) addIngredientBtn.disabled = true;
 
-    // --- ADD THESE LINES ---
+    if (variationToggle) variationToggle.checked = false;
+    if (singlePriceWrapper) singlePriceWrapper.classList.remove("hidden");
+    if (variationsWrapper) variationsWrapper.classList.add("hidden");
+
     if (menuImagePreview) {
         menuImagePreview.src = "";
         menuImagePreview.classList.add("hidden");
     }
     currentImageFile = null;
     currentImageUrl = null;
-    // --- END OF ADDITIONS ---
   }
 }
 
+// --- MODIFIED: addMenuBtn listener ---
 if (addMenuBtn) {
-    addMenuBtn.addEventListener("click", () => {
-        closeMenuModal();
-        loadCategories(); // Load menu categories
-        loadAllIngredientsCache().then(() => { // Load ingredients
-            // After ingredients are loaded, populate the filter
-            updateIngredientCacheForRecipeModal(""); // Show "All" by default
-        });
+    addMenuBtn.addEventListener("click", async () => {
+        closeMenuModal(); // Resets form to default
+        await loadCategories();
+        await loadInventoryCategories(); // <-- NEW: Load inv categories
+        await loadAllIngredientsCache();
+        if (addIngredientBtn) addIngredientBtn.disabled = false; // <-- NEW: Enable add btn
         if (menuModal) menuModal.style.display = "flex";
     });
 }
 if (cancelMenuBtn) {
     cancelMenuBtn.addEventListener("click", closeMenuModal);
 }
+// --- NEW: Add ingredient button (standalone) ---
+if (addIngredientBtn) {
+    addIngredientBtn.addEventListener("click", () => {
+        addIngredientRowUI(); // Adds a new blank row
+    });
+}
 
 // --- Edit Mode Toggle ---
 if (editModeBtn) {
     editModeBtn.addEventListener("click", () => {
-      editMode = !editMode; // Toggle the global editMode variable
+      editMode = !editMode;
       editModeBtn.textContent = editMode ? 'Exit Edit Mode' : 'Edit Menu';
       editModeBtn.classList.toggle('btn--danger', editMode);
-
-      // Hide 'Add Menu Item' button when in edit mode to avoid confusion
       if (addMenuBtn) {
         addMenuBtn.style.display = editMode ? 'none' : 'block';
       }
-
-      renderProducts(); // Re-render the grid to show/hide edit controls
+      renderProducts();
     });
 }
 
@@ -402,9 +476,7 @@ function renderCategoryTabs() {
   });
 }
 
-// --- Data Listeners (Fix for doubled items) ---
-
-// 1. Listen to Products
+// --- Data Listeners ---
 function listenForProducts() {
   const q = query(productsRef, orderBy("category"), orderBy("name"));
   onSnapshot(q, (snapshot) => {
@@ -412,8 +484,6 @@ function listenForProducts() {
     updateAllProductStockStatusAndRender();
   }, (error) => console.error("Error listening to products:", error));
 }
-
-// 2. Listen to Ingredients
 function listenForIngredients() {
   const qIngredients = query(ingredientsRef, orderBy("name"));
   onSnapshot(qIngredients, (snapshot) => {
@@ -421,8 +491,6 @@ function listenForIngredients() {
     updateAllProductStockStatusAndRender();
   }, (error) => console.error("Error listening to ingredients:", error));
 }
-  
-// 3. Listen to Recipes
 function listenForRecipes() {
   const qRecipes = query(recipesRef);
   onSnapshot(qRecipes, (snapshot) => {
@@ -430,82 +498,55 @@ function listenForRecipes() {
     updateAllProductStockStatusAndRender();
   }, (error) => console.error("Error listening to recipes:", error));
 }
-
-// 4. Main calculation and render function
 function updateAllProductStockStatusAndRender() {
   if (allIngredientsCache.length === 0 || allRecipesCache.length === 0 || allProducts.length === 0) {
-    // Don't run until all three caches are populated
     return;
   }
-  
   const ingredientStockMap = new Map();
   allIngredientsCache.forEach(ing => {
     const currentStockInBase = (ing.stockQuantity || 0) * (ing.conversionFactor || 1);
-    ingredientStockMap.set(ing.id, {
-        stock: currentStockInBase,
-        minStock: ing.minStockThreshold || 0
-    });
+    ingredientStockMap.set(ing.id, { stock: currentStockInBase, minStock: ing.minStockThreshold || 0 });
   });
-
   productStockStatus.clear();
-
   for (const product of allProducts) {
     const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
-    let status = "in-stock"; // Default
-
+    let status = "in-stock";
     if (productRecipes.length === 0) {
-      status = "out-of-stock"; // No recipe = out of stock
+      status = "out-of-stock";
     } else {
       for (const recipe of productRecipes) {
         const ingredient = ingredientStockMap.get(recipe.ingredientId);
         const neededQty = parseFloat(recipe.qtyPerProduct);
-
-        if (!ingredient) {
-          status = "out-of-stock"; // Ingredient missing
-          break;
-        }
-        
-        if (ingredient.stock <= 0 || ingredient.stock < neededQty) {
-          status = "out-of-stock"; // Not enough for one item
-          break;
-        }
-
-        if (ingredient.stock <= ingredient.minStock) {
-          status = "low-stock"; // Mark as low, but keep checking
-        }
+        if (!ingredient) { status = "out-of-stock"; break; }
+        if (ingredient.stock <= 0 || ingredient.stock < neededQty) { status = "out-of-stock"; break; }
+        if (ingredient.stock <= ingredient.minStock) { status = "low-stock"; }
       }
     }
     productStockStatus.set(product.id, status);
   }
-  
-  renderProducts(); // Re-render POS grid with new stock info
-  loadCategories(); // Re-render category tabs
+  renderProducts();
+  loadCategories();
 }
 
 // --- Render Products to POS Grid ---
 function renderProducts() {
   if (!productGrid) return;
-  
-  productGrid.innerHTML = ""; // Clear grid
-
+  productGrid.innerHTML = "";
   let productsToRender = allProducts;
-  if (!editMode) { // <--- THIS IS THE FIX (changed to 'editMode')
+  if (!editMode) {
     productsToRender = allProducts.filter(p => p.isVisible === true);
   }
-
   if (currentCategory !== "All") {
     productsToRender = productsToRender.filter(p => p.category === currentCategory);
   }
-
   if (productsToRender.length === 0) {
     if (currentCategory === "All" && allProducts.length === 0) {
-        productGrid.innerHTML = "<p>Loading products...</p>"; // Initial state
+        productGrid.innerHTML = "<p>Loading products...</p>";
     } else {
         productGrid.innerHTML = `<p>No products found in "${currentCategory}".</p>`;
     }
     return;
   }
-  
   let currentHeader = "";
   productsToRender.forEach(product => {
     if (currentCategory === "All" && product.category !== currentHeader) {
@@ -525,7 +566,6 @@ function createProductCard(product) {
   card.dataset.id = product.id;
   if (!product.isVisible) card.classList.add("is-hidden");
   
-  // --- ADD IMAGE ---
   if (product.imageUrl) {
     const img = document.createElement("img");
     img.src = product.imageUrl;
@@ -534,17 +574,30 @@ function createProductCard(product) {
     card.appendChild(img);
   }
   
-  // Create a container for the info
   const infoDiv = document.createElement("div");
   infoDiv.className = "product-card-info";
+
+  let priceDisplay = "";
+  if (product.variations && product.variations.length > 0) {
+      const prices = product.variations.map(v => v.price);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      if (minPrice === maxPrice) {
+          priceDisplay = `₱${minPrice.toFixed(2)}`;
+      } else {
+          priceDisplay = `₱${minPrice.toFixed(2)} - ₱${maxPrice.toFixed(2)}`;
+      }
+  } else {
+      priceDisplay = `₱${product.price.toFixed(2)}`;
+  }
+
   infoDiv.innerHTML = `
     <div class="product-name">${product.name}</div>
     <div class="product-category">${product.category}</div>
-    <div class="product-price">₱${product.price.toFixed(2)}</div>
+    <div class="product-price">${priceDisplay}</div>
   `;
   card.appendChild(infoDiv);
 
-  // --- ADD STOCK LABEL LOGIC ---
   const stockStatus = productStockStatus.get(product.id);
   if (stockStatus === "low-stock" || stockStatus === "out-of-stock") {
     const label = document.createElement("div");
@@ -553,53 +606,34 @@ function createProductCard(product) {
     card.appendChild(label);
   }
   
-  // --- NEW EDIT/HIDE BUTTONS ---
-  if (editMode) { //
+  if (editMode) {
     const controlsDiv = document.createElement("div");
     controlsDiv.className = "product-card-edit-controls";
-
-    // 1. Edit Button (Pencil)
     const editBtn = document.createElement("button");
     editBtn.className = "product-edit-btn";
-    editBtn.innerHTML = "&#9998;"; // Pencil icon
+    editBtn.innerHTML = "&#9998;";
     editBtn.title = "Edit Item";
-    editBtn.onclick = (e) => {
-        e.stopPropagation(); // Stop click from bubbling to card
-        openEditModal(product);
-    };
+    editBtn.onclick = (e) => { e.stopPropagation(); openEditModal(product); };
     controlsDiv.appendChild(editBtn);
-
-    // 2. Visibility Toggle Button
     const toggleBtn = document.createElement("button");
     toggleBtn.className = "product-toggle-btn" + (product.isVisible ? " is-visible" : "");
     toggleBtn.innerHTML = product.isVisible ? "✓" : "×";
     toggleBtn.title = product.isVisible ? "Click to Hide" : "Click to Show";
-    toggleBtn.onclick = (e) => { 
-        e.stopPropagation();
-        handleToggleVisibility(product.id, product.isVisible); 
-    };
+    toggleBtn.onclick = (e) => { e.stopPropagation(); handleToggleVisibility(product.id, product.isVisible); };
     controlsDiv.appendChild(toggleBtn);
-    
     card.appendChild(controlsDiv);
-
-    // 3. Delete Button (Trash Can)
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "product-delete-btn";
-    deleteBtn.innerHTML = "&#128465;"; // Trash can icon
+    deleteBtn.innerHTML = "&#128465;";
     deleteBtn.title = "Delete Item Permanently";
-    deleteBtn.onclick = (e) => { 
-        e.stopPropagation();
-        handleDeleteMenuItem(product); // Call the new validation function
-    };
+    deleteBtn.onclick = (e) => { e.stopPropagation(); handleDeleteMenuItem(product); };
     controlsDiv.appendChild(deleteBtn);
-
   } else {
-    // Normal mode: check stock and add to cart
     if (stockStatus === "out-of-stock") {
       card.style.cursor = "not-allowed";
       card.style.opacity = "0.6";
     } else {
-      card.onclick = () => addToCart(product);
+      card.onclick = () => handleProductClick(product);
     }
   }
   return card;
@@ -608,32 +642,42 @@ function createProductCard(product) {
 async function handleToggleVisibility(productId, currentVisibility) {
   try {
     await updateDoc(doc(db, "products", productId), { isVisible: !currentVisibility });
-    // No need to call renderProducts(), listener will handle it.
   } catch (error) {
     console.error("Error toggling visibility:", error);
   }
 }
+
+// --- MODIFIED: openEditModal ---
 async function openEditModal(product) {
-  // 1. Set modal to "Edit" mode and show it
   if (menuModal) menuModal.style.display = "flex";
   document.getElementById("menu-modal-title").textContent = "Edit Menu Product";
   menuForm.querySelector('button[type="submit"]').textContent = "Update Product";
 
-  // 2. Load fresh menu category and ingredient data
   await loadCategories();
+  await loadInventoryCategories(); // <-- NEW
   await loadAllIngredientsCache();
 
-  // 3. Populate product fields
   document.getElementById("menu-product-id").value = product.id;
   document.getElementById("menu-name").value = product.name;
-  document.getElementById("menu-price").value = product.price;
   document.getElementById("menu-waiting-time").value = product.waitingTime;
-  
-  // 4. Set menu category
-  const categoryDropdown = document.getElementById("menu-category");
-  categoryDropdown.value = product.category;
+  document.getElementById("menu-category").value = product.category;
 
-  // 5. Populate Image Preview
+  if (product.variations && product.variations.length > 0) {
+      variationToggle.checked = true;
+      singlePriceWrapper.classList.add("hidden");
+      variationsWrapper.classList.remove("hidden");
+      variationListContainer.innerHTML = ""; 
+      product.variations.forEach(v => {
+          addVariationRowUI(v);
+      });
+  } else {
+      variationToggle.checked = false;
+      singlePriceWrapper.classList.remove("hidden");
+      variationsWrapper.classList.add("hidden");
+      document.getElementById("menu-price").value = product.price;
+      variationListContainer.innerHTML = "";
+  }
+
   currentImageFile = null; 
   currentImageUrl = product.imageUrl || null; 
   if (menuImagePreview) {
@@ -646,39 +690,68 @@ async function openEditModal(product) {
       }
   }
 
-  // 6. Populate the recipe list
   if (recipeList) {
-      recipeList.innerHTML = ""; // Clear list
-      
-      // Find all recipe items for THIS product
+      recipeList.innerHTML = "";
       const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
-      
-      // We show ALL ingredients by default in edit mode
-      updateIngredientCacheForRecipeModal(""); 
       if (addIngredientBtn) addIngredientBtn.disabled = false;
-
-      // Add a pre-filled row for each recipe item
+      // --- MODIFIED: Loop to call new addIngredientRowUI ---
       for (const recipeItem of productRecipes) {
-          // We pass ALL ingredients to addIngredientRow
-          addIngredientRow(allIngredientsCache); 
-          const newRow = recipeList.lastChild;
-          
-          if (newRow) {
-              newRow.querySelector(".ingredient-id").value = recipeItem.ingredientId;
-              newRow.querySelector(".ingredient-qty").value = recipeItem.qtyPerProduct;
-              newRow.querySelector(".ingredient-unit").value = recipeItem.unitUsed;
-          }
+          addIngredientRowUI(recipeItem); 
       }
   }
 }
 
 // --- Cart Functions ---
-function addToCart(product) {
-  const existingItem = cart.find(item => item.id === product.id);
+
+function handleProductClick(product) {
+    if (product.variations && product.variations.length > 0) {
+        openVariationModal(product);
+    } else {
+        addItemToCart(product);
+    }
+}
+
+function openVariationModal(product) {
+    if (!variationModal || !variationModalTitle || !variationOptionsContainer) return;
+    variationModalTitle.textContent = `Select ${product.name} Size`;
+    variationOptionsContainer.innerHTML = ""; 
+    product.variations.forEach(variation => {
+        const button = document.createElement("button");
+        button.className = "variation-btn";
+        button.innerHTML = `
+            ${variation.name}
+            <span class="variation-price">₱${variation.price.toFixed(2)}</span>
+        `;
+        button.onclick = () => addVariationToCart(product, variation);
+        variationOptionsContainer.appendChild(button);
+    });
+    variationModal.style.display = "flex";
+}
+
+if (cancelVariationBtn) {
+    cancelVariationBtn.addEventListener("click", () => {
+        if (variationModal) variationModal.style.display = "none";
+    });
+}
+
+function addVariationToCart(product, variation) {
+    const itemToAdd = {
+        ...product,
+        id: `${product.id}-${variation.name}`, 
+        name: `${product.name} - ${variation.name}`,
+        price: variation.price,
+        variations: []
+    };
+    addItemToCart(itemToAdd);
+    if (variationModal) variationModal.style.display = "none";
+}
+
+function addItemToCart(item) {
+  const existingItem = cart.find(i => i.id === item.id);
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    cart.push({ ...product, quantity: 1, waitingTime: product.waitingTime });
+    cart.push({ ...item, quantity: 1 });
   }
   updateCartDisplay();
 }
@@ -719,9 +792,19 @@ function updateCartQuantity(productId, change) {
 
 function updateCartTotals() {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = subtotal * 0.12;
-  const total = subtotal + tax;
+  let discountAmount = 0;
+  if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+    discountAmount = subtotal * 0.20;
+  } else if (currentDiscount.type === "Custom") {
+    discountAmount = currentDiscount.amount;
+  }
+  if (discountAmount > subtotal) {
+      discountAmount = subtotal;
+  }
+  const tax = (subtotal - discountAmount) * 0.12;
+  const total = (subtotal - discountAmount) + tax;
   if (subtotalEl) subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
+  if (cartDiscountEl) cartDiscountEl.textContent = `(₱${discountAmount.toFixed(2)})`;
   if (taxEl) taxEl.textContent = `₱${tax.toFixed(2)}`;
   if (totalEl) totalEl.textContent = `₱${total.toFixed(2)}`;
 }
@@ -737,41 +820,41 @@ if (cartItemsContainer) {
 if (clearCartBtn) {
     clearCartBtn.addEventListener("click", () => {
       if (confirm("Clear the entire cart?")) {
-        cart = []; updateCartDisplay();
+        cart = [];
+        currentDiscount = { type: "none", amount: 0 };
+        if (discountTypeSelect) discountTypeSelect.value = "none";
+        if (customDiscountWrapper) customDiscountWrapper.classList.add("hidden");
+        if (customDiscountAmount) customDiscountAmount.value = "";
+        updateCartDisplay();
       }
     });
 }
 
 // --- Pending Order System (Cashier) ---
 
-// 1. Listen for clicks on "Process Payment" (Cashier Modal)
 if (processPaymentBtn) {
     processPaymentBtn.addEventListener("click", () => {
       if (cart.length === 0) {
         alert("Cart is empty."); return;
       }
-      
-      // --- NEW LOGIC: Calculate total and show modal ---
+      updateCartTotals(); 
       const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const tax = subtotal * 0.12;
-      const total = subtotal + tax;
-
-      // Show the total in the customer modal
+      let discountAmount = currentDiscount.amount;
+      if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+          discountAmount = subtotal * 0.20;
+      }
+      if (discountAmount > subtotal) discountAmount = subtotal;
+      const total = (subtotal - discountAmount) + ((subtotal - discountAmount) * 0.12);
       const customerModalTotal = document.getElementById("customer-modal-total");
       if (customerModalTotal) customerModalTotal.textContent = `₱${total.toFixed(2)}`;
-
-      // --- ADDED: Setup payment listeners ---
       const paymentMethodRadios = document.querySelectorAll('#customer-info-modal input[name="paymentMethod"]');
       const cashDetails = document.getElementById("payment-cash-details");
       const paymentAmountInput = document.getElementById("payment-amount");
       const changeDisplay = document.getElementById("payment-change-display");
-
-      // Real-time change calculator
       if (paymentAmountInput) {
           paymentAmountInput.oninput = () => {
             const paid = parseFloat(paymentAmountInput.value) || 0;
             const change = paid - total;
-            
             if (change >= 0) {
               changeDisplay.textContent = `₱${change.toFixed(2)}`;
               changeDisplay.style.color = "var(--color-green-700)";
@@ -781,24 +864,34 @@ if (processPaymentBtn) {
             }
           };
       }
-      
-      // Toggle cash/online
       paymentMethodRadios.forEach(radio => {
         radio.onchange = () => {
-          if (cashDetails) cashDetails.classList.toggle('hidden', radio.value !== 'Cash');
+          if (radio.value === 'Cash') {
+            if (paymentAmountInput) {
+                paymentAmountInput.disabled = false;
+                paymentAmountInput.value = '';
+            }
+            if (changeDisplay) changeDisplay.textContent = '₱0.00';
+          } else {
+            if (paymentAmountInput) {
+                paymentAmountInput.disabled = true;
+                paymentAmountInput.value = '';
+            }
+            if (changeDisplay) changeDisplay.textContent = '₱0.00';
+          }
         };
       });
-
-      // Reset form
       const payCashRadio = document.getElementById('pay-cash');
       if (payCashRadio) payCashRadio.checked = true;
       if (cashDetails) cashDetails.classList.remove('hidden');
-      if (paymentAmountInput) paymentAmountInput.value = '';
+      if (paymentAmountInput) {
+          paymentAmountInput.disabled = false;
+          paymentAmountInput.value = '';
+      }
       if (changeDisplay) {
           changeDisplay.textContent = '₱0.00';
           changeDisplay.style.color = "var(--color-text)";
       }
-      
       if (customerInfoModal) customerInfoModal.style.display = "flex";
       if (customerInfoForm) customerInfoForm.reset();
     });
@@ -809,63 +902,52 @@ if (cancelCustomerInfoBtn) {
     });
 }
 
-// 2. Handle the customer info form submission
 if (customerInfoForm) {
     customerInfoForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      
       const customerName = document.getElementById("customer-name").value;
       const orderType = document.getElementById("order-type").value;
-
-      // --- NEW PAYMENT VALIDATION ---
       const paymentMethodRadio = document.querySelector('#customer-info-modal input[name="paymentMethod"]:checked');
-      if (!paymentMethodRadio) {
-          alert("Please select a payment method.");
-          return;
-      }
+      if (!paymentMethodRadio) { alert("Please select a payment method."); return; }
       const paymentMethod = paymentMethodRadio.value;
       const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const tax = subtotal * 0.12;
-      const total = subtotal + tax;
-      
+      let discountAmount = 0;
+      if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+        discountAmount = subtotal * 0.20;
+      } else if (currentDiscount.type === "Custom") {
+        discountAmount = currentDiscount.amount;
+      }
+      if (discountAmount > subtotal) discountAmount = subtotal;
+      const tax = (subtotal - discountAmount) * 0.12;
+      const total = (subtotal - discountAmount) + tax;
       let paymentAmount = 0;
       let change = 0;
-
       if (paymentMethod === 'Cash') {
         paymentAmount = parseFloat(document.getElementById('payment-amount').value);
         if (isNaN(paymentAmount) || paymentAmount < total) {
-          alert("Payment amount is insufficient or invalid.");
-          return; // Stop submission
+          alert("Payment amount is insufficient or invalid."); return;
         }
         change = paymentAmount - total;
       } else {
-        // (Online payment)
         paymentAmount = total;
         change = 0;
       }
-      
       const paymentDetails = {
         paymentMethod,
         paymentAmount,
         change,
-        processedBy: "Cashier" // TODO: Get real employee name
+        processedBy: document.querySelector(".employee-name").textContent || "Cashier"
       };
-      // --- END VALIDATION ---
-
       if (customerInfoModal) customerInfoModal.style.display = "none";
-      
-      // Process the sale *with* payment details
-      processSale(customerName, orderType, total, subtotal, tax, paymentDetails);
+      processSale(customerName, orderType, total, subtotal, tax, paymentDetails, currentDiscount);
     });
 }
 
-// 3. Main function to process the sale and create a pending order
-async function processSale(customerName, orderType, totalAmount, subtotal, tax, paymentDetails) {
+async function processSale(customerName, orderType, totalAmount, subtotal, tax, paymentDetails, discountInfo) {
   if (processPaymentBtn) {
     processPaymentBtn.disabled = true;
     processPaymentBtn.textContent = "Processing...";
   }
-  
   const getAvgWaitTime = (cart) => {
     let maxTime = 0;
     let waitCategory = "short";
@@ -877,13 +959,10 @@ async function processSale(customerName, orderType, totalAmount, subtotal, tax, 
     if (maxTime === 2) waitCategory = "long";
     return waitCategory;
   };
-  
   const avgWaitTime = getAvgWaitTime(cart);
-
   try {
     const orderRef = doc(collection(db, "pending_orders"));
     const orderId = orderRef.id.substring(0, 4).toUpperCase();
-    
     await setDoc(orderRef, { 
       orderId: orderId,
       customerName: customerName,
@@ -894,9 +973,11 @@ async function processSale(customerName, orderType, totalAmount, subtotal, tax, 
       totalAmount: totalAmount,
       subtotal: subtotal,
       tax: tax,
-      ...paymentDetails, // Add payment details to the order
+      discountType: discountInfo.type,
+      discountAmount: discountInfo.amount,
+      ...paymentDetails,
       items: cart.map(item => ({
-        productId: item.id,
+        productId: item.id.split('-')[0],
         name: item.name,
         quantity: item.quantity,
         pricePerItem: item.price,
@@ -904,9 +985,12 @@ async function processSale(customerName, orderType, totalAmount, subtotal, tax, 
         isDone: false
       }))
     });
-    
     alert("Order created successfully! Sent to kitchen.");
     cart = [];
+    currentDiscount = { type: "none", amount: 0 };
+    if (discountTypeSelect) discountTypeSelect.value = "none";
+    if (customDiscountWrapper) customDiscountWrapper.classList.add("hidden");
+    if (customDiscountAmount) customDiscountAmount.value = "";
     updateCartDisplay();
   } catch (error) {
     console.error("Sale Failed:", error);
@@ -920,40 +1004,30 @@ async function processSale(customerName, orderType, totalAmount, subtotal, tax, 
 }
 
 // --- Kitchen / Pending Order Logic ---
-
-// 4. Listen for Pending Orders and render them
 function listenForPendingOrders() {
   const q = query(pendingOrdersRef, orderBy("createdAt", "asc"));
-  
   onSnapshot(q, (snapshot) => {
     if (!ordersLine) return;
-    ordersLine.innerHTML = ""; // Clear the line
-    allPendingOrders = []; // Clear and repopulate global list
-    
+    ordersLine.innerHTML = "";
+    allPendingOrders = [];
     if (snapshot.empty) {
         ordersLine.innerHTML = "<p class='empty-cart'>No pending orders.</p>";
         return;
     }
-    
     snapshot.forEach(doc => {
       const order = { id: doc.id, ...doc.data() };
-      allPendingOrders.push(order); // Add to global list
+      allPendingOrders.push(order);
       ordersLine.appendChild(createOrderCard(order));
     });
-    
-    checkOverdueStatus(); // Check status immediately
-    
+    checkOverdueStatus();
   }, (error) => {
     console.error("Error listening to pending orders:", error);
     if (ordersLine) ordersLine.innerHTML = "<p class='empty-cart'>Error loading orders.</p>";
   });
 }
-
-// Function to check for overdue items
 function checkOverdueStatus() {
-  const waitTimes = { short: 5, medium: 10, long: 20 }; // minutes
+  const waitTimes = { short: 5, medium: 10, long: 20 };
   const now = new Date();
-
   allPendingOrders.forEach(order => {
     if (order.status !== "Pending" && order.status !== "Preparing") {
         const card = document.querySelector(`.order-card[data-id="${order.id}"]`);
@@ -961,16 +1035,12 @@ function checkOverdueStatus() {
         if (dot) dot.remove(); 
         return; 
     }
-    
     const createdAt = order.createdAt?.toDate();
     if (!createdAt) return;
-
     const minutesPassed = (now - createdAt) / 60000;
-
     const isOverdue = order.items.some(item =>
         !item.isDone && minutesPassed > waitTimes[item.waitingTime]
     );
-
     const card = document.querySelector(`.order-card[data-id="${order.id}"]`);
     if (card) {
         const dot = card.querySelector('.overdue-dot');
@@ -984,27 +1054,21 @@ function checkOverdueStatus() {
     }
   });
 }
-
-// 5. Create Order Card HTML (Fix for disappearing orders)
 function createOrderCard(order) {
   const card = document.createElement("div");
   card.className = "order-card";
   card.dataset.id = order.id;
-  
   const orderStatus = order.status || "Pending";
   const avgTime = order.avgWaitTime || "short";
   const orderId = order.orderId || "----";
   const customerName = order.customerName || "Walk-in";
-
   let waitClass = "wait-short";
   if (avgTime === "medium") waitClass = "wait-medium";
   if (avgTime === "long") waitClass = "wait-long";
-  
   const totalItems = order.items?.length || 0;
   const doneItems = order.items?.filter(i => i.isDone).length || 0;
   const progressPercent = totalItems > 0 ? (doneItems / totalItems) * 100 : 0;
   const progressWidth = `${Math.max(progressPercent, 5)}%`; 
-  
   card.innerHTML = `
     <div class="order-card-header">
       <span class="order-card-id">#${orderId}</span>
@@ -1018,38 +1082,29 @@ function createOrderCard(order) {
       <div class="progress-bar-inner" style="width: ${progressWidth}; background-color: var(--color-blue-500);"></div>
     </div>
   `;
-  
   card.addEventListener("click", () => openOrderDetailsModal(order));
   return card;
 }
-
-// 6. Open Order Details Modal (Kitchen Modal)
 function openOrderDetailsModal(order) {
   currentOrderDetails = order; 
-  
   document.getElementById("order-modal-title").textContent = `Order #${order.orderId}`;
   document.getElementById("order-modal-customer").textContent = order.customerName;
   document.getElementById("order-modal-type").textContent = order.orderType;
   document.getElementById("order-modal-total").textContent = `₱${order.totalAmount.toFixed(2)}`;
-  
   const waitText = { short: "< 5 min", medium: "5-10 min", long: "15-20 min" };
   const waitValues = { short: 5, medium: 10, long: 20 };
   document.getElementById("order-modal-wait-time").textContent = waitText[order.avgWaitTime] || "N/A";
-
   const itemList = document.getElementById("order-modal-item-list");
   if (!itemList) return;
   itemList.innerHTML = "";
-  
   if (order.items && Array.isArray(order.items)) {
     order.items.forEach((item, index) => {
       const li = document.createElement("li");
       let itemWaitClass = "wait-short";
       if (item.waitingTime === "medium") itemWaitClass = "wait-medium";
       if (item.waitingTime === "long") itemWaitClass = "wait-long";
-      
       const isPreparing = order.status === "Preparing";
       const isDone = item.isDone || false;
-      
       li.innerHTML = `
         <button class="item-check-btn ${isDone ? 'done' : ''}" 
                 data-item-index="${index}" ${!isPreparing || isDone ? 'disabled' : ''}>
@@ -1061,38 +1116,27 @@ function openOrderDetailsModal(order) {
       itemList.appendChild(li);
     });
   }
-  
-  // Clone and replace to remove old listeners, then add new one
   const newItemList = itemList.cloneNode(true);
   itemList.parentNode.replaceChild(newItemList, itemList);
-  
   newItemList.addEventListener("click", (e) => {
       if (e.target.classList.contains("item-check-btn")) {
           handleItemCheck(e.target);
       }
   });
-
-  // Helper function to recalculate progress and time
   function recalculateProgress() {
     if (!currentOrderDetails || !currentOrderDetails.items || !Array.isArray(currentOrderDetails.items)) return;
-
     const totalItems = currentOrderDetails.items.length;
     const doneItems = currentOrderDetails.items.filter(i => i.isDone).length;
     const progressPercent = totalItems > 0 ? (doneItems / totalItems) * 100 : 0;
-
     const itemProgress = document.getElementById("order-modal-item-progress");
     if (itemProgress) itemProgress.style.width = `${progressPercent}%`;
-
     let maxRemainingTime = 0;
     currentOrderDetails.items.forEach(item => {
         if (!item.isDone) {
             const itemTime = waitValues[item.waitingTime] || 0;
-            if (itemTime > maxRemainingTime) {
-                maxRemainingTime = itemTime;
-            }
+            if (itemTime > maxRemainingTime) maxRemainingTime = itemTime;
         }
     });
-
     const estimatedEl = document.getElementById("order-modal-estimated-time");
     if (estimatedEl) {
         if (maxRemainingTime === 0 && doneItems === totalItems) {
@@ -1103,7 +1147,6 @@ function openOrderDetailsModal(order) {
             estimatedEl.textContent = `Est. ${maxRemainingTime} min remaining`;
         }
     }
-    
     const progressBtn = document.getElementById("order-modal-progress-btn");
     if (progressBtn && currentOrderDetails.status === "Preparing") {
         const allDone = currentOrderDetails.items.every(i => i.isDone);
@@ -1116,28 +1159,19 @@ function openOrderDetailsModal(order) {
         }
     }
   }
-
-  // Helper function to handle item check/uncheck
   async function handleItemCheck(button) {
     if (!currentOrderDetails || currentOrderDetails.status !== "Preparing") {
-        alert("Order must be marked as 'Preparing' before checking off items.");
-        return;
+        alert("Order must be marked as 'Preparing' before checking off items."); return;
     }
-    if (button.classList.contains('done')) {
-        return;
-    }
-    
+    if (button.classList.contains('done')) return;
     const itemIndex = parseInt(button.dataset.itemIndex);
     if (isNaN(itemIndex) || !currentOrderDetails.items[itemIndex]) return;
-
     const item = currentOrderDetails.items[itemIndex];
     item.isDone = true; 
-
     button.classList.add('done');
     button.innerHTML = '✓';
     button.disabled = true; 
     button.classList.add('disabled');
-
     try {
         const orderRef = doc(db, "pending_orders", currentOrderDetails.id);
         await updateDoc(orderRef, { items: currentOrderDetails.items });
@@ -1153,35 +1187,26 @@ function openOrderDetailsModal(order) {
         alert("Failed to update item status. Please try again.");
     }
   }
-  
   recalculateProgress(); 
   updateModalProgress(order.status);
   orderDetailsModal.style.display = "flex";
-
-  // --- ADD PAYMENT LOGIC (for when modal opens) ---
   const paymentModalTotal = document.getElementById("payment-modal-total");
   if (paymentModalTotal) paymentModalTotal.textContent = `₱${order.totalAmount.toFixed(2)}`;
-  
   const paymentMethodRadios = document.querySelectorAll('#order-details-modal input[name="paymentMethod"]');
   const cashDetails = document.getElementById("payment-cash-details");
   const paymentAmountInput = document.getElementById("payment-amount");
   const changeDisplay = document.getElementById("payment-change-display");
-
-  // Radio button listener
   paymentMethodRadios.forEach(radio => {
     radio.onchange = () => {
       if (cashDetails) cashDetails.classList.toggle('hidden', radio.value !== 'Cash');
     };
   });
-
-  // Real-time change calculator
   if (paymentAmountInput) {
       paymentAmountInput.oninput = () => {
         if (!currentOrderDetails) return;
         const total = currentOrderDetails.totalAmount || 0;
         const paid = parseFloat(paymentAmountInput.value) || 0;
         const change = paid - total;
-        
         if (change >= 0) {
           changeDisplay.textContent = `₱${change.toFixed(2)}`;
           changeDisplay.style.color = "var(--color-green-700)";
@@ -1191,8 +1216,6 @@ function openOrderDetailsModal(order) {
         }
       };
   }
-  
-  // Reset payment form
   const payCashRadio = document.getElementById('pay-cash');
   if (payCashRadio) payCashRadio.checked = true;
   if (cashDetails) cashDetails.classList.remove('hidden');
@@ -1202,39 +1225,25 @@ function openOrderDetailsModal(order) {
       changeDisplay.style.color = "var(--color-text)";
   }
 }
-
-// 7. Update Modal Progress Bar & Buttons
 function updateModalProgress(status) {
   const statusText = document.getElementById("order-modal-status-text");
   const progressBtn = document.getElementById("order-modal-progress-btn");
   const voidBtn = document.getElementById("order-modal-void-btn");
   const printBtn = document.getElementById("order-modal-print-btn");
-  
   const itemsContainer = document.getElementById("order-modal-items-container");
-  // const paymentContainer = document.getElementById("payment-details");
-
   if (!statusText || !progressBtn || !voidBtn || !itemsContainer || !printBtn) return;
-
   statusText.textContent = status;
   statusText.className = `status status-${status.toLowerCase()}`;
   printBtn.style.display = "none";
-
   if (status === "Pending") {
     progressBtn.textContent = "Mark as Preparing";
     progressBtn.disabled = false;
-    voidBtn.disabled = false; // Void ENABLED
-    
-    itemsContainer.classList.remove('hidden');
- 
-    
+    voidBtn.disabled = false;
+    itemsContainer.classList.remove('hidden'); 
   } else if (status === "Preparing") {
     progressBtn.textContent = "Mark as Ready";
-    voidBtn.disabled = true; // Void DISABLED
-    
+    voidBtn.disabled = true;
     itemsContainer.classList.remove('hidden');
-
-    
-    // Check if all items are done
     if (currentOrderDetails && currentOrderDetails.items) {
         const allDone = currentOrderDetails.items.every(i => i.isDone);
         if (allDone) {
@@ -1245,23 +1254,18 @@ function updateModalProgress(status) {
             progressBtn.title = "Check off all items to mark as ready";
         }
     }
-    
 } else if (status === "Ready") {
     progressBtn.textContent = "Complete Order";
     progressBtn.disabled = false;
-    voidBtn.disabled = true; // Void DISABLED
+    voidBtn.disabled = true;
     printBtn.style.display = "inline-flex";
     itemsContainer.classList.remove('hidden'); 
-
   }
 }
-
-// Helper function to update check buttons state
 function updateCheckButtonsState(status) {
     const isPreparing = (status === "Preparing");
     document.querySelectorAll("#order-modal-item-list .item-check-btn").forEach(btn => {
         const isDone = btn.classList.contains('done');
-        
         if (isDone) {
             btn.disabled = true; 
             btn.classList.add('disabled');
@@ -1274,141 +1278,93 @@ function updateCheckButtonsState(status) {
         }
     });
 }
-
-// 8. Add Event Listeners for Modal Buttons
 if (orderModalBackBtn) {
     orderModalBackBtn.addEventListener("click", () => {
       if (orderDetailsModal) orderDetailsModal.style.display = "none";
       currentOrderDetails = null;
     });
 }
-
-// --- REPLACE THIS ENTIRE BLOCK ---
 if (orderModalProgressBtn) {
     orderModalProgressBtn.addEventListener("click", async () => {
       if (!currentOrderDetails) return;
-      
-      let newStatus = ""; // This will only be set for 'Pending' or 'Preparing'
-
+      let newStatus = "";
       if (currentOrderDetails.status === "Pending") {
         newStatus = "Preparing";
       } 
       else if (currentOrderDetails.status === "Preparing") {
         const allDone = currentOrderDetails.items.every(i => i.isDone);
-        if (!allDone) {
-            alert("Please check off all items before marking the order as ready.");
-            return;
-        }
+        if (!allDone) { alert("Please check off all items before marking the order as ready."); return; }
         newStatus = "Ready";
       } 
       else if (currentOrderDetails.status === "Ready") {
-        
-        // --- FIX: All payment logic is REMOVED ---
-        // The payment details are already on the order object.
-        // We just need to call completeOrder.
         await completeOrder(currentOrderDetails);
-        return; // Stop here
-        // --- END OF FIX ---
+        return;
       }
-      
-      // This 'if' block is now correctly placed.
-      // It will only run if newStatus was set (i.e., for "Pending" or "Preparing")
       if (newStatus) {
         try {
             const orderRef = doc(db, "pending_orders", currentOrderDetails.id);
             await updateDoc(orderRef, { status: newStatus });
-            
             currentOrderDetails.status = newStatus;
             updateModalProgress(newStatus);
             updateCheckButtonsState(newStatus);
-            
         } catch (error) {
             console.error("Error updating order status:", error);
         }
       }
     });
 }
-
 if (orderModalVoidBtn) {
     orderModalVoidBtn.addEventListener("click", async () => {
       if (!currentOrderDetails) return;
       if (!confirm(`Are you sure you want to void Order #${currentOrderDetails.orderId}? This cannot be undone.`)) return;
-      
       await voidOrder(currentOrderDetails);
     });
 }
-
-// 9. Functions to Complete or Void an Order
 async function completeOrder(order, paymentDetails) {
-  
   const stockMovements = []; 
-
   try {
     const allRecipes = [];
     if (order.items && Array.isArray(order.items)) {
         for (const item of order.items) { 
           const q = query(recipesRef, where("productId", "==", item.productId));
           const recipeSnapshot = await getDocs(q);
-          if (recipeSnapshot.empty) {
-            throw new Error(`No recipe found for "${item.name}".`);
-          }
+          if (recipeSnapshot.empty) { throw new Error(`No recipe found for "${item.name}".`); }
           recipeSnapshot.forEach(recipeDoc => {
             allRecipes.push({ ...recipeDoc.data(), cartQuantity: item.quantity });
           });
         }
     }
-
     await runTransaction(db, async (transaction) => {
       const ingredientDeductions = new Map();
-      
       for (const recipe of allRecipes) {
         if (recipe.ingredientId && recipe.ingredientId.trim() !== "") {
-          
           const qtyPer = parseFloat(recipe.qtyPerProduct);
           const cartQty = parseFloat(recipe.cartQuantity);
-
           if (isNaN(qtyPer) || isNaN(cartQty)) {
              console.error(`Invalid recipe data for product: ${recipe.productId}. qtyPer: ${recipe.qtyPerProduct}, cartQty: ${recipe.cartQuantity}`);
              throw new Error(`Invalid recipe/order data for an item. Check product ID ${recipe.productId}.`);
           }
-          
           const totalDeduction = qtyPer * cartQty;
-
-          const existing = ingredientDeductions.get(recipe.ingredientId) || { 
-            amountToDeduction: 0, 
-            unit: recipe.unitUsed 
-          };
+          const existing = ingredientDeductions.get(recipe.ingredientId) || { amountToDeduction: 0, unit: recipe.unitUsed };
           existing.amountToDeduction += totalDeduction;
           ingredientDeductions.set(recipe.ingredientId, existing);
         } else {
           console.warn(`Skipping recipe with missing ingredientId for product ${recipe.productId}`);
         }
       }
-
       const ingredientDataMap = new Map();
       for (const [ingId, deduction] of ingredientDeductions.entries()) {
         if (!ingId || typeof ingId !== 'string' || ingId.trim() === "") {
           console.warn("⚠️ Skipping ingredient with invalid ID:", ingId);
           continue;
         }
-        
         const ingRef = doc(db, "ingredients", ingId);
         const ingDoc = await transaction.get(ingRef);
-        
-        if (!ingDoc.exists()) {
-          throw new Error(`CRITICAL: Ingredient ${ingId} not found.`);
-        }
-        
+        if (!ingDoc.exists()) { throw new Error(`CRITICAL: Ingredient ${ingId} not found.`); }
         const ingData = ingDoc.data();
         const currentStockInBaseUnits = ingData.stockQuantity * ingData.conversionFactor;
-        
-        if (deduction.unit !== ingData.baseUnit) {
-          throw new Error(`Unit mismatch for ${ingData.name}.`);
-        }
-        if (currentStockInBaseUnits < deduction.amountToDeduction) {
-          throw new Error(`Not enough stock for ${ingData.name}. Order cannot be completed.`);
-        }
-
+        if (deduction.unit !== ingData.baseUnit) { throw new Error(`Unit mismatch for ${ingData.name}.`); }
+        if (currentStockInBaseUnits < deduction.amountToDeduction) { throw new Error(`Not enough stock for ${ingData.name}. Order cannot be completed.`); }
         ingredientDataMap.set(ingId, {
           ref: ingRef,
           data: ingData,
@@ -1416,12 +1372,10 @@ async function completeOrder(order, paymentDetails) {
           deduction: deduction
         });
       }
-
       for (const [ingId, info] of ingredientDataMap.entries()) {
         const newStockInBaseUnits = info.currentStockInBaseUnits - info.deduction.amountToDeduction;
         const newStockInStockUnits = newStockInBaseUnits / info.data.conversionFactor;
         transaction.update(info.ref, { stockQuantity: newStockInStockUnits });
-
         stockMovements.push({
           ingredientId: ingId,
           ingredientName: info.data.name,
@@ -1431,41 +1385,38 @@ async function completeOrder(order, paymentDetails) {
           date: serverTimestamp() 
         });
       }
-      
       const saleRef = doc(db, "sales", order.id); 
       const pendingOrderRef = doc(db, "pending_orders", order.id);
-  
       transaction.set(saleRef, { 
         ...order, 
-        ...paymentDetails, // Add payment details
+        ...paymentDetails,
         status: "Completed", 
         completedAt: serverTimestamp(),
-        timestamp: order.createdAt // Keep original timestamp for filtering
+        timestamp: order.createdAt
       });
       transaction.delete(pendingOrderRef);
     });
-
     const logBatch = writeBatch(db);
     stockMovements.forEach(log => logBatch.set(doc(collection(db, "stock_movements")), log));
     await logBatch.commit();
-    
     alert(`Order #${order.orderId} completed! Stock updated and transaction saved.`);
     if (orderDetailsModal) orderDetailsModal.style.display = "none";
-    
   } catch (error) {
     console.error("Error completing order:", error);
     alert(`Error: ${error.message}`);
   }
 }
-
 async function voidOrder(order) {
   const saleRef = doc(db, "sales", order.id);
   const pendingOrderRef = doc(db, "pending_orders", order.id);
-  
   const batch = writeBatch(db);
-  batch.set(saleRef, { ...order, status: "Voided", voidedAt: serverTimestamp() });
+  batch.set(saleRef, { 
+    ...order, 
+    status: "Voided", 
+    voidedAt: serverTimestamp(),
+    timestamp: order.createdAt
+  });
   batch.delete(pendingOrderRef);
-  
   try {
     await batch.commit();
     alert(`Order #${order.orderId} has been voided.`);
@@ -1474,75 +1425,35 @@ async function voidOrder(order) {
     console.error("Error voiding order:", error);
   }
 }
-/**
- * Prompts the user for confirmation before deleting a menu item.
- * @param {object} product - The product object to be deleted.
- */
 function handleDeleteMenuItem(product) {
   const expectedName = product.name;
   const confirmation = prompt(`To delete this item, please type its exact name: "${expectedName}"`);
-
-  // User clicked "Cancel"
-  if (confirmation === null) {
-    alert("Deletion canceled.");
-    return;
-  }
-
-  // Check if the typed name matches
+  if (confirmation === null) { alert("Deletion canceled."); return; }
   if (confirmation.trim() === expectedName) {
-    // Call the actual deletion function
     deleteProductAndRecipe(product.id, product.name);
   } else {
     alert(`Name does not match. Deletion canceled.`);
   }
 }
-
-/**
- * Deletes a product and its associated recipes from Firestore.
- * @param {string} productId - The ID of the product to delete.
- * @param {string} productName - The name of the product (for alerts).
- */
 async function deleteProductAndRecipe(productId, productName) {
-  if (!productId) {
-    alert("Error: Product ID is missing. Cannot delete.");
-    return;
-  }
-
+  if (!productId) { alert("Error: Product ID is missing. Cannot delete."); return; }
   try {
     const batch = writeBatch(db);
-
-    // 1. Delete the product document
     const productRef = doc(db, "products", productId);
     batch.delete(productRef);
-
-    // 2. Find and delete all associated recipe documents
     const recipesQuery = query(recipesRef, where("productId", "==", productId));
     const recipeSnapshot = await getDocs(recipesQuery);
-    
     if (!recipeSnapshot.empty) {
-      recipeSnapshot.forEach(recipeDoc => {
-        batch.delete(recipeDoc.ref);
-      });
+      recipeSnapshot.forEach(recipeDoc => { batch.delete(recipeDoc.ref); });
     }
-
-    // 3. Commit the batch
     await batch.commit();
-
     alert(`Product "${productName}" and its recipe have been deleted successfully.`);
-    // The real-time listener will automatically update the UI.
-
   } catch (error) {
     console.error("Error deleting product:", error);
     alert(`Failed to delete product: ${error.message}`);
   }
 }
-
-/**
- * Generates and prints a receipt for the current order.
- * @param {object} order - The order object.
- */
 function printReceipt(order) {
-    // --- 1. Format Order Items ---
     let itemRows = order.items.map(item => {
         const qty = String(item.quantity).padEnd(3);
         let name = item.name;
@@ -1552,193 +1463,61 @@ function printReceipt(order) {
         const amount = (item.quantity * item.pricePerItem).toFixed(2).padStart(10);
         return `${qty}  ${name} ${unitPrice} ${amount}`;
     }).join('\n');
-
-    // --- 2. Format Totals ---
     const subtotal = `${'Subtotal:'.padEnd(30)}${order.subtotal.toFixed(2).padStart(10)}`;
     const tax = `${'VAT (12%):'.padEnd(30)}${order.tax.toFixed(2).padStart(10)}`;
     const total = `${'Total Amount:'.padEnd(30)}${order.totalAmount.toFixed(2).padStart(10)}`;
-    
-    // --- 3. Format Date/Time ---
     const dateTime = order.createdAt ? 
                    order.createdAt.toDate().toLocaleString('en-US', {
                        year: 'numeric', month: '2-digit', day: '2-digit', 
                        hour: '2-digit', minute: '2-digit', hour12: true 
                    }) : 
                    new Date().toLocaleString();
-                   
-    // --- 4. Create the Receipt HTML ---
     const receiptHTML = `
-      <html>
-        <head>
-          <title>Official Receipt #${order.orderId}</title>
-          
+      <html><head><title>Official Receipt #${order.orderId}</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
-          
           <style>
-            /* --- ⬇️ CHANGE 1: Style the wrapper, not the body ⬇️ --- */
-            .receipt-container {
-              font-family: 'Courier New', Courier, monospace;
-              font-size: 10pt;
-              width: 80mm; 
-              padding: 5mm;
-              margin: 0;
-              color: #000;
-              background: #fff; /* White background for the JPG */
-            }
-            body.receipt-body {
-              margin: 0;
-              padding: 0;
-              background: #fff; /* White background for the new window */
-            }
+            .receipt-container { font-family: 'Courier New', Courier, monospace; font-size: 10pt; width: 80mm; padding: 5mm; margin: 0; color: #000; background: #fff; }
+            body.receipt-body { margin: 0; padding: 0; background: #fff; }
             .center { text-align: center; }
             .line { padding: 0; margin: 5px 0; border-top: 1px dashed #000; }
             .header { font-weight: bold; font-size: 12pt; }
             .info { font-size: 10pt; }
-            pre {
-              font-family: 'Courier New', Courier, monospace;
-              font-size: 10pt;
-              margin: 0;
-              padding: 0;
-              white-space: pre-wrap;
-            }
+            pre { font-family: 'Courier New', Courier, monospace; font-size: 10pt; margin: 0; padding: 0; white-space: pre-wrap; }
             .totals-line { font-weight: bold; }
             .footer { font-size: 9pt; margin-top: 5px; }
             .bir-info { font-size: 8pt; text-align: center; margin-top: 10px; }
-            
-            .button-bar {
-              display: flex;
-              gap: 10px;
-              margin-top: 20px;
-            }
-            .print-receipt-btn {
-              flex: 1;
-              padding: 10px;
-              background: #333;
-              color: white;
-              border: none;
-              font-size: 14px;
-              font-weight: bold;
-              cursor: pointer;
-            }
-            .download-receipt-btn {
-              flex: 1;
-              padding: 10px;
-              background: #007bff;
-              color: white;
-              border: none;
-              font-size: 14px;
-              font-weight: bold;
-              cursor: pointer;
-            }
-
-            /* --- ⬇️ CHANGE 2: Add new print styles ⬇️ --- */
+            .button-bar { display: flex; gap: 10px; margin-top: 20px; }
+            .print-receipt-btn { flex: 1; padding: 10px; background: #333; color: white; border: none; font-size: 14px; font-weight: bold; cursor: pointer; }
+            .download-receipt-btn { flex: 1; padding: 10px; background: #007bff; color: white; border: none; font-size: 14px; font-weight: bold; cursor: pointer; }
             @media print {
               .button-bar { display: none !important; }
               @page { margin: 0; }
-              
-              body.receipt-body {
-                background-color: #f0f0f0; /* Light gray "paper" background */
-                display: flex;
-                justify-content: center; /* Center horizontally */
-                align-items: flex-start; /* Align to the top */
-                padding-top: 20px;
-              }
-              .receipt-container {
-                box-shadow: 0 0 10px rgba(0,0,0,0.3); /* Add a shadow */
-                margin: 0;
-              }
+              body.receipt-body { background-color: #f0f0f0; display: flex; justify-content: center; align-items: flex-start; padding-top: 20px; }
+              .receipt-container { box-shadow: 0 0 10px rgba(0,0,0,0.3); margin: 0; }
             }
-          </style>
-        </head>
-        
-        <body class="receipt-body">
-          
+          </style></head><body class="receipt-body">
           <div class="receipt-container" id="receipt-container">
-            <div class="center">
-              <div class="header">ACACCIA BISTRO CAFE</div>
-              <div class="info">Brgy. San Agustin, Alaminos, Laguna</div>
-              <div class="info">TIN: 123-456-789-00000</div>
-              <div class="info">BIR Permit to Use No: CAS-2025-001</div>
-            </div>
-            
-            <div class="line"></div>
-            <pre>Official Receipt No: ${order.orderId}</pre>
-            <pre>Date/Time: ${dateTime}</pre>
-            <pre>Cashier: ${order.processedBy || 'Cashier'}</pre>
-            <pre>Order Type: ${order.orderType}</pre>
-            
-            <div class="line"></div>
-            <pre>Qty  Description           Unit Price     Amount</pre>
-            <div class="line"></div>
-            <pre>${itemRows}</pre>
-            <div class="line"></div>
-            
-            <pre>${subtotal}</pre>
-            <pre>${tax}</pre>
-            <div class="line"></div>
-            <pre class="totals-line">${total}</pre>
-            <div class="line"></div>
-            
-            <pre>Payment Method: ${order.paymentMethod}</pre>
-            <pre>Customer Name:  ${order.customerName}</pre>
-            
-            <div class="center footer">
-              <strong>This serves as your OFFICIAL RECEIPT</strong>
-              <br>
-              Thank you for dining with us!
-            </div>
-            
-            <div class="line"></div>
-            <div class="bir-info">
-              POS Provider: CafeSync System v1.0<br>
-              Accredited Developer: Team Cafesync<br>
-              BIR Accreditation No.: CASDEV-2025-045
-            </div>
-            <div class="line"></div>
-            
-            <br>
-            <div class="button-bar">
-              <button class="print-receipt-btn" onclick="window.print()">Print Receipt</button>
-              <button class="download-receipt-btn" onclick="downloadAsJpg()">Download JPG</button>
-            </div>
+            <div class="center"><div class="header">ACACCIA BISTRO CAFE</div><div class="info">Brgy. San Agustin, Alaminos, Laguna</div><div class="info">TIN: 123-456-789-00000</div><div class="info">BIR Permit to Use No: CAS-2025-001</div></div>
+            <div class="line"></div><pre>Official Receipt No: ${order.orderId}</pre><pre>Date/Time: ${dateTime}</pre><pre>Cashier: ${order.processedBy || 'Cashier'}</pre><pre>Order Type: ${order.orderType}</pre>
+            <div class="line"></div><pre>Qty  Description           Unit Price     Amount</pre><div class="line"></div><pre>${itemRows}</pre><div class="line"></div>
+            <pre>${subtotal}</pre><pre>${tax}</pre><div class="line"></div><pre class="totals-line">${total}</pre><div class="line"></div>
+            <pre>Payment Method: ${order.paymentMethod}</pre><pre>Customer Name:  ${order.customerName}</pre>
+            <div class="center footer"><strong>This serves as your OFFICIAL RECEIPT</strong><br>Thank you for dining with us!</div>
+            <div class="line"></div><div class="bir-info">POS Provider: CafeSync System v1.0<br>Accredited Developer: Team Cafesync<br>BIR Accreditation No.: CASDEV-2025-045</div><div class="line"></div>
+            <br><div class="button-bar"><button class="print-receipt-btn" onclick="window.print()">Print Receipt</button><button class="download-receipt-btn" onclick="downloadAsJpg()">Download JPG</button></div>
           </div> <script>
             function downloadAsJpg() {
-              const buttonBar = document.querySelector('.button-bar');
-              buttonBar.style.display = 'none'; // Hide buttons
-
-              // --- ⬇️ CHANGE 4: Target the new ID ⬇️ ---
+              const buttonBar = document.querySelector('.button-bar'); buttonBar.style.display = 'none';
               const receiptElement = document.getElementById('receipt-container');
-              
-              html2canvas(receiptElement, {
-                scale: 2, // Increase resolution
-                useCORS: true,
-                backgroundColor: '#ffffff'
-              }).then(canvas => {
-                // Convert canvas to JPG
-                const imgData = canvas.toDataURL('image/jpeg', 0.9); // 0.9 = 90% quality
-                
-                // Create a temporary link to trigger download
-                const link = document.createElement('a');
-                link.href = imgData;
-                // Fix for template literal
+              html2canvas(receiptElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                const link = document.createElement('a'); link.href = imgData;
                 link.download = \`receipt-${order.orderId}.jpg\`;
-                
-                // Trigger the download
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Show the buttons again
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 buttonBar.style.display = 'flex';
               });
-            }
-          <\/script>
-          
-        </body>
-      </html>
+            } <\/script></body></html>
     `;
-
-    // --- 5. Open the new window ---
     const printWindow = window.open('', '_blank', 'width=350,height=650,resizable=yes,scrollbars=yes');
     if (printWindow) {
         printWindow.document.open();
@@ -1751,14 +1530,8 @@ function printReceipt(order) {
 }
 // --- Initial Load ---
 document.addEventListener("DOMContentLoaded", () => {
-  // Start all data listeners
-    const ingredientCategoryFilter = document.getElementById("ingredient-category-filter");
-  if (ingredientCategoryFilter) {
-    ingredientCategoryFilter.addEventListener("change", function() {
-      const selectedCategory = this.value;
-      updateIngredientCacheForRecipeModal(selectedCategory);
-    });
-  }
+  // --- REMOVED: ingredientCategoryFilter listener ---
+  
   if (orderModalPrintBtn) {
     orderModalPrintBtn.addEventListener("click", () => {
       if (currentOrderDetails) {
@@ -1771,12 +1544,76 @@ document.addEventListener("DOMContentLoaded", () => {
   listenForProducts();
   listenForIngredients();
   listenForRecipes();
-  listenForPendingOrders(); // Start listening for kitchen orders
-  
-  // Start the background timer
+  listenForPendingOrders();
   setInterval(checkOverdueStatus, 30000); 
-  
-  
-  // Note: We no longer call renderProducts() or loadCategories().
-  // The listeners will automatically trigger the first render.
+
+  // --- Variation Listeners ---
+  if (variationToggle) {
+      variationToggle.addEventListener("change", () => {
+          const hasVariations = variationToggle.checked;
+          if (hasVariations) {
+              singlePriceWrapper.classList.add("hidden");
+              variationsWrapper.classList.remove("hidden");
+              if (variationListContainer.children.length === 0) {
+                  addVariationRowUI();
+              }
+          } else {
+              singlePriceWrapper.classList.remove("hidden");
+              variationsWrapper.classList.add("hidden");
+          }
+      });
+  }
+  if (addVariationBtn) {
+      addVariationBtn.addEventListener("click", () => {
+          addVariationRowUI();
+      });
+  }
+});
+
+// --- Add Variation Row to Admin Modal ---
+function addVariationRowUI(variation = {}) {
+    if (!variationListContainer) return;
+    const row = document.createElement("div");
+    row.className = "variation-row";
+    row.innerHTML = `
+        <input type="text" class="form-control" placeholder="Name" value="${variation.name || ''}" required>
+        <input type="number" class="form-control" placeholder="Price" value="${variation.price || ''}" step="0.01" min="0" required>
+        <button type="button" class="remove-variation-btn">X</button>
+    `;
+    row.querySelector(".remove-variation-btn").addEventListener("click", () => {
+        row.remove();
+    });
+    variationListContainer.appendChild(row);
+}
+
+
+// --- Discount UI Event Listeners ---
+document.addEventListener("DOMContentLoaded", () => {
+    if (!discountTypeSelect) return; 
+    discountTypeSelect.addEventListener("change", () => {
+        const selectedType = discountTypeSelect.value;
+        if (selectedType === "Custom") {
+            customDiscountWrapper.classList.remove("hidden");
+            customDiscountAmount.value = "";
+            applyDiscountBtn.classList.remove("hidden");
+        } else {
+            customDiscountWrapper.classList.add("hidden");
+            customDiscountAmount.value = "";
+            if (selectedType === "PWD" || selectedType === "Senior") {
+                currentDiscount = { type: selectedType, amount: 0 };
+            } else {
+                currentDiscount = { type: "none", amount: 0 };
+            }
+            updateCartTotals();
+        }
+    });
+    applyDiscountBtn.addEventListener("click", () => {
+        const amount = parseFloat(customDiscountAmount.value);
+        if (!isNaN(amount) && amount > 0) {
+            currentDiscount = { type: "Custom", amount: amount };
+            updateCartTotals();
+        } else {
+            alert("Please enter a valid discount amount.");
+        }
+    });
 });

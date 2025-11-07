@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,10 +116,18 @@
                                                 <input type="text" id="menu-name" class="form-control" placeholder="e.g., Cappuccino" required>
                                             </div>
                                         </div>
-                                        <div class="form-column">
-                                            <div class="form-group">
+                                            <div class="form-column">
+
+                                            <div id="single-price-wrapper" class="form-group">
                                                 <label for="menu-price">Price (₱):</label>
-                                                <input type="number" id="menu-price" class="form-control" placeholder="0.00" step="0.01" min="0" required>
+                                                <input type="number" id="menu-price" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                            </div>
+                                                                                        <div class="form-group">
+                                                <label>Pricing:</label>
+                                                <div class="permission-item">
+                                                    <input type="checkbox" id="product-variation-toggle">
+                                                    <label for="product-variation-toggle" style="font-weight: 500; cursor: pointer;">This product has variations (e.g., 8oz, 12oz)</label>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="form-column">
@@ -133,15 +140,14 @@
                                                             </div>
                                                         </div>
                                     </div>
-
+                                    <div id="variations-wrapper" class="form-group hidden">
+                                        <label>Product Variations</label>
+                                        <div id="product-variations-list">
+                                            </div>
+                                        <button type="button" id="add-variation-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Variation</button>
+                                    </div>
                                     <div class="form-group">
                                         <label>Recipe (Ingredients):</label>
-                                        <div class="form-group" style="margin-bottom: 10px;">
-                                            <label for="ingredient-category-filter" style="font-weight: 500;">Filter by Inventory Category:</label>
-                                            <select id="ingredient-category-filter" class="form-control">
-                                                <option value="">All Inventory Categories</option>
-                                                </select>
-                                        </div>
                                         <div id="recipe-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
                                             </div>
                                         <button type="button" id="add-ingredient-btn" class="btn btn--secondary btn--small" style="margin-top: 10px;">+ Add Ingredient</button>
@@ -186,6 +192,10 @@
                                     <span>Subtotal:</span>
                                     <span id="cart-subtotal">₱0.00</span>
                                 </div>
+                                <div class="total-line discount-line">
+                                    <span>Discount:</span>
+                                    <span id="cart-discount">(₱0.00)</span>
+                                </div>
                                 <div class="total-line">
                                     <span>Tax:</span>
                                     <span id="cart-tax">₱0.00</span>
@@ -195,6 +205,26 @@
                                     <span id="cart-total">₱0.00</span>
                                 </div>
                             </div>
+
+                            <div class="discount-controls">
+                                <div class="form-group">
+                                    <label for="discount-type">Apply Discount</label>
+                                    <select id="discount-type" class="form-control">
+                                        <option value="none">No Discount</option>
+                                        <option value="PWD">PWD (20%)</option>
+                                        <option value="Senior">Senior (20%)</option>
+                                        <option value="Custom">Custom Amount</option>
+                                    </select>
+                                </div>
+                                <div class="form-group hidden" id="custom-discount-wrapper">
+                                    <label for="custom-discount-amount">Custom Amount (₱)</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="number" id="custom-discount-amount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                        <button type="button" id="apply-discount-btn" class="btn btn--secondary">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="payment-buttons">
                                 <button class="btn btn--primary btn--full-width">Process Payment</button>
                                 <button class="btn btn--secondary btn--full-width">Clear Cart</button>
@@ -212,17 +242,53 @@
                                     </div>
                                 </div>
 
+                                <div class="inventory-filter-bar">
+                                    <div class="filter-group">
+                                        <label for="inventory-search-name">Search Name:</label>
+                                        <input type="text" id="inventory-search-name" class="form-control" placeholder="e.g., Coffee Beans">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="inventory-filter-category">Category:</label>
+                                        <select id="inventory-filter-category" class="form-control">
+                                            <option value="">All Categories</option>
+                                            </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="inventory-filter-status">Status:</label>
+                                        <select id="inventory-filter-status" class="form-control">
+                                            <option value="">All Statuses</option>
+                                            <option value="in_stock">In Stock</option>
+                                            <option value="low_stock">Low Stock</option>
+                                            <option value="out_of_stock">Out of Stock</option>
+                                            <option value="expired">Expired</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="inventory-filter-expiry">Expiry:</label>
+                                        <select id="inventory-filter-expiry" class="form-control">
+                                            <option value="">All Dates</option>
+                                            <option value="expired">Expired</option>
+                                            <option value="expiring_soon">Expiring in 7 Days</option>
+                                        </select>
+                                    </div>
+                                    <button id="inventory-reset-filters" class="btn btn--secondary" style="align-self: flex-end;">Reset</button>
+                                </div>
+
+
                                 <div class="table-container">
                                     <table class="data-table">
                                     <thead>
                                         <tr>
-                                        <th>Item ID</th>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Stock</th>
-                                        <th>Minimum Stock</th>
-                                        <th>Price</th>
-                                        <th>Actions</th>
+                                            <th>Item ID</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Status</th>
+                                            <th>Stock (Unit)</th>
+                                            <th>Min Stock (Base)</th>
+                                            <th>Expiry Date</th>
+                                            <th>Last Updated</th>
+                                            <th>Conversion</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="inventory-table">
@@ -239,36 +305,61 @@
 
 
                 <div id="product-modal" class="modal">
-                        <div class="modal-content">
+                        <div class="modal-content modal-content--wide"> 
                             <h2 id="modal-title">Add Ingredient</h2>
                             <form id="product-form">
                                 <input type="hidden" id="product-id" />
 
-                                <label for="product-name">Ingredient Name:</label>
-                                <input type="text" id="product-name" placeholder="e.g., Coffee Beans" required />
+                                <div class="form-grid-two-col">
+                                    <div class="form-column">
+                                        <div class="form-group">
+                                            <label for="product-name">Ingredient Name:</label>
+                                            <input type="text" id="product-name" class="form-control" placeholder="e.g., Coffee Beans" required />
+                                        </div>
 
-                                <label for="product-category-dropdown">Category:</label>
-                                <select id="product-category-dropdown" class="form-control" required>
-                                    <option value="">Loading categories...</option>
-                                    </select>
+                                        <div class="form-group">
+                                            <label for="product-category-dropdown">Category:</label>
+                                            <select id="product-category-dropdown" class="form-control" required>
+                                                <option value="">Loading categories...</option>
+                                            </select>
+                                        </div>
 
-                                <label for="product-stock">Stock Quantity:</label>
-                                <input type="number" id="product-stock" min="0" step="any" placeholder="e.g., 10" required />
+                                        <div class="form-group">
+                                            <label for="product-expiry">Expiry Date:</label>
+                                            <input type="date" id="product-expiry" class="form-control" />
+                                        </div>
 
-                                <label for="product-stock-unit">Stock Unit:</label>
-                                <input type="text" id="product-stock-unit" placeholder="e.g., bag, jug, bottle, g" required />
+                                        <div class="form-group">
+                                            <label for="product-min-stock">Low Stock Alert (in Base Unit):</label>
+                                            <input type="number" id="product-min-stock" class="form-control" min="0" placeholder="e.g., 2000 (for 2000g)" required />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-column">
+                                        <div class="form-group">
+                                            <label for="product-stock">Stock Quantity:</label>
+                                            <input type="number" id="product-stock" class="form-control" min="0" step="any" placeholder="e.g., 10" required />
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="product-stock-unit">Stock Unit (Purchase Unit):</label>
+                                            <input type="text" id="product-stock-unit" class="form-control" placeholder="e.g., bag, jug, bottle" required />
+                                        </div>
 
-                                <label for="product-base-unit">Base Unit (for deduction):</label>
-                                <input type="text" id="product-base-unit" placeholder="e.g., g, ml" required />
+                                        <div class="form-group">
+                                            <label for="product-base-unit">Base Unit (Usage Unit):</label>
+                                            <input type="text" id="product-base-unit" class="form-control" placeholder="e.g., g, ml" required />
+                                        </div>
 
-                                <label for="product-conversion">Conversion Factor:</label>
-                                <input type="number" id="product-conversion" min="1" step="any" placeholder="e.g., 1000 (if 1 bag = 1000g)" required />
-                                <p style="font-size: 12px; color: #666; margin-top: -10px; margin-bottom: 10px;">
-                                    How many base units are in 1 stock unit? (If 1 bag = 1000g, enter 1000).
-                                </p>
-
-                                <label for="product-min-stock">Low Stock Alert (in Base Unit):</label>
-                                <input type="number" id="product-min-stock" min="0" placeholder="e.g., 2000 (for 2000g)" required />
+                                        <div class="form-group">
+                                            <label for="product-conversion">Conversion Factor:</label>
+                                            <input type="number" id="product-conversion" class="form-control" min="1" step="any" placeholder="e.g., 1000" required />
+                                            <p style="font-size: 12px; color: #666; margin-top: 4px;">
+                                                (1 Stock Unit = ? Base Units)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="modal-actions">
                                     <button type="submit" class="btn btn--primary">Save</button>
@@ -281,14 +372,19 @@
                         <section id="transactions-section" class="content-section hidden">
                         <div class="section-header">
                             <h1>Transaction History</h1>
-                            <div class="filter-container">
-                            <label for="filterRange">Sort by:</label>
-                            <select id="filterRange">
-                                <option value="all">All</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                            </select>
+                            <div class="header-actions"> <div class="filter-container">
+                                <label for="filterRange">Sort by:</label>
+                                <select id="filterRange">
+                                    <option value="all">All</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                                </div>
+                                <div class="export-buttons">
+                                    <button id="export-pdf-btn" class="btn btn--secondary btn--sm">Export PDF</button>
+                                    <button id="export-excel-btn" class="btn btn--secondary btn--sm">Export Excel</button>
+                                </div>
                             </div>
                         </div>
 
@@ -296,13 +392,16 @@
                             <table class="transactions-table">
                             <thead>
                                 <tr>
-                                <th>Date & Time</th>
-                                <th>Processed By</th>
-                                <th>Items</th>
-                                <th>Subtotal</th>
-                                <th>Tax</th>
-                                <th>Total</th>
-                                <th>Payment Method</th>
+                                    <th>Order ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Processed By</th>
+                                    <th>Items</th>
+                                    <th>Subtotal</th>
+                                    <th>Tax</th>
+                                    <th>Discount</th> 
+                                    <th>Total</th>
+                                    <th>Payment Method</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="transactions-list">
@@ -318,7 +417,7 @@
                 </div>
                 <div class="table-container">
                     <table id="reservationTable">
-                        <thead>
+                            <thead>
                             <tr>
                             <th>Name</th>
                             <th>Contact</th>
@@ -326,6 +425,8 @@
                             <th>Date</th>
                             <th>Time</th>
                             <th>Diners</th>
+                            <th>Pre-Ordered Items</th>
+                            <th>Receipt</th>
                             <th>Notes</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -391,8 +492,8 @@
                             <thead>
                                 <tr>
                                     <th>Customer Name</th>
-                                    <th>Comment</th>
-                                    <th>Date Submitted</th>
+                                    <th>Rating</th> <th>Comment</th>
+                                    <th>Image</th> <th>Date Submitted</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -406,6 +507,9 @@
             <section id="analytics-section" class="content-section">
                 <div class="section-header">
                     <h1>Business Analytics</h1>
+                    <div class="header-actions">
+                         <button id="generate-z-report-btn" class="btn btn--primary">Generate Z-Report</button>
+                    </div>
                 </div>
 
                     <div class="analytics-grid">
@@ -427,7 +531,17 @@
                             <h2 id="analytics-low-stock">0</h2>
                         </div>
 
-                        <div class="chart-card chart-card-medium"> <h5>Weekly Sales Overview (Last 7 Days)</h5>
+                        <div class="chart-card chart-card-medium">
+                            <div class="chart-header">
+                                <h5 id="sales-chart-title">Weekly Sales Overview</h5>
+                                <div class="filter-container">
+                                    <select id="sales-chart-filter" class="form-control">
+                                        <option value="week">This Week</option>
+                                        <option value="month">This Month</option>
+                                        <option value="today">Today (Hourly)</option>
+                                    </select>
+                                </div>
+                            </div>
                             <canvas id="analytics-sales-chart"></canvas>
                         </div>
 
@@ -472,11 +586,14 @@
                                     <label for="pay-cash">Cash</label>
                                 </div>
                                 <div>
-                                    <input type="radio" id="pay-online" name="paymentMethod" value="Online">
-                                    <label for="pay-online">Online</label>
+                                    <input type="radio" id="pay-gcash" name="paymentMethod" value="Gcash">
+                                    <label for="pay-gcash">Gcash</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="pay-card" name="paymentMethod" value="Debit/Credit Card">
+                                    <label for="pay-card">Debit/Credit Card</label>
                                 </div>
                             </div>
-                            
                             <div id="payment-cash-details">
                                 <div class="form-group">
                                     <label for="payment-amount">Payment Amount (₱):</label>
@@ -605,31 +722,65 @@
             </div>
         </div>
         <div id="inventory-category-modal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content modal-content--wide">
                 <h2>Manage Inventory Categories</h2>
-                <div class="form-group">
-                    <label for="new-inv-category-name">New Category Name:</label>
-                    <input type="text" id="new-inv-category-name" class="form-control" placeholder="e.g., Dairy, Produce...">
-                </div>
-                <button id="add-inv-category-btn" class="btn btn--primary btn--full-width">Add Category</button>
                 
+                <form id="add-inv-category-form" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <div class="form-group" style="flex-grow: 1; margin-bottom: 0;">
+                        <label for="new-inv-category-name" style="margin-bottom: 4px;">New Category Name:</label>
+                        <input type="text" id="new-inv-category-name" class="form-control" placeholder="e.g., Dairy, Produce...">
+                    </div>
+                    <button id="add-inv-category-btn" type="submit" class="btn btn--primary" style="align-self: flex-end;">Add Category</button>
+                </form>
+
                 <hr style="margin: 20px 0;">
                 
                 <label>Existing Categories:</label>
-                <div id="existing-inv-categories-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
-                    </div>
+                <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th style="width: 120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="existing-inv-categories-tbody">
+                        </tbody>
+                    </table>
+                </div>
                 
-                <div class="modal-buttons" style="margin-top: 20px;">
+                <div class="modal-buttons" style="margin-top: 20px; justify-content: flex-end;">
                     <button type="button" id="close-inv-category-btn" class="btn btn--secondary">Close</button>
                 </div>
             </div>
         </div>
 
+        <div id="image-view-modal" class="modal" style="padding: 20px;">
+            <div class="modal-content" style="padding: 10px; max-width: 80vw; max-height: 80vh;">
+                <span id="close-image-modal" class="close-modal">&times;</span>
+                <img id="modal-image-src" src="" alt="Feedback Image" style="width: 100%; height: auto; max-height: 75vh; object-fit: contain;">
+            </div>
+        </div>
+<div id="variation-modal" class="modal">
+            <div class="modal-content" style="width: 400px;">
+                <h2 id="variation-modal-title">Select Variation</h2>
+                <div id="variation-options-container">
+                    </div>
+                <div class="modal-buttons" style="margin-top: 20px;">
+                    <button type="button" id="cancel-variation-btn" class="btn btn--secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
         </div> 
     </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns/cdn.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script type="module" src="../scripts/firebase.js"></script>
     <script type="module" src="../scripts/advanced-pos.js"></script>
     <script type="module" src="../scripts/inventory-categories.js"></script>
