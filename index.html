@@ -4,8 +4,10 @@
     <title>Home</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="customer-ui-style.css">
     <meta name="robots" content="index,follow">
-    <style>
+    <!-- <style>
         /* Reset and base styles */
         * {
             box-sizing: border-box;
@@ -505,10 +507,10 @@
                 flex: 0 0 280px;
             }
         }
-    </style>
+    </style> -->
 </head>
 
-<body>
+<body class="page-home">
     <!-- Header -->
     <div id="i6po" class="gjs-grid-row">
         <div id="itjq" class="gjs-grid-column">
@@ -518,6 +520,11 @@
                         <img id="ihtxj" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
                     </a>
                 </div>
+                        <button id="mobile-menu-toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
                 <div id="it00l">
                     <div class="nav-links">
                         <a href="index.html">Home</a>
@@ -684,7 +691,22 @@
             <div class="gjs-divider"></div>
             <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
         </div>
-    </div>
+    </div><script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('mobile-menu-toggle');
+            var menu = document.getElementById('it00l'); // This is the container for .nav-links
+    
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', function() {
+                    // Toggle the 'X' animation on the button
+                    this.classList.toggle('is-active');
+                    
+                    // Toggle the dropdown menu visibility
+                    menu.classList.toggle('mobile-menu-active');
+                });
+            }
+        });
+    </script>
     <script type="module" src="scripts/firebase.js"></script>
     <script type="module" src="scripts/auth-manager.js"></script>
 </body>

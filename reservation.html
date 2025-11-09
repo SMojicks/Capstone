@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservation</title>
+    <link rel="stylesheet" href="customer-ui-style.css">
 </head>
-<style>
+<!-- <style>
  body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -945,8 +946,8 @@
     padding: 15px;
 }
 
-</style>
-<body>
+</style> -->
+<body class="page-content">
     <div id="i6po" class="gjs-grid-row">
         <div id="itjq" class="gjs-grid-column">
             <div id="iyd2">
@@ -955,6 +956,11 @@
                         <img id="ihtxj" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
                     </a>
                 </div>
+                <button id="mobile-menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
                 <div id="it00l">
                     <div class="nav-links">
                         <a href="index.html">Home</a>
@@ -1307,6 +1313,22 @@
             <div id="it6g1v">Copyright © 2025 Acaccia Bistro Cafe</div>
         </div>
     </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('mobile-menu-toggle');
+            var menu = document.getElementById('it00l'); // This is the container for .nav-links
+    
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', function() {
+                    // Toggle the 'X' animation on the button
+                    this.classList.toggle('is-active');
+                    
+                    // Toggle the dropdown menu visibility
+                    menu.classList.toggle('mobile-menu-active');
+                });
+            }
+        });
+    </script>
 <script type="module" src="scripts/firebase.js"></script>
     <script type="module" src="scripts/auth-manager.js"></script>
 </body>

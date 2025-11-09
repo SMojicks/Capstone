@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acaccia Bistro Cafe - Login</title>
-    <style>
+    <link rel="stylesheet" href="customer-ui-style.css">
+    <!-- <style>
         * {
             margin: 0;
             padding: 0;
@@ -280,9 +281,9 @@
                 padding: 30px 25px;
             }
         }
-    </style>
+    </style> -->
 </head>
-<body>
+<body class="page-login">
     <div class="login-container">
         <!-- Image Section -->
         <div class="image-section">
@@ -533,7 +534,22 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
             document.getElementById('phoneGroup').classList.add('hidden');
         }
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('mobile-menu-toggle');
+            var menu = document.getElementById('it00l'); // This is the container for .nav-links
     
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', function() {
+                    // Toggle the 'X' animation on the button
+                    this.classList.toggle('is-active');
+                    
+                    // Toggle the dropdown menu visibility
+                    menu.classList.toggle('mobile-menu-active');
+                });
+            }
+        });
+    </script>
     <script type="module" src="scripts/firebase.js"></script>
     <script type="module" src="scripts/auth-login.js"></script>
 </body>
