@@ -1,7 +1,12 @@
 // scripts/auth-login.js
 
 import { auth, db } from "./firebase.js";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut,
+    sendPasswordResetEmail  // <-- ADDED THIS IMPORT
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // Handle form submission
@@ -129,4 +134,42 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
                 alert('Invalid employee email or password.');
             });
     }
+});
+
+// --- NEW: FORGOT PASSWORD LINK HANDLER ---
+document.getElementById('forgotLink').addEventListener('click', function(e) {
+    e.preventDefault(); // Prevent the link from navigating
+
+    // Only allow for customers
+    if (currentLoginType !== 'customer') {
+        alert("Password reset is only available for customer accounts. Please switch to the 'Customer' tab.");
+        return;
+    }
+
+    // Get the email from the form field
+    const email = document.getElementById('email').value;
+    if (!email) {
+        alert("Please enter your email address in the email field first, then click 'Forgot your password?'.");
+        return;
+    }
+
+    sendPasswordResetEmail(auth, email)
+        .then(() => {
+            alert("Password reset email sent! Please check your inbox (and spam folder).");
+        })
+        .catch((error) => {
+            let userMessage = "An unknown error occurred.";
+            switch (error.code) {
+                case "auth/user-not-found":
+                case "auth/invalid-credential":
+                    userMessage = "No account was found with this email address.";
+                    break;
+                case "auth/invalid-email":
+                    userMessage = "The email address is not valid.";
+                    break;
+                default:
+                    userMessage = `Error: ${error.message}`;
+            }
+            alert(userMessage);
+        });
 });

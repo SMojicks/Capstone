@@ -642,7 +642,19 @@
             </div>
         </div>
     </div>
-
+<div id="auth-validation-modal" class="auth-modal-backdrop hidden">
+        <div class="auth-modal-content">
+            <h2>Login Required</h2>
+            <p>You must be logged in to post on the bulletin board. Please log in or create an account to continue.</p>
+            <div class="auth-modal-buttons">
+                <a href="login.html" class="auth-modal-btn">Login</a>
+                <a href="login.html" class="auth-modal-btn auth-modal-btn-secondary">Sign Up</a>
+            </div>
+            <div class="auth-modal-tertiary-action">
+            <button type="button" class="auth-modal-btn-tertiary auth-modal-close-btn">Stay signed out</button>
+        </div>
+        </div>
+    </div>
     <footer id="iv3be5" class="gjs-grid-row">
         <div id="ilriti" class="gjs-grid-column">
             <div id="im0rle">
@@ -764,6 +776,11 @@ window.showBulletinPlaceholder = function() {
 
 // Open upload modal
 function openPhotoModal(spotNumber) {
+    if (!loggedInUser) {
+      const authModal = document.getElementById('auth-validation-modal');
+      if (authModal) authModal.classList.remove('hidden');
+      return; // Stop the function from continuing
+  }
   // Don't open modal if spot is already filled
   if (bulletinPhotos[spotNumber]) {
       viewPhotoDetails(spotNumber);
@@ -1045,6 +1062,15 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAuthState();
   loadFeedbacksFromFirestore(); // This now filters for the last 7 days
   
+  const authModal = document.getElementById('auth-validation-modal');
+    if (authModal) {
+        const authModalClose = authModal.querySelector('.auth-modal-close-btn');
+        if (authModalClose) {
+            authModalClose.addEventListener('click', () => {
+                authModal.classList.add('hidden');
+            });
+        }
+    }
   // Add listener for emoji selection
   document.getElementById('emoji-rating').addEventListener('change', (e) => {
       if (e.target.name === 'rating') {

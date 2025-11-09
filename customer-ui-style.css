@@ -2417,3 +2417,104 @@ input[type="text"]:focus {
         height: 200px;
     }
 }
+
+/* ========================================
+   8. AUTH VALIDATION MODAL
+   ======================================== */
+
+.auth-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Use the existing .hidden class to toggle */
+.auth-modal-backdrop.hidden {
+    display: none;
+}
+
+.auth-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    animation: modalFadeIn 0.3s ease-in-out;
+}
+
+.auth-modal-content h2 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.auth-modal-content p {
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.auth-modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.auth-modal-btn {
+    padding: 12px 24px;
+    text-transform: uppercase;
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: 2px;
+    background-color: rgba(101, 85, 4, 1);
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: 2px solid transparent;
+}
+
+.auth-modal-btn:hover {
+    background-color: rgba(81, 65, 0, 1);
+}
+
+.auth-modal-btn.auth-modal-btn-secondary {
+    background-color: transparent;
+    color: rgba(101, 85, 4, 1);
+    border-color: rgba(101, 85, 4, 1);
+}
+
+.auth-modal-btn.auth-modal-btn-secondary:hover {
+    background-color: rgba(101, 85, 4, 0.1);
+}
+.auth-modal-tertiary-action {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.auth-modal-btn-tertiary {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.auth-modal-btn-tertiary:hover {
+    color: #000;
+}

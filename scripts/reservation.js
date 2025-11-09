@@ -12,7 +12,39 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
+async function checkAuthState() {
+    onAuthStateChanged(auth, async (user) => {
+        const modal = document.getElementById('auth-validation-modal'); // Get the modal
 
+        if (user) {
+            // User is LOGGED IN
+            currentUserId = user.uid;
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const nameInput = document.querySelector('input[name="customerName"]');
+                const contactInput = document.querySelector('input[name="contactNumber"]');
+                if (nameInput) nameInput.value = userData.fullName || "";
+                if (contactInput) contactInput.value = userData.phone || "";
+            }
+            
+            // Hide the modal if it exists
+            if (modal) modal.classList.add('hidden');
+
+        } else {
+            // User is NOT logged in
+            currentUserId = null;
+            const nameInput = document.querySelector('input[name="customerName"]');
+            const contactInput = document.querySelector('input[name="contactNumber"]');
+            if (nameInput) nameInput.value = "";
+            if (contactInput) contactInput.value = "";
+
+            // Show the modal if it exists
+            if (modal) modal.classList.remove('hidden');
+        }
+    });
+}
 const reservationsRef = collection(db, "reservations");
 const productsRef = collection(db, "products"); // <-- NEW
 
@@ -66,28 +98,28 @@ async function uploadToCloudinary(file) {
 // AUTH & RESERVATION FORM
 // ===================================
 
-async function checkAuthState() {
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            currentUserId = user.uid;
-            const userDocRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                const nameInput = document.querySelector('input[name="customerName"]');
-                const contactInput = document.querySelector('input[name="contactNumber"]');
-                if (nameInput) nameInput.value = userData.fullName || "";
-                if (contactInput) contactInput.value = userData.phone || "";
-            }
-        } else {
-            currentUserId = null;
-            const nameInput = document.querySelector('input[name="customerName"]');
-            const contactInput = document.querySelector('input[name="contactNumber"]');
-            if (nameInput) nameInput.value = "";
-            if (contactInput) contactInput.value = "";
-        }
-    });
-}
+// async function checkAuthState() {
+//     onAuthStateChanged(auth, async (user) => {
+//         if (user) {
+//             currentUserId = user.uid;
+//             const userDocRef = doc(db, "users", user.uid);
+//             const userDoc = await getDoc(userDocRef);
+//             if (userDoc.exists()) {
+//                 const userData = userDoc.data();
+//                 const nameInput = document.querySelector('input[name="customerName"]');
+//                 const contactInput = document.querySelector('input[name="contactNumber"]');
+//                 if (nameInput) nameInput.value = userData.fullName || "";
+//                 if (contactInput) contactInput.value = userData.phone || "";
+//             }
+//         } else {
+//             currentUserId = null;
+//             const nameInput = document.querySelector('input[name="customerName"]');
+//             const contactInput = document.querySelector('input[name="contactNumber"]');
+//             if (nameInput) nameInput.value = "";
+//             if (contactInput) contactInput.value = "";
+//         }
+//     });
+// }
 
 function setDateRestrictions() {
   const today = new Date();
@@ -182,6 +214,15 @@ function setFormDisabled(disabled) {
 }
 
 async function checkAvailability() {
+    // --- NEW VALIDATION ADDED HERE ---
+    // If the user is not logged in, show the modal and stop.
+    if (!currentUserId) {
+        const modal = document.getElementById('auth-validation-modal');
+        if (modal) modal.classList.remove('hidden');
+        return; // Stop the function from proceeding
+    }
+    // --- END OF NEW VALIDATION ---
+
     const selectedDate = reservationDateInput.value;
     if (!selectedDate) {
         alert("Please select a valid date.");
@@ -580,6 +621,16 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeTableClicks();
   checkAuthState();
   setFormDisabled(true);
+
+  const authModal = document.getElementById('auth-validation-modal');
+    if (authModal) {
+        const authModalClose = authModal.querySelector('.auth-modal-close-btn');
+        if (authModalClose) {
+            authModalClose.addEventListener('click', () => {
+                authModal.classList.add('hidden');
+            });
+        }
+    }
 
   // --- Reservation Form Listeners ---
   if (checkAvailabilityBtn) checkAvailabilityBtn.addEventListener("click", checkAvailability);
