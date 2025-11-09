@@ -1,9 +1,10 @@
 // scripts/inventory.js
 import { db } from './firebase.js';
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc,
+  collection, addDoc, updateDoc, deleteDoc, doc, getDoc,
   serverTimestamp, query, orderBy, onSnapshot, getDocs
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { createLog } from './inventory-log.js';
 
 // --- Elements ---
 const inventoryTableBody = document.getElementById('inventory-table');
@@ -285,7 +286,7 @@ function renderInventoryTable(ingredientsToRender) {
     });
 
     row.querySelector('.delete-btn').addEventListener('click', async () => {
-      if (confirm(`Delete "${ing.name}"? This is permanent.`)) {
+       if (confirm(`Delete "${ing.name}"? This is permanent.`)) {
         await deleteDoc(doc(db, "ingredients", id));
         // No need to reload, snapshot will update
       }
@@ -337,9 +338,9 @@ function loadInventory() {
 }
 
 // --- Add or Update Ingredient ---
- form.addEventListener('submit', async (e) => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
+
   const id = idField.value;
   const newData = {
     name: nameField.value.trim(),
@@ -353,26 +354,63 @@ function loadInventory() {
     lastUpdated: serverTimestamp(),
   };
 
-  // Validation
+  // ... (rest of your validation logic)
+// Validation Logic
   if (newData.conversionFactor <= 0) {
-      alert("Conversion Factor must be greater than 0.");
-      return;
+    alert("Conversion factor must be greater than 0.");
+    return;
   }
+  
   if (newData.stockUnit === newData.baseUnit && newData.conversionFactor !== 1) {
-      alert("If Stock Unit and Base Unit are the same, Conversion Factor must be 1.");
-      return;
+    alert("If Stock Unit and Base Unit are the same, conversion factor must be 1.");
+    return;
   }
+  
   if (newData.expiryDate === "") {
-      newData.expiryDate = null;
+    newData.expiryDate = null;
   }
+
+  // --- NEW LOGGING LOGIC ---
+  let prevQty = 0;
+  const employeeName = document.querySelector(".employee-name")?.textContent || "Employee";
+  const reason = id ? "Updated stock details" : "Added new stock";
+  let actionType = "Add Stock";
+  // --- END NEW LOGGING LOGIC ---
 
   try {
     if (id) {
-      await updateDoc(doc(db, "ingredients", id), newData);
+      // --- LOGGING: Get previous quantity for an UPDATE ---
+      actionType = "Update Stock";
+      const docRef = doc(db, "ingredients", id);
+      const oldDoc = await getDoc(docRef);
+      if (oldDoc.exists()) {
+        prevQty = oldDoc.data().stockQuantity || 0;
+      }
+      // --- END LOGGING ---
+
+      await updateDoc(docRef, newData);
+
     } else {
+      // This is a NEW item, so prevQty is 0
       newData.ingredientId = await getNextIngredientId();
       await addDoc(productsRef, newData);
     }
+
+    // --- NEW: Call createLog after success ---
+    const qtyChange = newData.stockQuantity - prevQty;
+    createLog(
+      employeeName,
+      actionType,
+      newData.name,
+      newData.category,
+      qtyChange,
+      newData.stockUnit, // We log the change in *stock units*
+      prevQty,
+      newData.stockQuantity,
+      reason
+    );
+    // --- END NEW ---
+
     closeModal();
   } catch (error) {
     console.error("❌ Error saving ingredient:", error);

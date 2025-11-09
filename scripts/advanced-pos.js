@@ -13,68 +13,21 @@ const salesRef = collection(db, "sales"); // For COMPLETED orders
 const pendingOrdersRef = collection(db, "pending_orders"); // For KITCHEN QUEUE
 const stockMovementsRef = collection(db, "stock_movements");
 const categoriesRef = doc(db, "settings", "categories");
-// --- NEW: Inventory Categories Reference ---
 const invCategoriesRef = doc(db, "settings", "inventoryCategories");
 
 
-// --- Page Elements ---
-const productGrid = document.getElementById("product-grid");
-const cartItemsContainer = document.getElementById("cart-items");
-const subtotalEl = document.getElementById("cart-subtotal");
-const taxEl = document.getElementById("cart-tax");
-const totalEl = document.getElementById("cart-total");
-const processPaymentBtn = document.querySelector(".payment-buttons .btn--primary");
-const clearCartBtn = document.querySelector(".payment-buttons .btn--secondary");
-const editModeBtn = document.getElementById("edit-mode-btn");
-const categoryTabsContainer = document.getElementById("category-tabs-container");
-const menuImageUpload = document.getElementById("menu-image-upload");
-const menuImagePreview = document.getElementById("menu-image-preview");
+// --- Page Elements (DECLARED here, ASSIGNED in DOMContentLoaded) ---
+let productGrid, cartItemsContainer, subtotalEl, taxEl, totalEl, processPaymentBtn, clearCartBtn, editModeBtn, categoryTabsContainer, menuImageUpload, menuImagePreview;
+let addMenuBtn, cancelMenuBtn, menuModal, menuForm, recipeList, addIngredientBtn, menuCategoryDropdown, newCategoryInput, menuWaitTimeSelect;
+let variationToggle, singlePriceWrapper, variationsWrapper, addVariationBtn, variationListContainer;
+let variationModal, variationModalTitle, variationOptionsContainer, cancelVariationBtn;
+let customerInfoModal, customerInfoForm, cancelCustomerInfoBtn;
+let orderDetailsModal, orderModalBackBtn, orderModalVoidBtn, orderModalProgressBtn, orderModalPrintBtn;
+let ordersLine;
+let discountTypeSelect, customDiscountWrapper, customDiscountAmount, applyDiscountBtn, cartDiscountEl;
+let kitchenStubModal, kitchenStubContent, kitchenStubSendBtn, kitchenStubCancelBtn;
+let mainRecipeContainer;
 
-// --- Add Menu Item Modal ---
-const addMenuBtn = document.getElementById("add-menu-item-btn");
-const cancelMenuBtn = document.getElementById("cancel-menu-btn");
-const menuModal = document.getElementById("menu-item-modal");
-const menuForm = document.getElementById("menu-item-form");
-const recipeList = document.getElementById("recipe-list");
-const addIngredientBtn = document.getElementById("add-ingredient-btn");
-const menuCategoryDropdown = document.getElementById("menu-category");
-const newCategoryInput = document.getElementById("new-category-input");
-const menuWaitTimeSelect = document.getElementById("menu-waiting-time");
-
-// --- Variation Elements (Admin) ---
-const variationToggle = document.getElementById("product-variation-toggle");
-const singlePriceWrapper = document.getElementById("single-price-wrapper");
-const variationsWrapper = document.getElementById("variations-wrapper");
-const addVariationBtn = document.getElementById("add-variation-btn");
-const variationListContainer = document.getElementById("product-variations-list");
-
-// --- Variation Choice Modal (POS) ---
-const variationModal = document.getElementById("variation-modal");
-const variationModalTitle = document.getElementById("variation-modal-title");
-const variationOptionsContainer = document.getElementById("variation-options-container");
-const cancelVariationBtn = document.getElementById("cancel-variation-btn");
-
-// --- Customer Info Modal ---
-const customerInfoModal = document.getElementById("customer-info-modal");
-const customerInfoForm = document.getElementById("customer-info-form");
-const cancelCustomerInfoBtn = document.getElementById("cancel-customer-info-btn");
-
-// --- Order Details Modal ---
-const orderDetailsModal = document.getElementById("order-details-modal");
-const orderModalBackBtn = document.getElementById("order-modal-back-btn");
-const orderModalVoidBtn = document.getElementById("order-modal-void-btn");
-const orderModalProgressBtn = document.getElementById("order-modal-progress-btn");
-const orderModalPrintBtn = document.getElementById("order-modal-print-btn");
-
-// --- Pending Orders Line ---
-const ordersLine = document.getElementById("orders-line");
-
-// --- Discount Elements ---
-const discountTypeSelect = document.getElementById("discount-type");
-const customDiscountWrapper = document.getElementById("custom-discount-wrapper");
-const customDiscountAmount = document.getElementById("custom-discount-amount");
-const applyDiscountBtn = document.getElementById("apply-discount-btn");
-const cartDiscountEl = document.getElementById("cart-discount");
 
 // --- State Variables ---
 let cart = [];
@@ -92,29 +45,7 @@ let currentImageFile = null;
 let currentImageUrl = null; 
 let currentDiscount = { type: "none", amount: 0 };
 
-// --- Image Preview & File Handling ---
-if (menuImageUpload) {
-    menuImageUpload.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            currentImageFile = file; 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                if (menuImagePreview) {
-                    menuImagePreview.src = event.target.result;
-                    menuImagePreview.classList.remove("hidden");
-                }
-            };
-            reader.readAsDataURL(file);
-        } else {
-            currentImageFile = null;
-            if (menuImagePreview) {
-                menuImagePreview.classList.add("hidden");
-                menuImagePreview.src = "";
-            }
-        }
-    });
-}
+
 // --- CLOUDINARY UPLOAD FUNCTION ---
 async function uploadToCloudinary(file) {
     const CLOUD_NAME = "dofyjwhlu"; 
@@ -165,21 +96,7 @@ async function addCategoryIfNew(categoryName) {
   }
 }
 
-if (menuCategoryDropdown) {
-    menuCategoryDropdown.addEventListener("change", function() {
-      if (this.value === "__new__") {
-        newCategoryInput.style.display = "block";
-        newCategoryInput.focus();
-      } else {
-        newCategoryInput.style.display = "none";
-        newCategoryInput.value = "";
-      }
-    });
-}
-
 // --- Recipe & Ingredient Filtering ---
-
-// --- NEW: Load Inventory Categories ---
 async function loadInventoryCategories() {
     try {
         const docSnap = await getDoc(invCategoriesRef);
@@ -202,11 +119,16 @@ async function loadAllIngredientsCache() {
   }
 }
 
-// --- REMOVED: updateIngredientCacheForRecipeModal() function is no longer needed ---
-
-// --- MODIFIED: addIngredientRowUI ---
-// This function now builds the row with its own internal filters
-function addIngredientRowUI(ingredient = {}) {
+/**
+ * Adds an ingredient row to the *main* recipe list (for single-price items)
+ * @param {object} ingredient - The ingredient data to pre-fill
+ * @param {HTMLElement} container - The HTML element to append the row to (should be recipeList)
+ */
+function addIngredientRowUI(ingredient = {}, container) {
+  if (!container) {
+      console.error("No container specified for addIngredientRowUI");
+      return;
+  }
   const row = document.createElement("div");
   row.className = "ingredient-row";
 
@@ -254,7 +176,6 @@ function addIngredientRowUI(ingredient = {}) {
       ingredientSelect.innerHTML = `<option value="">Select Ingredient...</option>`;
       filtered.forEach(ing => {
           ingredientSelect.add(new Option(`${ing.name} (${ing.baseUnit})`, ing.id));
-          // Store baseUnit on the option
           ingredientSelect.options[ingredientSelect.options.length - 1].dataset.baseUnit = ing.baseUnit;
       });
   };
@@ -276,30 +197,105 @@ function addIngredientRowUI(ingredient = {}) {
   row.appendChild(qtyInput);
   row.appendChild(unitInput);
   row.appendChild(deleteBtn);
-  recipeList.appendChild(row);
+  container.appendChild(row); // Use the provided container
 
   // 7. Pre-fill logic (for editing)
   if (ingredient.ingredientId) {
       const fullIngredient = allIngredientsCache.find(ing => ing.id === ingredient.ingredientId);
       if (fullIngredient) {
-          // Set category and trigger ingredient population
           categorySelect.value = fullIngredient.category;
           populateIngredients(fullIngredient.category);
-          
-          // Set selected ingredient, qty, and unit
           ingredientSelect.value = ingredient.ingredientId;
           qtyInput.value = ingredient.qtyPerProduct;
           unitInput.value = ingredient.unitUsed;
       }
   } else {
-      // If adding new row, just populate with all ingredients
       populateIngredients("");
   }
 }
 
+/**
+ * Adds an all-in-one row (Variation + Recipe) to the variations list
+ * @param {object} variation - The variation data (name, price) to pre-fill
+ * @param {object} ingredient - The ingredient data to pre-fill
+ */
+function addVariationRowUI(variation = {}, ingredient = {}) {
+    if (!variationListContainer) return;
+
+    const row = document.createElement("div");
+    row.className = "ingredient-row"; // Reuse the existing class for structure
+
+    // Create the combined row HTML (NO inline styles)
+    row.innerHTML = `
+        <div class="variation-name-price-group">
+            <input type="text" class="form-control variation-name" placeholder="Variation Name" value="${variation.name || ''}" required>
+            <input type="number" class="form-control variation-price" placeholder="Price" value="${variation.price || ''}" step="0.01" min="0" required>
+        </div>
+        <select class="inv-category-filter form-control"><option value="">Category...</option></select>
+        <select class="ingredient-id form-control" required><option value="">Select Ingredient...</option></select>
+        <input type="number" class="ingredient-qty form-control" placeholder="Qty" step="any" min="0" required>
+        <input type="text" class="ingredient-unit form-control" placeholder="Unit" readonly required>
+        <button type="button" class="remove-ingredient">X</button>
+    `;
+
+    variationListContainer.appendChild(row);
+
+    // --- All the logic below remains the same ---
+    const categorySelect = row.querySelector(".inv-category-filter");
+    const ingredientSelect = row.querySelector(".ingredient-id");
+    const unitInput = row.querySelector(".ingredient-unit");
+    const qtyInput = row.querySelector(".ingredient-qty");
+
+    // Populate category dropdown
+    allInventoryCategories.forEach(cat => {
+        categorySelect.add(new Option(cat, cat));
+    });
+
+    // Function to populate ingredients based on category
+    const populateIngredients = (category) => {
+        let filtered = (category)
+            ? allIngredientsCache.filter(ing => ing.category === category)
+            : allIngredientsCache;
+        
+        ingredientSelect.innerHTML = `<option value="">Select Ingredient...</option>`;
+        filtered.forEach(ing => {
+            ingredientSelect.add(new Option(`${ing.name} (${ing.baseUnit})`, ing.id));
+            ingredientSelect.options[ingredientSelect.options.length - 1].dataset.baseUnit = ing.baseUnit;
+        });
+    };
+
+    // Add Event Listeners
+    categorySelect.addEventListener("change", () => {
+        populateIngredients(categorySelect.value);
+        unitInput.value = ""; // Clear unit
+    });
+
+    ingredientSelect.addEventListener("change", () => {
+        const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
+        unitInput.value = selectedOption.dataset.baseUnit || "";
+    });
+    
+    row.querySelector(".remove-ingredient").addEventListener("click", () => row.remove());
+
+    // Pre-fill logic (for editing)
+    if (ingredient.ingredientId) {
+        const fullIngredient = allIngredientsCache.find(ing => ing.id === ingredient.ingredientId);
+        if (fullIngredient) {
+            categorySelect.value = fullIngredient.category;
+            populateIngredients(fullIngredient.category); // Populate before setting value
+            ingredientSelect.value = ingredient.ingredientId;
+            qtyInput.value = ingredient.qtyPerProduct;
+            unitInput.value = ingredient.unitUsed;
+        }
+    } else {
+        populateIngredients(""); // Populate with all ingredients for a new row
+    }
+}
 
 // --- Save Product, Variations, and Recipe ---
-menuForm.addEventListener("submit", async (e) => {
+// This function needs to be attached to the form,
+// so we will move its attachment into DOMContentLoaded
+async function handleMenuFormSubmit(e) {
   e.preventDefault();
   
   const productId = document.getElementById("menu-product-id").value || doc(productsRef).id;
@@ -307,97 +303,125 @@ menuForm.addEventListener("submit", async (e) => {
   
   let productCategory = menuCategoryDropdown.value;
   if (productCategory === "__new__") {
-    productCategory = newCategoryInput.value.trim();
-    if (productCategory) await addCategoryIfNew(productCategory);
-    else { alert("Please enter a name for the new category."); return; }
+      productCategory = newCategoryInput.value.trim();
+      if (productCategory) await addCategoryIfNew(productCategory);
+      else { alert("Please enter a name for the new category."); return; }
   }
 
   const productData = {
-    name: document.getElementById("menu-name").value,
-    category: productCategory,
-    waitingTime: menuWaitTimeSelect.value,
-    isVisible: true,
-    imageUrl: currentImageUrl || null,
-    price: 0, 
-    variations: []
+      name: document.getElementById("menu-name").value,
+      category: productCategory,
+      waitingTime: menuWaitTimeSelect.value,
+      isVisible: true,
+      imageUrl: currentImageUrl || null,
+      price: 0, 
+      variations: []
   };
   
   if (!productData.waitingTime) { alert("Please select an average waiting time."); return; }
 
+  let mainRecipeData = [];
+  let recipeError = false; 
+
   if (variationToggle.checked) {
-      const variationRows = variationListContainer.querySelectorAll(".variation-row");
-      if (variationRows.length === 0) { alert("Please add at least one product variation."); return; }
-      
+      const variationMap = new Map();
+      const ingredientRows = variationListContainer.querySelectorAll(".ingredient-row");
+      if (ingredientRows.length === 0) { alert("Please add at least one variation ingredient."); return; }
+
       let variationError = false;
-      variationRows.forEach(row => {
-          const name = row.querySelector('input[placeholder="Name"]').value;
-          const price = parseFloat(row.querySelector('input[placeholder="Price"]').value);
-          if (!name || isNaN(price) || price <= 0) variationError = true;
-          productData.variations.push({ name: name, price: price });
+      ingredientRows.forEach(row => {
+          const varName = row.querySelector(".variation-name").value.trim();
+          const varPrice = parseFloat(row.querySelector(".variation-price").value);
+
+          if (!varName || isNaN(varPrice) || varPrice <= 0) {
+              variationError = true;
+          }
+
+          const ingredient = {
+              ingredientId: row.querySelector(".ingredient-id").value,
+              qtyPerProduct: parseFloat(row.querySelector(".ingredient-qty").value),
+              unitUsed: row.querySelector(".ingredient-unit").value
+          };
+
+          if (!ingredient.ingredientId || isNaN(ingredient.qtyPerProduct) || !ingredient.unitUsed) {
+              recipeError = true;
+          }
+
+          if (!variationMap.has(varName)) {
+              variationMap.set(varName, { name: varName, price: varPrice, recipe: [] });
+          }
+          variationMap.get(varName).recipe.push(ingredient);
       });
-      if (variationError) { alert("Please check your variations. All must have a name and a valid price."); return; }
-      productData.price = productData.variations[0].price;
+
+      if (variationError) { alert("Please ensure every variation has a valid Name and Price."); return; }
+      if (recipeError) { alert("Please ensure every ingredient row is completely filled out."); return; }
+
+      productData.variations = Array.from(variationMap.values());
+      if (productData.variations.length > 0) {
+          productData.price = productData.variations[0].price; // Set base price
+      }
 
   } else {
       const singlePrice = parseFloat(document.getElementById("menu-price").value);
       if (isNaN(singlePrice) || singlePrice <= 0) { alert("Please enter a valid price for the product."); return; }
       productData.price = singlePrice;
       productData.variations = [];
+      
+      const ingredientRows = recipeList.querySelectorAll(".ingredient-row");
+      if (ingredientRows.length === 0) { alert("A product must have at least one ingredient."); return; }
+      
+      ingredientRows.forEach(row => {
+          const ingredientId = row.querySelector(".ingredient-id").value;
+          const qty = parseFloat(row.querySelector(".ingredient-qty").value);
+          const unit = row.querySelector(".ingredient-unit").value;
+          if (!unit || qty <= 0 || !ingredientId) { recipeError = true; }
+          mainRecipeData.push({ productId: productId, ingredientId: ingredientId, qtyPerProduct: qty, unitUsed: unit });
+      });
+      if (recipeError) { alert("Please check your recipe ingredients."); return; }
   }
-  
-  const recipeData = [];
-  const ingredientRows = recipeList.querySelectorAll(".ingredient-row");
-  if (ingredientRows.length === 0) { alert("A product must have at least one ingredient..."); return; }
-  let recipeError = false;
-  ingredientRows.forEach(row => {
-    const ingredientId = row.querySelector(".ingredient-id").value; 
-    const qty = parseFloat(row.querySelector(".ingredient-qty").value);
-    const unit = row.querySelector(".ingredient-unit").value;
-    if (!unit || qty <= 0 || !ingredientId) { recipeError = true; }
-    recipeData.push({ productId: productId, ingredientId: ingredientId, qtyPerProduct: qty, unitUsed: unit });
-  });
-  if (recipeError) { alert("Please check your recipe..."); return; }
   
   try {
-    const saveBtn = menuForm.querySelector('button[type="submit"]');
-    if (currentImageFile) {
-        saveBtn.disabled = true;
-        saveBtn.textContent = "Uploading Image...";
-        const downloadURL = await uploadToCloudinary(currentImageFile);
-        productData.imageUrl = downloadURL;
-        saveBtn.textContent = "Saving Product...";
-    }
+      const saveBtn = menuForm.querySelector('button[type="submit"]');
+      if (currentImageFile) {
+          saveBtn.disabled = true;
+          saveBtn.textContent = "Uploading Image...";
+          const downloadURL = await uploadToCloudinary(currentImageFile);
+          productData.imageUrl = downloadURL;
+          saveBtn.textContent = "Saving Product...";
+      }
 
-    const batch = writeBatch(db);
-    const productDocRef = doc(db, "products", productId);
-    batch.set(productDocRef, productData, { merge: true });
+      const batch = writeBatch(db);
+      const productDocRef = doc(db, "products", productId);
+      batch.set(productDocRef, productData, { merge: true });
 
-    if (isEditing) {
-        const q = query(recipesRef, where("productId", "==", productId));
-        const oldRecipes = await getDocs(q);
-        oldRecipes.forEach(recipeDoc => batch.delete(recipeDoc.ref));
-    }
-    
-    recipeData.forEach(recipeItem => {
-        const recipeDocRef = doc(collection(db, "recipes"));
-        batch.set(recipeDocRef, recipeItem);
-    });
+      if (isEditing) {
+          const q = query(recipesRef, where("productId", "==", productId));
+          const oldRecipes = await getDocs(q);
+          oldRecipes.forEach(recipeDoc => batch.delete(recipeDoc.ref));
+      }
+      
+      if (mainRecipeData.length > 0) {
+          mainRecipeData.forEach(recipeItem => {
+              const recipeDocRef = doc(collection(db, "recipes"));
+              batch.set(recipeDocRef, recipeItem);
+          });
+      }
 
-    await batch.commit();
-    alert(`Product ${isEditing ? 'updated' : 'saved'} successfully!`);
-    closeMenuModal();
+      await batch.commit();
+      alert(`Product ${isEditing ? 'updated' : 'saved'} successfully!`);
+      closeMenuModal();
   
   } catch (error) {
-    console.error("Error saving product:", error);
-    alert(`Failed to save product: ${error.message}`);
+      console.error("Error saving product:", error);
+      alert(`Failed to save product: ${error.message}`);
   } finally {
-    const saveBtn = menuForm.querySelector('button[type="submit"]');
-    if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.textContent = "Save Product & Recipe";
-    }
+      const saveBtn = menuForm.querySelector('button[type="submit"]');
+      if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save Product & Recipe";
+      }
   }
-});
+}
 
 function closeMenuModal() {
   if (menuModal) {
@@ -412,6 +436,7 @@ function closeMenuModal() {
     if (variationToggle) variationToggle.checked = false;
     if (singlePriceWrapper) singlePriceWrapper.classList.remove("hidden");
     if (variationsWrapper) variationsWrapper.classList.add("hidden");
+    if (mainRecipeContainer) mainRecipeContainer.classList.remove("disabled");
 
     if (menuImagePreview) {
         menuImagePreview.src = "";
@@ -422,38 +447,13 @@ function closeMenuModal() {
   }
 }
 
-// --- MODIFIED: addMenuBtn listener ---
-if (addMenuBtn) {
-    addMenuBtn.addEventListener("click", async () => {
-        closeMenuModal(); // Resets form to default
-        await loadCategories();
-        await loadInventoryCategories(); // <-- NEW: Load inv categories
-        await loadAllIngredientsCache();
-        if (addIngredientBtn) addIngredientBtn.disabled = false; // <-- NEW: Enable add btn
-        if (menuModal) menuModal.style.display = "flex";
-    });
-}
-if (cancelMenuBtn) {
-    cancelMenuBtn.addEventListener("click", closeMenuModal);
-}
-// --- NEW: Add ingredient button (standalone) ---
-if (addIngredientBtn) {
-    addIngredientBtn.addEventListener("click", () => {
-        addIngredientRowUI(); // Adds a new blank row
-    });
-}
-
 // --- Edit Mode Toggle ---
-if (editModeBtn) {
-    editModeBtn.addEventListener("click", () => {
-      editMode = !editMode;
-      editModeBtn.textContent = editMode ? 'Exit Edit Mode' : 'Edit Menu';
-      editModeBtn.classList.toggle('btn--danger', editMode);
-      if (addMenuBtn) {
-        addMenuBtn.style.display = editMode ? 'none' : 'block';
-      }
-      renderProducts();
-    });
+function handleToggleVisibility(productId, currentVisibility) {
+  try {
+    updateDoc(doc(db, "products", productId), { isVisible: !currentVisibility });
+  } catch (error) {
+    console.error("Error toggling visibility:", error);
+  }
 }
 
 // --- POS Category Tabs ---
@@ -498,29 +498,62 @@ function listenForRecipes() {
     updateAllProductStockStatusAndRender();
   }, (error) => console.error("Error listening to recipes:", error));
 }
+
 function updateAllProductStockStatusAndRender() {
-  if (allIngredientsCache.length === 0 || allRecipesCache.length === 0 || allProducts.length === 0) {
+  if (allIngredientsCache.length === 0 || allProducts.length === 0) {
     return;
   }
+
   const ingredientStockMap = new Map();
   allIngredientsCache.forEach(ing => {
     const currentStockInBase = (ing.stockQuantity || 0) * (ing.conversionFactor || 1);
     ingredientStockMap.set(ing.id, { stock: currentStockInBase, minStock: ing.minStockThreshold || 0 });
   });
+
   productStockStatus.clear();
   for (const product of allProducts) {
-    const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
     let status = "in-stock";
-    if (productRecipes.length === 0) {
-      status = "out-of-stock";
+    
+    if (product.variations && product.variations.length > 0) {
+        let atLeastOneVariationInStock = false;
+        let lowestStockStatus = "in-stock"; // Track if any variation is low-stock
+
+        for (const variation of product.variations) {
+            let varStatus = "in-stock";
+            if (!variation.recipe || variation.recipe.length === 0) {
+                varStatus = "out-of-stock";
+            } else {
+                for (const recipe of variation.recipe) {
+                    const ingredient = ingredientStockMap.get(recipe.ingredientId);
+                    const neededQty = parseFloat(recipe.qtyPerProduct);
+                    if (!ingredient) { varStatus = "out-of-stock"; break; }
+                    if (ingredient.stock <= 0 || ingredient.stock < neededQty) { varStatus = "out-of-stock"; break; }
+                    if (ingredient.stock <= ingredient.minStock) { varStatus = "low-stock"; }
+                }
+            }
+            if (varStatus === "in-stock") atLeastOneVariationInStock = true;
+            if (varStatus === "low-stock") lowestStockStatus = "low-stock";
+        }
+        
+        if (!atLeastOneVariationInStock) {
+            status = "out-of-stock";
+        } else if (lowestStockStatus === "low-stock") {
+            status = "low-stock"; // If at least one is in stock, but one is low, show low
+        }
+        
     } else {
-      for (const recipe of productRecipes) {
-        const ingredient = ingredientStockMap.get(recipe.ingredientId);
-        const neededQty = parseFloat(recipe.qtyPerProduct);
-        if (!ingredient) { status = "out-of-stock"; break; }
-        if (ingredient.stock <= 0 || ingredient.stock < neededQty) { status = "out-of-stock"; break; }
-        if (ingredient.stock <= ingredient.minStock) { status = "low-stock"; }
-      }
+        const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
+        if (productRecipes.length === 0) {
+          status = "out-of-stock";
+        } else {
+          for (const recipe of productRecipes) {
+            const ingredient = ingredientStockMap.get(recipe.ingredientId);
+            const neededQty = parseFloat(recipe.qtyPerProduct);
+            if (!ingredient) { status = "out-of-stock"; break; }
+            if (ingredient.stock <= 0 || ingredient.stock < neededQty) { status = "out-of-stock"; break; }
+            if (ingredient.stock <= ingredient.minStock) { status = "low-stock"; }
+          }
+        }
     }
     productStockStatus.set(product.id, status);
   }
@@ -639,70 +672,73 @@ function createProductCard(product) {
   return card;
 }
 
-async function handleToggleVisibility(productId, currentVisibility) {
-  try {
-    await updateDoc(doc(db, "products", productId), { isVisible: !currentVisibility });
-  } catch (error) {
-    console.error("Error toggling visibility:", error);
-  }
-}
-
 // --- MODIFIED: openEditModal ---
 async function openEditModal(product) {
-  if (menuModal) menuModal.style.display = "flex";
-  document.getElementById("menu-modal-title").textContent = "Edit Menu Product";
-  menuForm.querySelector('button[type="submit"]').textContent = "Update Product";
+    if (menuModal) menuModal.style.display = "flex";
+    document.getElementById("menu-modal-title").textContent = "Edit Menu Product";
+    menuForm.querySelector('button[type="submit"]').textContent = "Update Product";
 
-  await loadCategories();
-  await loadInventoryCategories(); // <-- NEW
-  await loadAllIngredientsCache();
+    await loadCategories();
+    await loadInventoryCategories();
+    await loadAllIngredientsCache();
 
-  document.getElementById("menu-product-id").value = product.id;
-  document.getElementById("menu-name").value = product.name;
-  document.getElementById("menu-waiting-time").value = product.waitingTime;
-  document.getElementById("menu-category").value = product.category;
+    document.getElementById("menu-product-id").value = product.id;
+    document.getElementById("menu-name").value = product.name;
+    document.getElementById("menu-waiting-time").value = product.waitingTime;
+    document.getElementById("menu-category").value = product.category;
 
-  if (product.variations && product.variations.length > 0) {
-      variationToggle.checked = true;
-      singlePriceWrapper.classList.add("hidden");
-      variationsWrapper.classList.remove("hidden");
-      variationListContainer.innerHTML = ""; 
-      product.variations.forEach(v => {
-          addVariationRowUI(v);
-      });
-  } else {
-      variationToggle.checked = false;
-      singlePriceWrapper.classList.remove("hidden");
-      variationsWrapper.classList.add("hidden");
-      document.getElementById("menu-price").value = product.price;
-      variationListContainer.innerHTML = "";
-  }
+    if (product.variations && product.variations.length > 0) {
+        variationToggle.checked = true;
+        singlePriceWrapper.classList.add("hidden");
+        variationsWrapper.classList.remove("hidden");
+        variationListContainer.innerHTML = ""; 
+        
+        product.variations.forEach(variation => {
+            if (variation.recipe && variation.recipe.length > 0) {
+                variation.recipe.forEach(ingredient => {
+                    addVariationRowUI(variation, ingredient);
+                });
+            } else {
+                addVariationRowUI(variation, {});
+            }
+        });
+        
+        if (mainRecipeContainer) mainRecipeContainer.classList.add("disabled");
+        if (recipeList) recipeList.innerHTML = "";
+        if (addIngredientBtn) addIngredientBtn.disabled = true;
 
-  currentImageFile = null; 
-  currentImageUrl = product.imageUrl || null; 
-  if (menuImagePreview) {
-      if (product.imageUrl) {
-          menuImagePreview.src = product.imageUrl;
-          menuImagePreview.classList.remove("hidden");
-      } else {
-          menuImagePreview.classList.add("hidden");
-          menuImagePreview.src = "";
-      }
-  }
+    } else {
+        variationToggle.checked = false;
+        singlePriceWrapper.classList.remove("hidden");
+        variationsWrapper.classList.add("hidden");
+        document.getElementById("menu-price").value = product.price;
+        variationListContainer.innerHTML = "";
+        
+        if (mainRecipeContainer) mainRecipeContainer.classList.remove("disabled");
+        if (recipeList) recipeList.innerHTML = "";
+        if (addIngredientBtn) addIngredientBtn.disabled = false;
+        
+        const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
+        for (const recipeItem of productRecipes) {
+            addIngredientRowUI(recipeItem, recipeList); 
+        }
+    }
 
-  if (recipeList) {
-      recipeList.innerHTML = "";
-      const productRecipes = allRecipesCache.filter(r => r.productId === product.id);
-      if (addIngredientBtn) addIngredientBtn.disabled = false;
-      // --- MODIFIED: Loop to call new addIngredientRowUI ---
-      for (const recipeItem of productRecipes) {
-          addIngredientRowUI(recipeItem); 
-      }
-  }
+    currentImageFile = null; 
+    currentImageUrl = product.imageUrl || null; 
+    if (menuImagePreview) {
+        if (product.imageUrl) {
+            menuImagePreview.src = product.imageUrl;
+            menuImagePreview.classList.remove("hidden");
+        } else {
+            menuImagePreview.classList.add("hidden");
+            menuImagePreview.src = "";
+        }
+    }
 }
 
-// --- Cart Functions ---
 
+// --- Cart Functions ---
 function handleProductClick(product) {
     if (product.variations && product.variations.length > 0) {
         openVariationModal(product);
@@ -726,12 +762,6 @@ function openVariationModal(product) {
         variationOptionsContainer.appendChild(button);
     });
     variationModal.style.display = "flex";
-}
-
-if (cancelVariationBtn) {
-    cancelVariationBtn.addEventListener("click", () => {
-        if (variationModal) variationModal.style.display = "none";
-    });
 }
 
 function addVariationToCart(product, variation) {
@@ -807,140 +837,6 @@ function updateCartTotals() {
   if (cartDiscountEl) cartDiscountEl.textContent = `(₱${discountAmount.toFixed(2)})`;
   if (taxEl) taxEl.textContent = `₱${tax.toFixed(2)}`;
   if (totalEl) totalEl.textContent = `₱${total.toFixed(2)}`;
-}
-
-if (cartItemsContainer) {
-    cartItemsContainer.addEventListener("click", (e) => {
-      if (e.target.classList.contains("qty-btn")) {
-        updateCartQuantity(e.target.dataset.id, parseInt(e.target.dataset.change));
-      }
-    });
-}
-
-if (clearCartBtn) {
-    clearCartBtn.addEventListener("click", () => {
-      if (confirm("Clear the entire cart?")) {
-        cart = [];
-        currentDiscount = { type: "none", amount: 0 };
-        if (discountTypeSelect) discountTypeSelect.value = "none";
-        if (customDiscountWrapper) customDiscountWrapper.classList.add("hidden");
-        if (customDiscountAmount) customDiscountAmount.value = "";
-        updateCartDisplay();
-      }
-    });
-}
-
-// --- Pending Order System (Cashier) ---
-
-if (processPaymentBtn) {
-    processPaymentBtn.addEventListener("click", () => {
-      if (cart.length === 0) {
-        alert("Cart is empty."); return;
-      }
-      updateCartTotals(); 
-      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      let discountAmount = currentDiscount.amount;
-      if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
-          discountAmount = subtotal * 0.20;
-      }
-      if (discountAmount > subtotal) discountAmount = subtotal;
-      const total = (subtotal - discountAmount) + ((subtotal - discountAmount) * 0.12);
-      const customerModalTotal = document.getElementById("customer-modal-total");
-      if (customerModalTotal) customerModalTotal.textContent = `₱${total.toFixed(2)}`;
-      const paymentMethodRadios = document.querySelectorAll('#customer-info-modal input[name="paymentMethod"]');
-      const cashDetails = document.getElementById("payment-cash-details");
-      const paymentAmountInput = document.getElementById("payment-amount");
-      const changeDisplay = document.getElementById("payment-change-display");
-      if (paymentAmountInput) {
-          paymentAmountInput.oninput = () => {
-            const paid = parseFloat(paymentAmountInput.value) || 0;
-            const change = paid - total;
-            if (change >= 0) {
-              changeDisplay.textContent = `₱${change.toFixed(2)}`;
-              changeDisplay.style.color = "var(--color-green-700)";
-            } else {
-              changeDisplay.textContent = `₱${change.toFixed(2)} (Insufficient)`;
-              changeDisplay.style.color = "var(--color-red-500)";
-            }
-          };
-      }
-      paymentMethodRadios.forEach(radio => {
-        radio.onchange = () => {
-          if (radio.value === 'Cash') {
-            if (paymentAmountInput) {
-                paymentAmountInput.disabled = false;
-                paymentAmountInput.value = '';
-            }
-            if (changeDisplay) changeDisplay.textContent = '₱0.00';
-          } else {
-            if (paymentAmountInput) {
-                paymentAmountInput.disabled = true;
-                paymentAmountInput.value = '';
-            }
-            if (changeDisplay) changeDisplay.textContent = '₱0.00';
-          }
-        };
-      });
-      const payCashRadio = document.getElementById('pay-cash');
-      if (payCashRadio) payCashRadio.checked = true;
-      if (cashDetails) cashDetails.classList.remove('hidden');
-      if (paymentAmountInput) {
-          paymentAmountInput.disabled = false;
-          paymentAmountInput.value = '';
-      }
-      if (changeDisplay) {
-          changeDisplay.textContent = '₱0.00';
-          changeDisplay.style.color = "var(--color-text)";
-      }
-      if (customerInfoModal) customerInfoModal.style.display = "flex";
-      if (customerInfoForm) customerInfoForm.reset();
-    });
-}
-if (cancelCustomerInfoBtn) {
-    cancelCustomerInfoBtn.addEventListener("click", () => {
-        if (customerInfoModal) customerInfoModal.style.display = "none";
-    });
-}
-
-if (customerInfoForm) {
-    customerInfoForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const customerName = document.getElementById("customer-name").value;
-      const orderType = document.getElementById("order-type").value;
-      const paymentMethodRadio = document.querySelector('#customer-info-modal input[name="paymentMethod"]:checked');
-      if (!paymentMethodRadio) { alert("Please select a payment method."); return; }
-      const paymentMethod = paymentMethodRadio.value;
-      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      let discountAmount = 0;
-      if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
-        discountAmount = subtotal * 0.20;
-      } else if (currentDiscount.type === "Custom") {
-        discountAmount = currentDiscount.amount;
-      }
-      if (discountAmount > subtotal) discountAmount = subtotal;
-      const tax = (subtotal - discountAmount) * 0.12;
-      const total = (subtotal - discountAmount) + tax;
-      let paymentAmount = 0;
-      let change = 0;
-      if (paymentMethod === 'Cash') {
-        paymentAmount = parseFloat(document.getElementById('payment-amount').value);
-        if (isNaN(paymentAmount) || paymentAmount < total) {
-          alert("Payment amount is insufficient or invalid."); return;
-        }
-        change = paymentAmount - total;
-      } else {
-        paymentAmount = total;
-        change = 0;
-      }
-      const paymentDetails = {
-        paymentMethod,
-        paymentAmount,
-        change,
-        processedBy: document.querySelector(".employee-name").textContent || "Cashier"
-      };
-      if (customerInfoModal) customerInfoModal.style.display = "none";
-      processSale(customerName, orderType, total, subtotal, tax, paymentDetails, currentDiscount);
-    });
 }
 
 async function processSale(customerName, orderType, totalAmount, subtotal, tax, paymentDetails, discountInfo) {
@@ -1190,40 +1086,13 @@ function openOrderDetailsModal(order) {
   recalculateProgress(); 
   updateModalProgress(order.status);
   orderDetailsModal.style.display = "flex";
-  const paymentModalTotal = document.getElementById("payment-modal-total");
-  if (paymentModalTotal) paymentModalTotal.textContent = `₱${order.totalAmount.toFixed(2)}`;
   const paymentMethodRadios = document.querySelectorAll('#order-details-modal input[name="paymentMethod"]');
   const cashDetails = document.getElementById("payment-cash-details");
-  const paymentAmountInput = document.getElementById("payment-amount");
-  const changeDisplay = document.getElementById("payment-change-display");
   paymentMethodRadios.forEach(radio => {
     radio.onchange = () => {
       if (cashDetails) cashDetails.classList.toggle('hidden', radio.value !== 'Cash');
     };
   });
-  if (paymentAmountInput) {
-      paymentAmountInput.oninput = () => {
-        if (!currentOrderDetails) return;
-        const total = currentOrderDetails.totalAmount || 0;
-        const paid = parseFloat(paymentAmountInput.value) || 0;
-        const change = paid - total;
-        if (change >= 0) {
-          changeDisplay.textContent = `₱${change.toFixed(2)}`;
-          changeDisplay.style.color = "var(--color-green-700)";
-        } else {
-          changeDisplay.textContent = `₱${change.toFixed(2)} (Insufficient)`;
-          changeDisplay.style.color = "var(--color-red-500)";
-        }
-      };
-  }
-  const payCashRadio = document.getElementById('pay-cash');
-  if (payCashRadio) payCashRadio.checked = true;
-  if (cashDetails) cashDetails.classList.remove('hidden');
-  if (paymentAmountInput) paymentAmountInput.value = '';
-  if (changeDisplay) {
-      changeDisplay.textContent = '₱0.00';
-      changeDisplay.style.color = "var(--color-text)";
-  }
 }
 function updateModalProgress(status) {
   const statusText = document.getElementById("order-modal-status-text");
@@ -1278,62 +1147,40 @@ function updateCheckButtonsState(status) {
         }
     });
 }
-if (orderModalBackBtn) {
-    orderModalBackBtn.addEventListener("click", () => {
-      if (orderDetailsModal) orderDetailsModal.style.display = "none";
-      currentOrderDetails = null;
-    });
-}
-if (orderModalProgressBtn) {
-    orderModalProgressBtn.addEventListener("click", async () => {
-      if (!currentOrderDetails) return;
-      let newStatus = "";
-      if (currentOrderDetails.status === "Pending") {
-        newStatus = "Preparing";
-      } 
-      else if (currentOrderDetails.status === "Preparing") {
-        const allDone = currentOrderDetails.items.every(i => i.isDone);
-        if (!allDone) { alert("Please check off all items before marking the order as ready."); return; }
-        newStatus = "Ready";
-      } 
-      else if (currentOrderDetails.status === "Ready") {
-        await completeOrder(currentOrderDetails);
-        return;
-      }
-      if (newStatus) {
-        try {
-            const orderRef = doc(db, "pending_orders", currentOrderDetails.id);
-            await updateDoc(orderRef, { status: newStatus });
-            currentOrderDetails.status = newStatus;
-            updateModalProgress(newStatus);
-            updateCheckButtonsState(newStatus);
-        } catch (error) {
-            console.error("Error updating order status:", error);
-        }
-      }
-    });
-}
-if (orderModalVoidBtn) {
-    orderModalVoidBtn.addEventListener("click", async () => {
-      if (!currentOrderDetails) return;
-      if (!confirm(`Are you sure you want to void Order #${currentOrderDetails.orderId}? This cannot be undone.`)) return;
-      await voidOrder(currentOrderDetails);
-    });
-}
+
 async function completeOrder(order, paymentDetails) {
   const stockMovements = []; 
   try {
-    const allRecipes = [];
+    const allRecipes = []; 
+    
     if (order.items && Array.isArray(order.items)) {
         for (const item of order.items) { 
-          const q = query(recipesRef, where("productId", "==", item.productId));
-          const recipeSnapshot = await getDocs(q);
-          if (recipeSnapshot.empty) { throw new Error(`No recipe found for "${item.name}".`); }
-          recipeSnapshot.forEach(recipeDoc => {
-            allRecipes.push({ ...recipeDoc.data(), cartQuantity: item.quantity });
-          });
+          const productDoc = await getDoc(doc(db, "products", item.productId));
+          if (!productDoc.exists()) { throw new Error(`Product "${item.name}" not found.`); }
+          
+          const product = productDoc.data();
+          
+          if (product.variations && product.variations.length > 0) {
+              const variationName = item.name.split(' - ')[1];
+              const variation = product.variations.find(v => v.name === variationName);
+              
+              if (!variation || !variation.recipe) { throw new Error(`Recipe not found for variation "${item.name}".`); }
+              
+              variation.recipe.forEach(recipeItem => {
+                  allRecipes.push({ ...recipeItem, cartQuantity: item.quantity });
+              });
+              
+          } else {
+              const q = query(recipesRef, where("productId", "==", item.productId));
+              const recipeSnapshot = await getDocs(q);
+              if (recipeSnapshot.empty) { throw new Error(`No recipe found for "${item.name}".`); }
+              recipeSnapshot.forEach(recipeDoc => {
+                allRecipes.push({ ...recipeDoc.data(), cartQuantity: item.quantity });
+              });
+          }
         }
     }
+
     await runTransaction(db, async (transaction) => {
       const ingredientDeductions = new Map();
       for (const recipe of allRecipes) {
@@ -1341,17 +1188,18 @@ async function completeOrder(order, paymentDetails) {
           const qtyPer = parseFloat(recipe.qtyPerProduct);
           const cartQty = parseFloat(recipe.cartQuantity);
           if (isNaN(qtyPer) || isNaN(cartQty)) {
-             console.error(`Invalid recipe data for product: ${recipe.productId}. qtyPer: ${recipe.qtyPerProduct}, cartQty: ${recipe.cartQuantity}`);
-             throw new Error(`Invalid recipe/order data for an item. Check product ID ${recipe.productId}.`);
+             console.error(`Invalid recipe data. qtyPer: ${recipe.qtyPerProduct}, cartQty: ${recipe.cartQuantity}`);
+             throw new Error(`Invalid recipe/order data for an item.`);
           }
           const totalDeduction = qtyPer * cartQty;
           const existing = ingredientDeductions.get(recipe.ingredientId) || { amountToDeduction: 0, unit: recipe.unitUsed };
           existing.amountToDeduction += totalDeduction;
           ingredientDeductions.set(recipe.ingredientId, existing);
         } else {
-          console.warn(`Skipping recipe with missing ingredientId for product ${recipe.productId}`);
+          console.warn(`Skipping recipe with missing ingredientId.`);
         }
       }
+      
       const ingredientDataMap = new Map();
       for (const [ingId, deduction] of ingredientDeductions.entries()) {
         if (!ingId || typeof ingId !== 'string' || ingId.trim() === "") {
@@ -1362,7 +1210,7 @@ async function completeOrder(order, paymentDetails) {
         const ingDoc = await transaction.get(ingRef);
         if (!ingDoc.exists()) { throw new Error(`CRITICAL: Ingredient ${ingId} not found.`); }
         const ingData = ingDoc.data();
-        const currentStockInBaseUnits = ingData.stockQuantity * ingData.conversionFactor;
+        const currentStockInBaseUnits = (ingData.stockQuantity || 0) * (ingData.conversionFactor || 1);
         if (deduction.unit !== ingData.baseUnit) { throw new Error(`Unit mismatch for ${ingData.name}.`); }
         if (currentStockInBaseUnits < deduction.amountToDeduction) { throw new Error(`Not enough stock for ${ingData.name}. Order cannot be completed.`); }
         ingredientDataMap.set(ingId, {
@@ -1376,14 +1224,18 @@ async function completeOrder(order, paymentDetails) {
         const newStockInBaseUnits = info.currentStockInBaseUnits - info.deduction.amountToDeduction;
         const newStockInStockUnits = newStockInBaseUnits / info.data.conversionFactor;
         transaction.update(info.ref, { stockQuantity: newStockInStockUnits });
-        stockMovements.push({
-          ingredientId: ingId,
-          ingredientName: info.data.name,
-          qtyDeducted: info.deduction.amountToDeduction,
-          unit: info.deduction.unit,
-          reason: `Sale (Order #${order.orderId})`,
-          date: serverTimestamp() 
-        });
+stockMovements.push({
+    timestamp: serverTimestamp(),
+    employeeName: order.processedBy || "System",
+    actionType: "Sale Deduction",
+    itemName: info.data.name,
+    category: info.data.category,
+    qtyChange: -info.deduction.amountToDeduction, // Negative number for deduction
+    unit: info.deduction.unit,
+    prevQty: info.currentStockInBaseUnits,
+    newQty: newStockInBaseUnits,
+    reason: `Sale (Order #${order.orderId})`
+});
       }
       const saleRef = doc(db, "sales", order.id); 
       const pendingOrderRef = doc(db, "pending_orders", order.id);
@@ -1397,7 +1249,7 @@ async function completeOrder(order, paymentDetails) {
       transaction.delete(pendingOrderRef);
     });
     const logBatch = writeBatch(db);
-    stockMovements.forEach(log => logBatch.set(doc(collection(db, "stock_movements")), log));
+stockMovements.forEach(log => logBatch.set(doc(collection(db, "inventoryLogs")), log));
     await logBatch.commit();
     alert(`Order #${order.orderId} completed! Stock updated and transaction saved.`);
     if (orderDetailsModal) orderDetailsModal.style.display = "none";
@@ -1441,6 +1293,7 @@ async function deleteProductAndRecipe(productId, productName) {
     const batch = writeBatch(db);
     const productRef = doc(db, "products", productId);
     batch.delete(productRef);
+    
     const recipesQuery = query(recipesRef, where("productId", "==", productId));
     const recipeSnapshot = await getDocs(recipesQuery);
     if (!recipeSnapshot.empty) {
@@ -1528,92 +1381,476 @@ function printReceipt(order) {
         alert("Popup blocked. Please allow popups to print the receipt.");
     }
 }
-// --- Initial Load ---
-document.addEventListener("DOMContentLoaded", () => {
-  // --- REMOVED: ingredientCategoryFilter listener ---
-  
-  if (orderModalPrintBtn) {
-    orderModalPrintBtn.addEventListener("click", () => {
-      if (currentOrderDetails) {
-        printReceipt(currentOrderDetails);
-      } else {
-        alert("Error: No order details found to print.");
-      }
-    });
-  }
-  listenForProducts();
-  listenForIngredients();
-  listenForRecipes();
-  listenForPendingOrders();
-  setInterval(checkOverdueStatus, 30000); 
+function populateKitchenStub(order) {
+    if (!kitchenStubContent) return;
 
-  // --- Variation Listeners ---
-  if (variationToggle) {
+    let itemsHTML = '';
+    if (order.items && Array.isArray(order.items)) {
+        order.items.forEach(item => {
+            itemsHTML += `<li><strong>${item.quantity}x</strong> ${item.name}</li>`;
+        });
+    }
+
+    const stubHTML = `
+        <h3 class="stub-header">ORDER #${order.orderId}</h3>
+        <p><strong>Customer:</strong> ${order.customerName}</p>
+        <p><strong>Type:</strong> ${order.orderType}</p>
+        <ul class="stub-item-list">
+            ${itemsHTML}
+        </ul>
+        <p style="text-align: center; font-weight: bold;">${new Date().toLocaleTimeString()}</p>
+    `;
+    
+    kitchenStubContent.innerHTML = stubHTML;
+}
+
+// --- Main DOMContentLoaded Listener ---
+// This is the *only* DOMContentLoaded listener.
+document.addEventListener("DOMContentLoaded", () => {
+    // --- ASSIGN ALL ELEMENTS ---
+    productGrid = document.getElementById("product-grid");
+    cartItemsContainer = document.getElementById("cart-items");
+    subtotalEl = document.getElementById("cart-subtotal");
+    taxEl = document.getElementById("cart-tax");
+    totalEl = document.getElementById("cart-total");
+    processPaymentBtn = document.querySelector(".payment-buttons .btn--primary");
+    clearCartBtn = document.querySelector(".payment-buttons .btn--secondary");
+    editModeBtn = document.getElementById("edit-mode-btn");
+    categoryTabsContainer = document.getElementById("category-tabs-container");
+    menuImageUpload = document.getElementById("menu-image-upload");
+    menuImagePreview = document.getElementById("menu-image-preview");
+
+    addMenuBtn = document.getElementById("add-menu-item-btn");
+    cancelMenuBtn = document.getElementById("cancel-menu-btn");
+    menuModal = document.getElementById("menu-item-modal");
+    menuForm = document.getElementById("menu-item-form");
+    recipeList = document.getElementById("recipe-list");
+    addIngredientBtn = document.getElementById("add-ingredient-btn");
+    menuCategoryDropdown = document.getElementById("menu-category");
+    newCategoryInput = document.getElementById("new-category-input");
+    menuWaitTimeSelect = document.getElementById("menu-waiting-time");
+
+    variationToggle = document.getElementById("product-variation-toggle");
+    singlePriceWrapper = document.getElementById("single-price-wrapper");
+    variationsWrapper = document.getElementById("variations-wrapper");
+    addVariationBtn = document.getElementById("add-variation-btn");
+    variationListContainer = document.getElementById("product-variations-list");
+
+    variationModal = document.getElementById("variation-modal");
+    variationModalTitle = document.getElementById("variation-modal-title");
+    variationOptionsContainer = document.getElementById("variation-options-container");
+    cancelVariationBtn = document.getElementById("cancel-variation-btn");
+
+    customerInfoModal = document.getElementById("customer-info-modal");
+    customerInfoForm = document.getElementById("customer-info-form");
+    cancelCustomerInfoBtn = document.getElementById("cancel-customer-info-btn");
+
+    orderDetailsModal = document.getElementById("order-details-modal");
+    orderModalBackBtn = document.getElementById("order-modal-back-btn");
+    orderModalVoidBtn = document.getElementById("order-modal-void-btn");
+    orderModalProgressBtn = document.getElementById("order-modal-progress-btn");
+    orderModalPrintBtn = document.getElementById("order-modal-print-btn");
+
+    ordersLine = document.getElementById("orders-line");
+
+    discountTypeSelect = document.getElementById("discount-type");
+    customDiscountWrapper = document.getElementById("custom-discount-wrapper");
+    customDiscountAmount = document.getElementById("custom-discount-amount");
+    applyDiscountBtn = document.getElementById("apply-discount-btn");
+    cartDiscountEl = document.getElementById("cart-discount");
+    
+    kitchenStubModal = document.getElementById("kitchen-stub-modal");
+    kitchenStubContent = document.getElementById("kitchen-stub-content");
+    kitchenStubSendBtn = document.getElementById("kitchen-stub-send-btn");
+    kitchenStubCancelBtn = document.getElementById("kitchen-stub-cancel-btn");
+    mainRecipeContainer = document.getElementById("main-recipe-container");
+
+    // --- ATTACH ALL EVENT LISTENERS ---
+
+    // --- Menu Form Submit ---
+    if (menuForm) {
+        menuForm.addEventListener("submit", handleMenuFormSubmit);
+    }
+
+    // --- Image Preview Handler ---
+    if (menuImageUpload) {
+        menuImageUpload.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                currentImageFile = file; 
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    if (menuImagePreview) {
+                        menuImagePreview.src = event.target.result;
+                        menuImagePreview.classList.remove("hidden");
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                currentImageFile = null;
+                if (menuImagePreview) {
+                    menuImagePreview.classList.add("hidden");
+                    menuImagePreview.src = "";
+                }
+            }
+        });
+    }
+
+    // --- Category Dropdown Listener ---
+    if (menuCategoryDropdown) {
+        menuCategoryDropdown.addEventListener("change", function() {
+          if (this.value === "__new__") {
+            newCategoryInput.style.display = "block";
+            newCategoryInput.focus();
+          } else {
+            newCategoryInput.style.display = "none";
+            newCategoryInput.value = "";
+          }
+        });
+    }
+
+    // --- Main Variation Toggle Listener ---
+    if (variationToggle) {
       variationToggle.addEventListener("change", () => {
           const hasVariations = variationToggle.checked;
           if (hasVariations) {
               singlePriceWrapper.classList.add("hidden");
               variationsWrapper.classList.remove("hidden");
               if (variationListContainer.children.length === 0) {
-                  addVariationRowUI();
+                  addVariationRowUI({}, {}); 
               }
+              mainRecipeContainer.classList.add("disabled");
+              recipeList.innerHTML = "";
+              addIngredientBtn.disabled = true;
           } else {
               singlePriceWrapper.classList.remove("hidden");
               variationsWrapper.classList.add("hidden");
+              mainRecipeContainer.classList.remove("disabled");
+              addIngredientBtn.disabled = false;
           }
       });
-  }
-  if (addVariationBtn) {
-      addVariationBtn.addEventListener("click", () => {
-          addVariationRowUI();
-      });
-  }
-});
+    }
+  
+    // --- 'addVariationBtn' Listener ---
+    if (addVariationBtn) {
+        addVariationBtn.addEventListener("click", () => {
+            addVariationRowUI({}, {}); 
+        });
+    }
 
-// --- Add Variation Row to Admin Modal ---
-function addVariationRowUI(variation = {}) {
-    if (!variationListContainer) return;
-    const row = document.createElement("div");
-    row.className = "variation-row";
-    row.innerHTML = `
-        <input type="text" class="form-control" placeholder="Name" value="${variation.name || ''}" required>
-        <input type="number" class="form-control" placeholder="Price" value="${variation.price || ''}" step="0.01" min="0" required>
-        <button type="button" class="remove-variation-btn">X</button>
-    `;
-    row.querySelector(".remove-variation-btn").addEventListener("click", () => {
-        row.remove();
-    });
-    variationListContainer.appendChild(row);
-}
+    // --- 'addIngredientBtn' Listener (for main recipe) ---
+    if (addIngredientBtn) {
+        addIngredientBtn.addEventListener("click", () => {
+            addIngredientRowUI({}, recipeList); 
+        });
+    }
 
+    // --- Kitchen Stub Modal Listeners ---
+    if (kitchenStubCancelBtn) {
+        kitchenStubCancelBtn.addEventListener("click", () => {
+            if (kitchenStubModal) kitchenStubModal.style.display = "none";
+        });
+    }
 
-// --- Discount UI Event Listeners ---
-document.addEventListener("DOMContentLoaded", () => {
-    if (!discountTypeSelect) return; 
-    discountTypeSelect.addEventListener("change", () => {
-        const selectedType = discountTypeSelect.value;
-        if (selectedType === "Custom") {
-            customDiscountWrapper.classList.remove("hidden");
-            customDiscountAmount.value = "";
-            applyDiscountBtn.classList.remove("hidden");
-        } else {
-            customDiscountWrapper.classList.add("hidden");
-            customDiscountAmount.value = "";
-            if (selectedType === "PWD" || selectedType === "Senior") {
-                currentDiscount = { type: selectedType, amount: 0 };
-            } else {
-                currentDiscount = { type: "none", amount: 0 };
+    if (kitchenStubSendBtn) {
+        kitchenStubSendBtn.addEventListener("click", async () => {
+            if (!currentOrderDetails) return;
+
+            const newStatus = "Preparing";
+            kitchenStubSendBtn.disabled = true;
+            kitchenStubSendBtn.textContent = "Sending...";
+
+            try {
+                const orderRef = doc(db, "pending_orders", currentOrderDetails.id);
+                await updateDoc(orderRef, { status: newStatus });
+                currentOrderDetails.status = newStatus;
+                
+                updateModalProgress(newStatus);
+                updateCheckButtonsState(newStatus);
+                
+                kitchenStubModal.style.display = "none";
+            } catch (error) {
+                console.error("Error updating order status:", error);
+                alert("Failed to send to kitchen. Please try again.");
+            } finally {
+                kitchenStubSendBtn.disabled = false;
+                kitchenStubSendBtn.textContent = "Send to Kitchen";
             }
-            updateCartTotals();
-        }
-    });
-    applyDiscountBtn.addEventListener("click", () => {
-        const amount = parseFloat(customDiscountAmount.value);
-        if (!isNaN(amount) && amount > 0) {
-            currentDiscount = { type: "Custom", amount: amount };
-            updateCartTotals();
+        });
+    }
+    
+    // --- Print Button Listener ---
+    if (orderModalPrintBtn) {
+      orderModalPrintBtn.addEventListener("click", () => {
+        if (currentOrderDetails) {
+          printReceipt(currentOrderDetails);
         } else {
-            alert("Please enter a valid discount amount.");
+          alert("Error: No order details found to print.");
         }
-    });
+      });
+    }
+
+    // --- Add Menu Button (main) ---
+    if (addMenuBtn) {
+        addMenuBtn.addEventListener("click", async () => {
+            closeMenuModal(); // Resets form to default
+            if (mainRecipeContainer) mainRecipeContainer.classList.remove("disabled");
+            await loadCategories();
+            await loadInventoryCategories();
+            await loadAllIngredientsCache();
+            if (addIngredientBtn) addIngredientBtn.disabled = false;
+            if (menuModal) menuModal.style.display = "flex";
+        });
+    }
+
+    // --- Cancel Menu Modal Button ---
+    if (cancelMenuBtn) {
+        cancelMenuBtn.addEventListener("click", closeMenuModal);
+    }
+
+    // --- Edit Mode Button ---
+    if (editModeBtn) {
+        editModeBtn.addEventListener("click", () => {
+          editMode = !editMode;
+          editModeBtn.textContent = editMode ? 'Exit Edit Mode' : 'Edit Menu';
+          editModeBtn.classList.toggle('btn--danger', editMode);
+          if (addMenuBtn) {
+            addMenuBtn.style.display = editMode ? 'none' : 'block';
+          }
+          renderProducts();
+        });
+    }
+
+    // --- Cart Listeners ---
+    if (cartItemsContainer) {
+        cartItemsContainer.addEventListener("click", (e) => {
+          if (e.target.classList.contains("qty-btn")) {
+            updateCartQuantity(e.target.dataset.id, parseInt(e.target.dataset.change));
+          }
+        });
+    }
+    
+    if (clearCartBtn) {
+        clearCartBtn.addEventListener("click", () => {
+          if (cart.length > 0) {
+            if (confirm("Clear all items from cart?")) {
+              cart = [];
+              currentDiscount = { type: "none", amount: 0 };
+              if (discountTypeSelect) discountTypeSelect.value = "none";
+              if (customDiscountWrapper) customDiscountWrapper.classList.add("hidden");
+              if (customDiscountAmount) customDiscountAmount.value = "";
+              updateCartDisplay();
+            }
+          }
+        });
+    }
+    
+    // --- Variation Modal (POS) ---
+    if (cancelVariationBtn) {
+        cancelVariationBtn.addEventListener("click", () => {
+            if (variationModal) variationModal.style.display = "none";
+        });
+    }
+
+    // --- Customer/Payment Modal ---
+    if (processPaymentBtn) {
+        processPaymentBtn.addEventListener("click", () => { 
+             if (cart.length === 0) {
+                alert("Cart is empty."); return;
+              }
+              updateCartTotals(); 
+              const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+              let discountAmount = currentDiscount.amount;
+              if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+                  discountAmount = subtotal * 0.20;
+              }
+              if (discountAmount > subtotal) discountAmount = subtotal;
+              const total = (subtotal - discountAmount) + ((subtotal - discountAmount) * 0.12);
+              const customerModalTotal = document.getElementById("customer-modal-total");
+              if (customerModalTotal) customerModalTotal.textContent = `₱${total.toFixed(2)}`;
+              const paymentMethodRadios = document.querySelectorAll('#customer-info-modal input[name="paymentMethod"]');
+              const cashDetails = document.getElementById("payment-cash-details");
+              const paymentAmountInput = document.getElementById("payment-amount");
+              const changeDisplay = document.getElementById("payment-change-display");
+              if (paymentAmountInput) {
+                  paymentAmountInput.oninput = () => {
+                    const paid = parseFloat(paymentAmountInput.value) || 0;
+                    const change = paid - total;
+                    if (change >= 0) {
+                      changeDisplay.textContent = `₱${change.toFixed(2)}`;
+                      changeDisplay.style.color = "var(--color-green-700)";
+                    } else {
+                      changeDisplay.textContent = `₱${change.toFixed(2)} (Insufficient)`;
+                      changeDisplay.style.color = "var(--color-red-500)";
+                    }
+                  };
+              }
+              paymentMethodRadios.forEach(radio => {
+                radio.onchange = () => {
+                  if (radio.value === 'Cash') {
+                    if (paymentAmountInput) {
+                        paymentAmountInput.disabled = false;
+                        paymentAmountInput.value = '';
+                    }
+                    if (changeDisplay) changeDisplay.textContent = '₱0.00';
+                  } else {
+                    if (paymentAmountInput) {
+                        paymentAmountInput.disabled = true;
+                        paymentAmountInput.value = '';
+                    }
+                    if (changeDisplay) changeDisplay.textContent = '₱0.00';
+                  }
+                };
+              });
+              const payCashRadio = document.getElementById('pay-cash');
+              if (payCashRadio) payCashRadio.checked = true;
+              if (cashDetails) cashDetails.classList.remove('hidden');
+              if (paymentAmountInput) {
+                  paymentAmountInput.disabled = false;
+                  paymentAmountInput.value = '';
+              }
+              if (changeDisplay) {
+                  changeDisplay.textContent = '₱0.00';
+                  changeDisplay.style.color = "var(--color-text)";
+              }
+              if (customerInfoModal) customerInfoModal.style.display = "flex";
+              if (customerInfoForm) customerInfoForm.reset();
+        });
+    }
+    if (cancelCustomerInfoBtn) {
+        cancelCustomerInfoBtn.addEventListener("click", () => {
+            if (customerInfoModal) customerInfoModal.style.display = "none";
+        });
+    }
+
+    if (customerInfoForm) {
+        customerInfoForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const customerName = document.getElementById("customer-name").value;
+          const orderType = document.getElementById("order-type").value;
+          const paymentMethodRadio = document.querySelector('#customer-info-modal input[name="paymentMethod"]:checked');
+          if (!paymentMethodRadio) { alert("Please select a payment method."); return; }
+          const paymentMethod = paymentMethodRadio.value;
+          const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          let discountAmount = 0;
+          if (currentDiscount.type === "PWD" || currentDiscount.type === "Senior") {
+            discountAmount = subtotal * 0.20;
+          } else if (currentDiscount.type === "Custom") {
+            discountAmount = currentDiscount.amount;
+          }
+          if (discountAmount > subtotal) discountAmount = subtotal;
+          const tax = (subtotal - discountAmount) * 0.12;
+          const total = (subtotal - discountAmount) + tax;
+          let paymentAmount = 0;
+          let change = 0;
+          if (paymentMethod === 'Cash') {
+            paymentAmount = parseFloat(document.getElementById('payment-amount').value);
+            if (isNaN(paymentAmount) || paymentAmount < total) {
+              alert("Payment amount is insufficient or invalid."); return;
+            }
+            change = paymentAmount - total;
+          } else {
+            paymentAmount = total;
+            change = 0;
+          }
+          const paymentDetails = {
+            paymentMethod,
+            paymentAmount,
+            change,
+            processedBy: document.querySelector(".employee-name").textContent || "Cashier"
+          };
+          if (customerInfoModal) customerInfoModal.style.display = "none";
+          processSale(customerName, orderType, total, subtotal, tax, paymentDetails, currentDiscount);
+        });
+    }
+
+    // --- Order Details Modal (Kitchen) ---
+    if (orderModalBackBtn) {
+        orderModalBackBtn.addEventListener("click", () => {
+          if (orderDetailsModal) orderDetailsModal.style.display = "none";
+          currentOrderDetails = null;
+        });
+    }
+    
+    if (orderModalProgressBtn) {
+        orderModalProgressBtn.addEventListener("click", async () => {
+          if (!currentOrderDetails) return;
+    
+          if (currentOrderDetails.status === "Pending") {
+            populateKitchenStub(currentOrderDetails);
+            kitchenStubModal.style.display = "flex";
+          
+          } else if (currentOrderDetails.status === "Preparing") {
+            const allDone = currentOrderDetails.items.every(i => i.isDone);
+            if (!allDone) { 
+              alert("Please check off all items before marking the order as ready."); 
+              return; 
+            }
+            
+            const newStatus = "Ready";
+            try {
+                const orderRef = doc(db, "pending_orders", currentOrderDetails.id);
+                await updateDoc(orderRef, { status: newStatus });
+                currentOrderDetails.status = newStatus;
+                updateModalProgress(newStatus);
+                updateCheckButtonsState(newStatus);
+            } catch (error) {
+                console.error("Error updating order status:", error);
+            }
+    
+          } else if (currentOrderDetails.status === "Ready") {
+            await completeOrder(currentOrderDetails);
+            return;
+          }
+        });
+    }
+    
+    if (orderModalVoidBtn) {
+        orderModalVoidBtn.addEventListener("click", async () => {
+          if (!currentOrderDetails) return;
+          if (!confirm(`Are you sure you want to void Order #${currentOrderDetails.orderId}? This cannot be undone.`)) return;
+          await voidOrder(currentOrderDetails);
+        });
+    }
+
+    // --- Discount Listeners (MERGED from the second listener) ---
+    if (discountTypeSelect) { 
+        discountTypeSelect.addEventListener("change", () => {
+            const selectedType = discountTypeSelect.value;
+            if (selectedType === "Custom") {
+                customDiscountWrapper.classList.remove("hidden");
+                customDiscountAmount.value = "";
+                applyDiscountBtn.classList.remove("hidden");
+            } else {
+                customDiscountWrapper.classList.add("hidden");
+                customDiscountAmount.value = "";
+                if (selectedType === "PWD" || selectedType === "Senior") {
+                    currentDiscount = { type: selectedType, amount: 0 };
+                } else {
+                    currentDiscount = { type: "none", amount: 0 };
+                }
+                updateCartTotals();
+            }
+        });
+    }
+
+    if (applyDiscountBtn) {
+        applyDiscountBtn.addEventListener("click", () => {
+            const amount = parseFloat(customDiscountAmount.value);
+            if (!isNaN(amount) && amount > 0) {
+                currentDiscount = { type: "Custom", amount: amount };
+                updateCartTotals();
+            } else {
+                alert("Please enter a valid discount amount.");
+            }
+        });
+    }
+
+    // --- Initial Data Loaders ---
+    listenForProducts();
+    listenForIngredients();
+    listenForRecipes();
+    listenForPendingOrders();
+    setInterval(checkOverdueStatus, 30000); 
+
 });

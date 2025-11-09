@@ -5,6 +5,7 @@ import { loadTransactions } from "../scripts/transaction.js";
 import { loadAnalytics } from "../scripts/analytics.js";
 import { loadAccounts } from "../scripts/account-management.js";
 import { auth, db } from "../scripts/firebase.js";
+import { loadInventoryLog } from "../scripts/inventory-log.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
@@ -141,7 +142,8 @@ function setupNavigation(defaultSection) {
         // --- LAZY LOAD DEFAULT TAB DATA ---
         if (defaultSection === 'transactions') loadTransactions();
         if (defaultSection === 'analytics') loadAnalytics();
-        if (defaultSection === 'accounts') loadAccounts(); // ⬅️ ADD THIS
+        if (defaultSection === 'accounts') loadAccounts();
+        if (defaultSection === 'inventory-log') loadInventoryLog();
     } else {
         // Fallback if the default doesn't exist (e.g., no permissions)
         document.getElementById('pos-section').classList.add('active');
@@ -166,8 +168,11 @@ function setupNavigation(defaultSection) {
             if (targetSectionId === 'analytics') {
                 loadAnalytics();
             }
-            if (targetSectionId === 'accounts') { // ⬅️ ADD THIS
+            if (targetSectionId === 'accounts') { 
                 loadAccounts();
+            }
+            if (targetSectionId === 'inventory-log') { 
+            loadInventoryLog();
             }
         });
     });
