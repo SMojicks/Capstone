@@ -534,6 +534,10 @@
     <div class="community-background">
         <div class="community-section">
             <h2>Community Bulletin Board</h2>
+                    <div class="bulletin-instructions">
+                    <p>🖼️ Click on any empty spot to add your photo and review!</p>
+                    <p>📌 Share your cafe moments with the community</p>
+                </div>
             
             <div class="bulletin-board-main">
                 <div class="bulletin-board-container-large" id="bulletinBoardContainer">
@@ -590,10 +594,7 @@
                     </div>
                     </div>
                 
-                <div class="bulletin-instructions">
-                    <p>🖼️ Click on any empty spot to add your photo and review!</p>
-                    <p>📌 Share your cafe moments with the community</p>
-                </div>
+
             </div>
             
             <div class="photo-modal" id="photoModal">
@@ -704,7 +705,7 @@ import {
   doc,
   getDoc,
   Timestamp,
-  where // <-- Make sure this is imported
+  where 
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
@@ -896,12 +897,18 @@ function updatePhotoSpot(spotNumber, photoData) {
   if (!spot) return;
 
   spot.classList.add('filled');
+  
+  // --- THIS IS THE FIX ---
+  // We are creating *only* an img tag.
+  // The div.photo-placeholder-spot and div.photo-author are removed.
   spot.innerHTML = `
-    <div class="photo-placeholder-spot">
-      <img src="${photoData.imageUrl}" alt="Community photo" class="submitted-photo">
-      <div class="photo-author">${photoData.rating} ${photoData.author}</div>
-    </div>
+    <img src="${photoData.imageUrl}" 
+         alt="Community photo" 
+         class="submitted-photo" 
+         style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
   `;
+  // --- END OF FIX ---
+
   spot.onclick = () => viewPhotoDetails(spotNumber);
 }
 

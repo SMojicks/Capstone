@@ -2246,6 +2246,12 @@ input[type="text"]:focus {
     .reservation-form {
         padding: 20px;
     }
+    .cafe-layout {
+        min-height: auto; /* This removes the 600px gap */
+    }
+    #secondFloorContainer {
+        position: relative; /* Fixes the overlap bug */
+    }
     .table-spot,
     .vip-room-btn {
         transform: scale(0.8) !important;
@@ -2276,43 +2282,99 @@ input[type="text"]:focus {
         grid-template-columns: 1fr;
     }
 
-    /* --- PAGE: community-feedback.html --- */
-    .community-section {
+
+/* --- PAGE: community-feedback.html (Percentage Sizing Fix) --- */
+    .community-section h2 {
+        font-size: 2rem; /* Smaller title */
+        margin-bottom: 15px;
+    }
+    .bulletin-instructions {
+        padding: 10px;
+        margin-bottom: 15px; /* Space between instructions and board */
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+    }
+    .bulletin-instructions p {
+        font-size: 0.9rem; /* Smaller instruction text */
+        margin: 4px 0;
+    }    
+.community-section {
         padding: 15px;
     }
+
+    /* 1. This is the main container. We remove any
+       fixed height just like we did on the reservation page.
+    */
     .bulletin-board-container-large {
-        background: #D2B48C;
-        border: none;
+        min-height: auto;
         height: auto;
-        min-height: 50vh;
-        overflow: visible;
+        overflow: hidden;
     }
-    .bulletin-board-image,
+
+    /* 2. This is the image of the bulletin board.
+       We MUST make sure it is visible.
+    */
+    .bulletin-board-image {
+        display: block !important; /* Overrides inline JS */
+    }
     .bulletin-placeholder {
         display: none;
     }
+
+    /* 3. This is the container for all the spots. 
+       We leave it as 'position: absolute'.
+    */
     .photo-spots {
-        position: static;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 15px;
-        padding: 15px;
-        height: auto;
-        pointer-events: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
     }
+
+    /* * 4. THE FIX:
+     * We override the *desktop* fixed pixel size (120x100px)
+     * with a *mobile* percentage size (22x20%).
+     * * We DO NOT touch the 'transform' property here.
+     * This allows the inline style="...transform..." from your HTML
+     * to continue working for centering and rotating.
+    */
     .photo-spot {
-        position: static;
-        width: 100%;
-        height: auto;
-        transform: none !important;
+        width: 22%;  /* Replaces 120px */
+        height: 20%; /* Replaces 100px */
     }
+
+    /* 5. Style the *empty* spot */
     .photo-placeholder-spot {
-        height: 120px;
+        border-width: 1px;
+        border-radius: 4px;
+        padding: 4px;
+        font-size: 10px;
+        line-height: 1.2;
     }
+    .photo-placeholder-spot span {
+        font-size: 24px;
+        margin-bottom: 2px;
+    }
+    .photo-placeholder-spot p {
+        display: block;
+        font-size: 8px;
+        color: #666;
+    }
+
+    /* 6. Style the *filled* spot (the <img> tag) */
     .submitted-photo {
-        height: 200px;
         width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
     }
+    .photo-author {
+        display: none; /* Hides the username and rating */
+    }
+    
+    /* 7. Modal responsive rule */
     .photo-modal .modal-content {
         width: 95%;
         margin: 5% auto;
