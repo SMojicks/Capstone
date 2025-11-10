@@ -6,947 +6,6 @@
     <title>Reservation</title>
     <link rel="stylesheet" href="customer-ui-style.css">
 </head>
-<!-- <style>
- body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background-color: #f5f5f5;
-    min-height: 100vh;
-}
-
-.reservation-background {
-    background: url("assets/reservation_page_bg.png") no-repeat center center/cover;
-    background-attachment: fixed;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-/* Header styles */
-#i6po {
-    background-color: rgba(18, 39, 1, 1);
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-#itjq {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-#iyd2 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-#ihtxj {
-    width: 54px;
-    height: 54px;
-}
-
-#it00l {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.nav-links {
-    display: flex;
-    gap: 20px;
-}
-
-.nav-links a {
-    color: rgba(255, 255, 255, 1);
-    text-decoration: none;
-    padding: 10px 20px;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-.nav-links a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-#i1mew {
-    padding: 10px 20px;
-    text-transform: uppercase;
-    font-family: Arial, Helvetica, sans-serif;
-    letter-spacing: 3px;
-    background-color: rgba(101, 85, 4, 1);
-    color: white;
-    text-decoration: none;
-    border-radius: 3px;
-}
-
-.gjs-grid-row {
-    display: block;
-    width: 100%;
-    margin: 0 auto;
-}
-
-.gjs-grid-column {
-    display: block;
-    width: 100%;
-}
-
-/* Reservation Section Styles */
-.reservation-section {
-    display: flex;
-    width: 95%;
-    max-width: 1400px;
-    background: rgba(255, 255, 255, 0.123);
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    min-height: 80vh;
-}
-
-.reservation-grid {
-    display: flex;
-    width: 100%;
-    gap: 20px;
-}
-
-.cafe-section {
-    flex: 2;
-    padding: 20px;
-    background: #f8f9fa21;
-}
-
-.cafe-section h2 {
-    margin-top: 0;
-    text-shadow: 1px 1px 5px black;
-    color: #f1efef;
-    text-align: center;
-}
-
-.cafe-layout {
-    position: relative;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    min-height: 600px; /* Adjust this to match your actual image height */
-}
-
-
-.cafe-image-container {
-    position: relative;
-    width: 100%;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #ffffff28;
-}
-
-#cafeImageContainer {
-    position: relative;
-}
-
-/* Make second floor overlay first floor in the same position */
-#secondFloorContainer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-#secondFloorContainer.hidden {
-    display: none !important;
-}
-
-.cafe-image {
-    width: 100%;
-    height: auto;
-    display: none;
-}
-
-.image-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 400px;
-    background: #f0f0f0;
-    color: #666;
-    text-align: center;
-    padding: 20px;
-}
-
-.image-placeholder svg {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 15px;
-    opacity: 0.5;
-}
-
-.table-overlays {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-
-.table-spot {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #333;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    pointer-events: auto;
-    z-index: 10;
-}
-
-.table-spot.available {
-    background: linear-gradient(45deg, #4ECDC4, #44A08D);
-    animation: pulse 2s infinite;
-}
-
-.table-spot.occupied {
-    background: linear-gradient(45deg, #df0404, #FF8E53);
-    cursor: not-allowed;
-}
-
-.table-spot.selected {
-    background: linear-gradient(45deg, #04ec23, #764ba2);
-    transform: scale(1.3);
-    box-shadow: 0 0 15px rgba(4, 236, 35, 0.6);
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-.legend {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 1px solid #333;
-}
-
-.reservation-form {
-    flex: 1;
-    padding: 30px;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.reservation-form h3 {
-    color: rgba(255, 255, 255, 1);
-    text-shadow: 1px 1px 5px black;
-    margin-top: 0;
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    color: rgba(255, 255, 255, 1);
-    text-shadow: 1px 1px 5px black;
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.form-group textarea {
-    height: 80px;
-    resize: vertical;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-    border-color: #d1b106;
-    outline: none;
-}
-
-.datetime-group {
-    display: flex;
-    gap: 15px;
-}
-
-.datetime-group .form-group {
-    flex: 1;
-}
-
-/* Date and Time in one row */
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.half-width {
-    flex: 1;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 15px;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    text-transform: uppercase;
-    font-family: Arial, Helvetica, sans-serif;
-    letter-spacing: 3px;
-    background-color: rgba(101, 85, 4, 1);
-    text-decoration: none;
-}
-
-.submit-btn:hover {
-    transform: translateY(-2px);
-    background-color: #b89b05;
-}
-
-.selected-table-info {
-    background: linear-gradient(45deg, #04ec23, rgba(101, 85, 4, 1));
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-    display: none;
-}
-
-.selected-table-info.show {
-    display: block;
-}
-
-.success-message {
-    background: linear-gradient(45deg, #28a745, #20c997);
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-    display: none;
-}
-
-.success-message.show {
-    display: block;
-}
-
-/* Terms and Conditions */
-.terms-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 1);
-    text-shadow: 1px 1px 5px black;
-}
-
-.terms-container input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.terms-container a {
-    color: #ffd700;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.terms-container a:hover {
-    text-decoration: underline;
-}
-
-/* Modal */
-.modal {
-    position: fixed;
-    z-index: 999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.6);
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-    animation: modalFadeIn 0.3s ease-in-out;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-    color: #333;
-}
-
-.modal-content ul {
-    padding-left: 20px;
-    line-height: 1.8;
-}
-
-.close-modal {
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #999;
-}
-
-.close-modal:hover {
-    color: #ff4444;
-}
-
-@keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* Legend and button for 2nd floor */
-.legend-container {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.floor-toggle-btn {
-    padding: 12px 24px;
-    background: linear-gradient(45deg, rgba(101, 85, 4, 1), #d1b106);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    align-self: flex-start;
-}
-
-.floor-toggle-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(101, 85, 4, 0.4);
-}
-
-.hidden {
-    display: none !important;
-}
-/* --- NEW STYLES for Date Check --- */
-.date-check-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-.date-check-group input[type="date"] {
-    flex-grow: 1;
-}
-.date-check-group .submit-btn {
-    flex-shrink: 0; /* Prevent button from shrinking */
-    width: auto;
-}
-
-/* Loader animation */
-.loader {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-.hidden {
-    display: none;
-}
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Disabled state for form */
-.form-group input:disabled,
-.form-group select:disabled,
-.form-group textarea:disabled,
-.terms-container input:disabled,
-.submit-btn:disabled {
-    background-color: #eee !important;
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.terms-container input:disabled + label {
-    cursor: not-allowed;
-}
-/* Footer - separate from menu background */
-#iv3be5 {
-    background-color: #f8f8f8;
-    padding: 60px 20px 20px;
-}
-
-#ilriti {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-#im0rle {
-    display: flex;
-    justify-content: space-between;
-    gap: 40px;
-    flex-wrap: wrap;
-    margin-bottom: 40px;
-}
-
-#ikhs8g {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    margin-bottom: 20px;
-}
-
-.footer-column {
-    flex: 1;
-    min-width: 200px;
-}
-
-.footer-column h3 {
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    color: #333;
-}
-
-.footer-column a {
-    display: block;
-    color: #666;
-    text-decoration: none;
-    margin-bottom: 8px;
-}
-
-.footer-column a:hover {
-    color: #333;
-}
-
-.gjs-divider {
-    height: 2px;
-    background-color: rgba(0, 0, 0, 0.1);
-    margin: 30px 0;
-}
-
-#it6g1v {
-    text-align: center;
-    font-size: 0.9rem;
-    color: #666;
-}
-/* VIP Room Button */
-.vip-room-btn {
-    position: absolute;
-    padding: 8px 12px;
-    background: linear-gradient(45deg, #FFD700, #FFA500);
-    color: #000;
-    border: 2px solid #DAA520;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    pointer-events: auto;
-    z-index: 10;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
-    white-space: nowrap;
-}
-
-.vip-room-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.6);
-}
-
-.vip-room-btn.selected {
-    background: linear-gradient(45deg, #04ec23, #764ba2);
-    color: white;
-    border-color: #04ec23;
-    transform: scale(1.15);
-}
-
-/* VIP Modal Content */
-.vip-image-container {
-    width: 100%;
-    margin: 20px 0;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.vip-room-image {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.vip-details {
-    text-align: left;
-    margin: 20px 0;
-}
-
-.vip-details ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-.vip-details ul li {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.vip-details ul li:before {
-    content: "✓ ";
-    color: #04ec23;
-    font-weight: bold;
-    margin-right: 8px;
-}
-
-.vip-modal-buttons {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-.modal-btn {
-    flex: 1;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.cancel-btn {
-    background-color: #6c757d;
-    color: white;
-}
-
-.cancel-btn:hover {
-    background-color: #5a6268;
-}
-
-.proceed-btn {
-    background: linear-gradient(45deg, rgba(101, 85, 4, 1), #d1b106);
-    color: white;
-}
-
-.proceed-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(101, 85, 4, 0.4);
-}
-
-/* QR Code Styles */
-.qr-code-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 30px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    margin: 20px 0;
-}
-
-.qr-code-image {
-    max-width: 250px;
-    width: 100%;
-    height: auto;
-}
-
-.payment-instructions {
-    text-align: left;
-    line-height: 1.8;
-    color: #666;
-    font-size: 14px;
-    margin: 20px 0;
-}
-/* --- NEW: PRE-ORDER MODAL STYLES --- */
-.preorder-modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px);
-    overflow-y: auto;
-}
-
-.preorder-modal-content {
-    background: #f5f5f5;
-    margin: 2% auto; /* 2% from top */
-    border-radius: 15px;
-    width: 90%;
-    max-width: 1000px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-    animation: modalSlideIn 0.3s ease-out;
-    min-height: 80vh;
-}
-
-.preorder-header {
-    background: linear-gradient(45deg, var(--color-green-700, #1a633c), var(--color-green-600, #1f7d4a));
-    color: white;
-    padding: 20px 30px;
-    border-radius: 15px 15px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.preorder-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-.preorder-header .skip-btn {
-    background: var(--color-brown-500, #8b6f47);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-}
-.preorder-header .skip-btn:hover {
-    background: var(--color-brown-600, #725a39);
-}
-
-.preorder-body {
-    display: flex;
-    width: 100%;
-    min-height: 70vh;
-}
-
-/* Menu Sidebar */
-.preorder-sidebar {
-    width: 200px;
-    background: #e9ecef;
-    border-right: 1px solid #ddd;
-}
-.preorder-sidebar h3 {
-    padding: 20px;
-    margin: 0;
-    background: #ddd;
-    font-size: 1.2rem;
-}
-.preorder-sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.preorder-sidebar li {
-    padding: 15px 20px;
-    cursor: pointer;
-    font-weight: 500;
-    border-bottom: 1px solid #ddd;
-}
-.preorder-sidebar li:hover {
-    background: #f8f9fa;
-}
-.preorder-sidebar li.active {
-    background: #fff;
-    color: #1a633c;
-    border-right: 4px solid #1a633c;
-}
-
-/* Menu Product Grid */
-.preorder-main {
-    flex: 2;
-    padding: 20px;
-    overflow-y: auto;
-    max-height: 70vh;
-}
-.preorder-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 15px;
-}
-.preorder-product-card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-.preorder-product-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-.preorder-product-card img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-}
-.preorder-product-card-info {
-    padding: 10px;
-}
-.preorder-product-card-info h4 {
-    margin: 0 0 5px 0;
-    font-size: 1rem;
-}
-.preorder-product-card-info p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #555;
-}
-.preorder-product-card.out-of-stock {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: #f0f0f0;
-}
-
-/* Pre-order Cart */
-.preorder-cart {
-    flex: 1;
-    background: #fff;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-}
-.preorder-cart-items {
-    flex-grow: 1;
-    overflow-y: auto;
-    max-height: 50vh;
-}
-.preorder-cart-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-}
-.preorder-cart-item .name { flex-grow: 1; }
-.preorder-cart-item .qty { margin: 0 10px; }
-.preorder-cart-item .price { font-weight: 500; }
-
-.preorder-total {
-    border-top: 2px solid #333;
-    padding-top: 10px;
-    margin-top: 10px;
-}
-.preorder-total div {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-}
-.preorder-total .total-final {
-    font-size: 1.3rem;
-    font-weight: bold;
-}
-#preorder-checkout-btn {
-    width: 100%;
-    padding: 15px;
-    margin-top: 15px;
-}
-
-/* Payment Modal */
-.payment-modal-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-    animation: modalSlideIn 0.3s ease-out;
-}
-.payment-body {
-    padding: 30px;
-}
-.payment-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-.payment-qr-code {
-    text-align: center;
-}
-.payment-qr-code img {
-    width: 100%;
-    max-width: 250px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-.payment-qr-code p {
-    font-weight: 500;
-}
-.payment-upload .form-group label {
-    font-weight: bold;
-}
-#receipt-preview {
-    display: none;
-    max-width: 100%;
-    max-height: 200px;
-    object-fit: contain;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-top: 10px;
-}
-#upload-receipt-btn {
-    width: 100%;
-    padding: 15px;
-}
-
-</style> -->
 <body class="page-content">
     <div id="i6po" class="gjs-grid-row">
         <div id="itjq" class="gjs-grid-column">
@@ -977,7 +36,7 @@
     </div>
 
  <div class="reservation-background">
-    <div class="reservation-section">
+    <div class="reservation-section" id="reservation-section-main">
         <div class="reservation-grid">
             <div class="cafe-section">
                 <h2 style="color: rgba(255, 255, 255, 1); text-shadow: 1px 1px 5px black; font-size: 30px;">Cafe Floor Plan</h2>
@@ -1126,169 +185,241 @@
                         <button type="submit" class="submit-btn" id="confirmReservationBtn" disabled>Confirm Reservation</button>
                     </form>
 
-                        <div id="termsModal" class="modal hidden">
-                            <div class="modal-content">
-                                <span class="close-modal" id="closeTerms">&times;</span>
-                                <h2>Terms and Conditions</h2>
-                                <p>By confirming your reservation, you agree to:</p>
-                                <ul>
-                                    <li>Arrive within 15 minutes of your reservation time, or your table may be released.</li>
-                                    <li>Provide a valid ID to verify your booking upon arrival.</li>
-                                    <li>Any fraudulent or repeated no-shows may result in account restrictions.</li>
-                                    <li>Respect other customers and staff during your stay.</li>
-                                    <li>The restaurant reserves the right to modify or cancel reservations in case of emergencies.</li>
-                                </ul>
-                                <p>For more details, please contact our staff at <b>Acaccia Bistro Café</b>.</p>
-                            </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="preorder-section" class="desktop-only-section" style="display: none;">
+        <div class="preorder-modal-content">
+            <div class="preorder-header">
+                <button class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Reservation</span></button> <h2>Pre-Order Your Food</h2>
+            </div>
+            <div class="preorder-body">
+                <div class="preorder-sidebar">
+                    <h3>Categories</h3>
+                    <ul id="preorder-categories-desktop">
+                        <li class="active" data-category="All">All</li>
+                        </ul>
+                </div>
+                <div class="preorder-main">
+                    <div id="preorder-grid-desktop" class="preorder-grid">
                         </div>
-                        <div id="vipModal" class="modal hidden">
-    <div class="modal-content">
-        <span class="close-modal" id="closeVip">&times;</span>
-        <h2>VIP Room Reservation</h2>
-        <p>Experience luxury dining in our exclusive VIP room with premium amenities and privacy.</p>
-        
-        <div class="vip-image-container">
-            <img src="assets/vip-room.jpg" alt="VIP Room" class="vip-room-image">
+                </div>
+                <div class="preorder-cart">
+                    <div class="preorder-cart-summary-header">
+                        <h3>Your Pre-Order</h3>
+                        <button id="clear-cart-btn-desktop" class="clear-cart-btn" disabled>Clear</button>
+                        <div class="cart-icon-container" id="cartIconContainer-desktop">
+                            <img src="assets/cart_icon.png" alt="Cart" class="cart-icon"> 
+                            <span class="cart-badge" id="cartBadge-desktop">0</span>
+                        </div>
+                    </div>
+                    <div id="preOrderCartItemsWrapper-desktop" class="preorder-cart-items-wrapper collapsed">
+                        <div id="preOrderCartItems-desktop" class="preorder-cart-items">
+                            <p style="color: #888; text-align: center;">Your cart is empty.</p>
+                        </div>
+                    </div>
+                    <div class="preorder-summary"> 
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="preOrderSubtotal-desktop">₱0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (12%):</span>
+                            <span id="preOrderTax-desktop">₱0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total:</span>
+                            <span id="preOrderTotal-desktop">₱0.00</span>
+                        </div>
+                    </div>
+                    <button id="preOrderCheckoutBtn-desktop" class="preorder-checkout-btn" disabled>Checkout</button>
+                </div>
+            </div>
         </div>
-        
-        <div class="vip-details">
-            <p><strong>Features:</strong></p>
+    </div>
+    
+    <div id="payment-section" class="desktop-only-section" style="display: none;">
+        <div class="payment-modal-content">
+            <div class="preorder-header">
+                <button id="cancel-payment-btn-desktop" class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Pre-Order</span></button>
+                <h2>Pay for Pre-Order</h2>
+            </div>
+            <div class="payment-body">
+                <div class="payment-grid">
+                    <div class="payment-qr-code">
+                        <h4>Pay with GCash</h4>
+                        <p>Total Amount: <strong id="payment-total-amount-desktop" style="font-size: 1.2rem;">₱0.00</strong></p>
+                        <img src="assets/qr-code.png" alt="GCash QR Code">
+                        <p>Scan this QR code with your GCash app.</p>
+                    </div>
+                    <div class="payment-upload">
+                        <h4>Upload Receipt</h4>
+                        <p>After paying, please upload a screenshot of your e-receipt.</p>
+                        <div class="form-group">
+                            <label for="receipt-file-input-desktop">Proof of Payment:</label>
+                            <input type="file" id="receipt-file-input-desktop" class="file-input" accept="image/*" required>
+                            <label for="receipt-file-input-desktop" class="file-input-label">📷 Select Screenshot</label>
+                            <button type="button" id="receipt-preview-link-desktop" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+                        </div>
+                        <button id="upload-receipt-btn-desktop" class="submit-btn" disabled>Confirm Pre-Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div> <div id="termsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closeTerms">&times;</span>
+            <h2>Terms and Conditions</h2>
+            <p>By confirming your reservation, you agree to:</p>
             <ul>
-                <li>Private dining area for up to 10 guests</li>
-                <li>Exclusive menu options</li>
-                <li>Personalized service</li>
-                <li>₱500 down payment required</li>
+                <li>Arrive within 15 minutes of your reservation time, or your table may be released.</li>
+                <li>Provide a valid ID to verify your booking upon arrival.</li>
+                <li>Any fraudulent or repeated no-shows may result in account restrictions.</li>
+                <li>Respect other customers and staff during your stay.</li>
+                <li>The restaurant reserves the right to modify or cancel reservations in case of emergencies.</li>
             </ul>
-        </div>
-        
-        <div class="vip-modal-buttons">
-            <button class="modal-btn cancel-btn" id="cancelVip">Cancel</button>
-            <button class="modal-btn proceed-btn" id="proceedPayment">Proceed to Down Payment</button>
+            <p>For more details, please contact our staff at <b>Acaccia Bistro Café</b>.</p>
         </div>
     </div>
-</div>
-
-<div id="paymentModal" class="modal hidden">
-    <div class="modal-content">
-        <span class="close-modal" id="closePayment">&times;</span>
-        <h2>Down Payment - ₱500</h2>
-        <p>Scan the QR code below to complete your down payment:</p>
-        
-        <div class="qr-code-container">
-            <img src="assets/qr-code.png" alt="Payment QR Code" class="qr-code-image">
-        </div>
-        
-        <p class="payment-instructions">
-            <strong>Instructions:</strong><br>
-            1. Scan the QR code using your banking app or e-wallet<br>
-            2. Complete the ₱500 payment<br>
-            3. Click "Close" to complete your reservation
-        </p>
-        
-        <button class="modal-btn proceed-btn" id="closePaymentBtn">Close</button>
-    </div>
-</div>
-
-<div id="preorder-modal" class="preorder-modal">
-    <div class="preorder-modal-content">
-        <div class="preorder-header">
-            <button class="preorder-back-btn">&larr;</button> <h2>Pre-Order Your Food</h2>
-        </div>
-        <div class="preorder-body">
-            <div class="preorder-sidebar">
-                <h3>Categories</h3>
-                <ul id="preorder-categories">
-                    <li class="active" data-category="All">All</li>
-                    </ul>
+    
+    <div id="vipModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closeVip">&times;</span>
+            <h2>VIP Room Reservation</h2>
+            <p>Experience luxury dining in our exclusive VIP room with premium amenities and privacy.</p>
+            <div class="vip-image-container">
+                <img src="assets/vip-room.jpg" alt="VIP Room" class="vip-room-image">
             </div>
-            <div class="preorder-main">
-                <div id="preorder-grid" class="preorder-grid">
-                    </div>
+            <div class="vip-details">
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li>Private dining area for up to 10 guests</li>
+                    <li>Exclusive menu options</li>
+                    <li>Personalized service</li>
+                    <li>₱500 down payment required</li>
+                </ul>
             </div>
-<div class="preorder-cart">
-    <div class="preorder-cart-summary-header">
-        <h3>Your Pre-Order</h3>
-        <div class="cart-icon-container" id="cartIconContainer">
-            <img src="assets/cart_icon.png" alt="Cart" class="cart-icon"> 
-            <span class="cart-badge" id="cartBadge">0</span>
-        </div>
-    </div>
-
-    <div id="preOrderCartItemsWrapper" class="preorder-cart-items-wrapper collapsed">
-        <div id="preOrderCartItems" class="preorder-cart-items">
-            <p style="color: #888; text-align: center;">Your cart is empty.</p>
-        </div>
-    </div>
-
-    <div class="preorder-summary"> 
-        <div class="summary-row">
-            <span>Subtotal:</span>
-            <span id="preOrderSubtotal">₱0.00</span>
-        </div>
-        <div class="summary-row">
-            <span>Tax (12%):</span>
-            <span id="preOrderTax">₱0.00</span>
-        </div>
-        <div class="summary-row total">
-            <span>Total:</span>
-            <span id="preOrderTotal">₱0.00</span>
-        </div>
-    </div>
-    <button id="preOrderCheckoutBtn" class="preorder-checkout-btn" disabled>Checkout</button>
-</div>
-        </div>
-    </div>
-</div>
-
-<div id="preorder-variation-modal" class="modal hidden" style="z-index: 1001;">
-    <div class="modal-content" style="width: 400px;">
-        <h2 id="preorder-variation-title">Select Variation</h2>
-        <div id="preorder-variation-options" style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+            <div class="vip-modal-buttons">
+                <button class="modal-btn cancel-btn" id="cancelVip">Cancel</button>
+                <button class="modal-btn proceed-btn" id="proceedPayment">Proceed to Down Payment</button>
             </div>
-        <div class="modal-buttons" style="margin-top: 20px;">
-            <button type="button" id="cancel-preorder-variation" class="btn btn--secondary">Cancel</button>
         </div>
     </div>
-</div>
 
-<div id="preorder-payment-modal" class="preorder-modal" style="z-index: 1002;">
-    <div class="payment-modal-content">
-        <div class="preorder-header">
-            <h2>Pay for Pre-Order</h2>
-            <button id="cancel-payment-btn" class="skip-btn">Cancel</button>
+    <div id="paymentModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="closePayment">&times;</span>
+            <h2>Down Payment - ₱500</h2>
+            <p>Scan the QR code below to complete your down payment:</p>
+            <div class="qr-code-container">
+                <img src="assets/qr-code.png" alt="Payment QR Code" class="qr-code-image">
+            </div>
+            <p class="payment-instructions">
+                <strong>Instructions:</strong><br>
+                1. Scan the QR code using your banking app or e-wallet<br>
+                2. Complete the ₱500 payment<br>
+                3. Click "Close" to complete your reservation
+            </p>
+            <button class="modal-btn proceed-btn" id="closePaymentBtn">Close</button>
         </div>
-        <div class="payment-body">
-            <div class="payment-grid">
-                <div class="payment-qr-code">
-                    <h4>Pay with GCash</h4>
-                    <p>Total Amount: <strong id="payment-total-amount" style="font-size: 1.2rem;">₱0.00</strong></p>
-                    <img src="assets/qr-code.png" alt="GCash QR Code">
-                    <p>Scan this QR code with your GCash app.</p>
+    </div>
+
+    <div id="preorder-modal" class="preorder-modal">
+        <div class="preorder-modal-content">
+            <div class="preorder-header">
+                <button class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Reservation</span></button> <h2>Pre-Order Your Food</h2>
+            </div>
+            <div class="preorder-body">
+                <div class="preorder-sidebar">
+                    <h3>Categories</h3>
+                    <ul id="preorder-categories">
+                        <li class="active" data-category="All">All</li>
+                        </ul>
                 </div>
-                <div class="payment-upload">
-                    <h4>Upload Receipt</h4>
-                    <p>After paying, please upload a screenshot of your e-receipt.</p>
-                    <div class="form-group">
-                        <label for="receipt-file-input">Proof of Payment:</label>
-                        <input type="file" id="receipt-file-input" class="file-input" accept="image/*" required>
-                        <label for="receipt-file-input" class="file-input-label">📷 Select Screenshot</label>
-                        <img id="receipt-preview" alt="Receipt preview">
+                <div class="preorder-main">
+                    <div id="preorder-grid" class="preorder-grid">
+                        </div>
+                </div>
+                <div class="preorder-cart">
+                    <div class="preorder-cart-summary-header">
+                        <h3>Your Pre-Order</h3>
+                        <button id="clear-cart-btn-mobile" class="clear-cart-btn" disabled>Clear</button>
+                        <div class="cart-icon-container" id="cartIconContainer">
+                            <img src="assets/cart_icon.png" alt="Cart" class="cart-icon"> 
+                            <span class="cart-badge" id="cartBadge">0</span>
+                        </div>
                     </div>
-                    <button id="upload-receipt-btn" class="submit-btn" disabled>Confirm Pre-Order</button>
+                    <div id="preOrderCartItemsWrapper" class="preorder-cart-items-wrapper collapsed">
+                        <div id="preOrderCartItems" class="preorder-cart-items">
+                            <p style="color: #888; text-align: center;">Your cart is empty.</p>
+                        </div>
+                    </div>
+                    <div class="preorder-summary"> 
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="preOrderSubtotal">₱0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (12%):</span>
+                            <span id="preOrderTax">₱0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total:</span>
+                            <span id="preOrderTotal">₱0.00</span>
+                        </div>
+                    </div>
+                    <button id="preOrderCheckoutBtn" class="preorder-checkout-btn" disabled>Checkout</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-                    </div>
-                    </div>
 
+    <div id="preorder-variation-modal" class="modal hidden" style="z-index: 1001;">
+        <div class="modal-content">
+            <h2 id="preorder-variation-title">Select Variation</h2>
+            <div id="preorder-variation-options">
+                </div>
+            <div class="modal-buttons">
+                <button type="button" id="cancel-preorder-variation" class="btn--secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
 
+    <div id="preorder-payment-modal" class="preorder-modal" style="z-index: 1002;">
+        <div class="payment-modal-content">
+            <div class="preorder-header">
+                <button id="payment-back-btn-mobile" class="preorder-back-btn"><span>&larr;</span><span class="btn-text"> Back to Pre-Order</span></button>
+                <h2>Pay for Pre-Order</h2>
+                <button id="cancel-payment-btn" class="skip-btn">Cancel</button>
+            </div>
+            <div class="payment-body">
+                <div class="payment-grid">
+                    <div class="payment-qr-code">
+                        <h4>Pay with GCash</h4>
+                        <p>Total Amount: <strong id="payment-total-amount" style="font-size: 1.2rem;">₱0.00</strong></p>
+                        <img src="assets/qr-code.png" alt="GCash QR Code">
+                        <p>Scan this QR code with your GCash app.</p>
+                    </div>
+                    <div class="payment-upload">
+                        <h4>Upload Receipt</h4>
+                        <p>After paying, please upload a screenshot of your e-receipt.</p>
+                        <div class="form-group">
+                            <label for="receipt-file-input">Proof of Payment:</label>
+                            <input type="file" id="receipt-file-input" class="file-input" accept="image/*" required>
+                            <label for="receipt-file-input" class="file-input-label">📷 Select Screenshot</label>
+                            <button type="button" id="receipt-preview-link" class="receipt-preview-link" style="display: none;">View Attached Screenshot</button>
+                        </div>
+                        <button id="upload-receipt-btn" class="submit-btn" disabled>Confirm Pre-Order</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-<div id="auth-validation-modal" class="auth-modal-backdrop hidden">
+
+    <div id="auth-validation-modal" class="auth-modal-backdrop hidden">
         <div class="auth-modal-content">
             <h2>Login Required</h2>
             <p>You must be logged in to reserve a table. Please log in or create an account to continue.</p>
@@ -1301,7 +432,16 @@
         </div>
         </div>
     </div>
-<footer id="iv3be5" class="gjs-grid-row">
+
+    <div id="reservation-receipt-modal" class="modal hidden" style="z-index: 1003;">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; padding: 10px;">
+            <span class="close-modal" id="close-receipt-modal" style="font-size: 2.5rem; top: 10px; right: 20px; position: absolute; color: #fff; text-shadow: 0 0 5px #000;">&times;</span>
+            <img id="receipt-modal-image" src="" alt="Receipt Preview" style="width: 100%; height: auto; max-height: 85vh; object-fit: contain;">
+        </div>
+    </div>
+
+
+    <footer id="iv3be5" class="gjs-grid-row">
         <div id="ilriti" class="gjs-grid-column">
             <div id="im0rle">
                 <div>

@@ -863,6 +863,7 @@ body.page-content {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    /* REMOVED flex-direction: column; */
 }
 
 .reservation-section {
@@ -2700,6 +2701,8 @@ input[type="text"]:focus {
     margin: 0;
     font-size: 1.5rem;
     color: white; /* Ensure text is white */
+    text-align: center; /* Center the title */
+    flex-grow: 1; /* Allow it to take up space */
 }
 
 /* Back arrow button */
@@ -2874,5 +2877,261 @@ input[type="text"]:focus {
     
     .summary-row.total {
         font-size: 1rem;
+    }
+}
+
+/* ========================================
+   14. DESKTOP/MOBILE RESERVATION FLOW
+   ======================================== */
+
+/* --- Desktop-Only Reservation Sections (Replacing Flow) --- */
+.desktop-only-section {
+    display: none; /* HIDE THE SECTIONS BY DEFAULT */
+    width: 95%;
+    max-width: 1400px;
+    margin: 20px auto; 
+    background: rgba(255, 255, 255, 0.123);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#preorder-section .preorder-modal-content,
+#payment-section .payment-modal-content {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent; /* Background is on the parent */
+    animation: none; /* No modal animation needed */
+    min-height: auto;
+}
+
+#preorder-section .preorder-header,
+#payment-section .preorder-header {
+    border-radius: 15px 15px 0 0;
+}
+
+#preorder-section .preorder-body {
+    background: #f5f5f5;
+    min-height: 70vh; 
+}
+
+#payment-section .payment-body {
+     background: #fefefe;
+     padding: 30px;
+     border-radius: 0 0 15px 15px;
+}
+
+/* --- Responsive Toggling --- */
+
+@media (max-width: 992px) {
+    /* Hide the new desktop sections on mobile */
+    .desktop-only-section {
+        display: none !important;
+    }
+    
+    /* Ensure the main reservation section is visible on mobile */
+    .reservation-section {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 993px) {
+    /* Hide the original modals on desktop */
+    .preorder-modal,
+    #preorder-payment-modal {
+        display: none !important;
+    }
+
+    /* Widen the cart on desktop */
+    #preorder-section .preorder-main {
+        flex: 1.8; /* Make menu grid smaller */
+    }
+    #preorder-section .preorder-cart {
+        flex: 1.2; /* Make cart grid wider */
+    }
+}
+
+/* ========================================
+   15. PRE-ORDER VARIATION MODAL STYLES
+   ======================================== */
+#preorder-variation-modal .modal-content {
+    max-width: 450px;
+}
+
+#preorder-variation-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.variation-btn {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1.1rem;
+    font-weight: 600; 
+    text-align: left;
+    background: linear-gradient(135deg, rgba(101, 85, 4, 1) 0%, #b89b05 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.variation-btn:hover {
+    background: linear-gradient(135deg, #b89b05 0%, rgba(101, 85, 4, 1) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.variation-btn .variation-price {
+    float: right;
+    font-weight: 700;
+}
+
+#preorder-variation-modal .modal-buttons {
+    margin-top: 25px;
+    display: flex;
+    justify-content: flex-end; 
+}
+
+#preorder-variation-modal .btn--secondary {
+    padding: 10px 20px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+#preorder-variation-modal .btn--secondary:hover {
+    background: #5a6268;
+}
+
+/* ========================================
+   16. PRE-ORDER BACK BUTTON
+   ======================================== */
+.preorder-back-btn {
+    font-size: 0.9rem; /* Smaller text */
+    font-weight: 500;
+}
+
+/* ========================================
+   17. PRE-ORDER CLEAR CART BUTTON
+   ======================================== */
+.clear-cart-btn {
+    background: none;
+    border: 1px solid #c92a2a;
+    color: #c92a2a;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto; /* Pushes it to the left of the cart icon */
+    margin-right: 10px;
+}
+
+.clear-cart-btn:hover {
+    background: #c92a2a;
+    color: white;
+}
+
+.clear-cart-btn:disabled {
+    border-color: #ccc;
+    color: #ccc;
+    background: none;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   18. RECEIPT PREVIEW LINK/MODAL
+   ======================================== */
+.receipt-preview-link {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    text-align: center;
+    background: #e9ecef;
+    border-radius: 4px;
+    color: #007bff;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+.receipt-preview-link:hover {
+    background: #dde2e6;
+    text-decoration: underline;
+}
+
+/* Remove old preview image styles */
+#receipt-preview-desktop,
+#receipt-preview {
+    display: none;
+}
+
+/* ========================================
+   19. SINGLE COLUMN PAYMENT FORM
+   ======================================== */
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column */
+    gap: 20px;
+}
+
+.payment-qr-code {
+    text-align: center;
+    max-width: 350px; /* Constrain width */
+    margin: 0 auto; /* Center the block */
+}
+
+.payment-upload {
+    max-width: 350px; /* Constrain width */
+    margin: 0 auto; /* Center the block */
+}
+
+/* ========================================
+   21. MOBILE HEADER BUTTON FIXES
+   ======================================== */
+
+/* Tablet and Mobile (max-width: 992px) */
+@media (max-width: 992px) {
+    /* Hide text on all back buttons */
+    .preorder-back-btn .btn-text {
+        display: none;
+    }
+
+    /* Make the arrow icon larger and tap-friendly */
+    .preorder-back-btn {
+        font-size: 2rem;
+        font-weight: 600;
+    }
+    
+    /* Hide the old "Cancel" button on the payment modal */
+    #preorder-payment-modal .skip-btn {
+        display: none;
+    }
+
+    /* Re-center the payment modal title */
+    #preorder-payment-modal .preorder-header h2 {
+        margin: 0 auto;
+        text-align: center;
+        flex-grow: 1;
+    }
+}
+
+/* Larger Desktop (Desktop View) */
+@media (min-width: 993px) {
+    /* Hide the new mobile-only back button on desktop */
+    #payment-back-btn-mobile {
+        display: none;
     }
 }
