@@ -8,7 +8,7 @@ import {
   query,
   where,
   getDocs,
-  updateDoc // <-- ADD THIS
+  updateDoc 
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
@@ -46,7 +46,7 @@ async function checkAuthState() {
     });
 }
 const reservationsRef = collection(db, "reservations");
-const productsRef = collection(db, "products"); // <-- NEW
+const productsRef = collection(db, "products"); 
 
 let selectedTableId = null;
 let occupiedTables = [];
@@ -54,29 +54,29 @@ let isVipSelected = false;
 let vipPaymentCompleted = false;
 let currentUserId = null;
 
-// --- Form Elements ---
+// --- DECLARE ALL DOM ELEMENT VARIABLES WITH 'let' ---
 let reservationDateInput, checkAvailabilityBtn, availabilityLoader, availabilityMessage;
 let reservationTimeInput, numberOfDinersInput, notesInput, agreeTermsCheckbox, confirmReservationBtn;
-
-// --- NEW: Pre-Order Elements ---
 let preOrderModal, skipPreOrderBtn, preOrderCategories, preOrderGrid, preOrderCartItems, preOrderSubtotal, preOrderTax, preOrderTotal, preOrderCheckoutBtn;
 let preOrderVariationModal, preOrderVariationTitle, preOrderVariationOptions, cancelPreOrderVariationBtn;
 let preOrderPaymentModal, cancelPaymentBtn, paymentTotalAmount, receiptFileInput, receiptPreview, uploadReceiptBtn;
+let preorderBackBtn, cartIconContainer, cartBadge, preOrderCartItemsWrapper;
 
-// --- NEW: Pre-Order State ---
+// --- Pre-Order State ---
 let allProductsCache = [];
 let preOrderCart = [];
-let currentReservationId = null;
+
+// --- FIX: Add variable to hold reservation data temporarily ---
+let currentReservationData = null;
+let currentReservationId = null; 
 let currentReceiptFile = null;
 
 // ===================================
 // CLOUDINARY UPLOAD
 // ===================================
 async function uploadToCloudinary(file) {
-    // --- ⬇️ ⬇️ VITAL: REPLACE THESE WITH YOUR OWN ⬇️ ⬇️ ---
-    const CLOUD_NAME = "dofyjwhlu"; // <-- REPLACE WITH YOUR CLOUD_NAME
-    const UPLOAD_PRESET = "cafesync"; // <-- REPLACE WITH YOUR UPLOAD_PRESET
-    // --- ⬆️ ⬆️ VITAL: REPLACE THESE WITH YOUR OWN ⬆️ ⬆️ ---
+    const CLOUD_NAME = "dofyjwhlu";
+    const UPLOAD_PRESET = "cafesync";
 
     const URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
     const formData = new FormData();
@@ -97,29 +97,6 @@ async function uploadToCloudinary(file) {
 // ===================================
 // AUTH & RESERVATION FORM
 // ===================================
-
-// async function checkAuthState() {
-//     onAuthStateChanged(auth, async (user) => {
-//         if (user) {
-//             currentUserId = user.uid;
-//             const userDocRef = doc(db, "users", user.uid);
-//             const userDoc = await getDoc(userDocRef);
-//             if (userDoc.exists()) {
-//                 const userData = userDoc.data();
-//                 const nameInput = document.querySelector('input[name="customerName"]');
-//                 const contactInput = document.querySelector('input[name="contactNumber"]');
-//                 if (nameInput) nameInput.value = userData.fullName || "";
-//                 if (contactInput) contactInput.value = userData.phone || "";
-//             }
-//         } else {
-//             currentUserId = null;
-//             const nameInput = document.querySelector('input[name="customerName"]');
-//             const contactInput = document.querySelector('input[name="contactNumber"]');
-//             if (nameInput) nameInput.value = "";
-//             if (contactInput) contactInput.value = "";
-//         }
-//     });
-// }
 
 function setDateRestrictions() {
   const today = new Date();
@@ -214,14 +191,11 @@ function setFormDisabled(disabled) {
 }
 
 async function checkAvailability() {
-    // --- NEW VALIDATION ADDED HERE ---
-    // If the user is not logged in, show the modal and stop.
     if (!currentUserId) {
         const modal = document.getElementById('auth-validation-modal');
         if (modal) modal.classList.remove('hidden');
-        return; // Stop the function from proceeding
+        return; 
     }
-    // --- END OF NEW VALIDATION ---
 
     const selectedDate = reservationDateInput.value;
     if (!selectedDate) {
@@ -254,7 +228,7 @@ async function checkAvailability() {
     }
 }
 
-// --- MODIFIED: Reservation submit now opens pre-order ---
+// --- FIX: Reservation submit now stores data locally, opens pre-order ---
 async function handleReservation(event) {
   event.preventDefault();
   if (!selectedTableId) {
@@ -272,7 +246,9 @@ async function handleReservation(event) {
   }
 
   const formData = new FormData(event.target);
-  const reservationData = {
+  
+  // --- FIX: Store data in the global variable, DON'T save to Firestore yet ---
+  currentReservationData = {
     name: formData.get("customerName"),
     contactNumber: formData.get("contactNumber"),
     numOfDiners: formData.get("numberOfDiners"),
@@ -289,27 +265,19 @@ async function handleReservation(event) {
     paymentReceiptUrl: null // NEW: Initialize receipt URL
   };
   
-  if (!reservationData.name || !reservationData.contactNumber) {
+  if (!currentReservationData.name || !currentReservationData.contactNumber) {
       alert("Please enter your Full Name and Contact Number.");
+      currentReservationData = null; // Clear bad data
       return;
   }
   
-  // --- Disable submit button to prevent double-booking ---
   if(confirmReservationBtn) confirmReservationBtn.disabled = true;
 
-  try {
-    const docRef = await addDoc(reservationsRef, reservationData);
-    console.log("✅ Reservation saved, id:", docRef.id, reservationData);
-    currentReservationId = docRef.id; // <-- Store the new ID
+  // --- FIX: Reset reservation ID tracker ---
+  currentReservationId = null; 
 
-    // --- DON'T show success yet. Open pre-order modal ---
-    openPreOrderModal(docRef.id);
-
-  } catch (err) {
-    console.error("Error saving reservation:", err);
-    alert("Could not save reservation. Check console for details.");
-    if(confirmReservationBtn) confirmReservationBtn.disabled = false; // Re-enable on error
-  }
+  // --- FIX: Just open the pre-order modal, don't pass ID ---
+  openPreOrderModal();
 }
 
 // ===================================
@@ -317,16 +285,13 @@ async function handleReservation(event) {
 // ===================================
 
 // --- 1. Open the main Pre-Order Modal ---
-async function openPreOrderModal(reservationId) {
-    currentReservationId = reservationId;
+async function openPreOrderModal() {
     preOrderCart = [];
     updatePreOrderCart();
     
-    // Load menu items if not already cached
     if (allProductsCache.length === 0) {
         await loadPreOrderMenu();
     } else {
-        // If already cached, just render them
         renderPreOrderMenu("All");
     }
 
@@ -347,10 +312,9 @@ async function loadPreOrderMenu() {
             categories.add(product.category);
         });
 
-        // Populate category sidebar
         if (preOrderCategories) {
-            preOrderCategories.innerHTML = '<li class="active" data-category="All">All</li>'; // Reset
-            categories.forEach(cat => {
+            preOrderCategories.innerHTML = '<li class="active" data-category="All">All</li>';
+            Array.from(categories).sort().forEach(cat => {
                 const li = document.createElement("li");
                 li.dataset.category = cat;
                 li.textContent = cat;
@@ -358,7 +322,7 @@ async function loadPreOrderMenu() {
             });
         }
         
-        renderPreOrderMenu("All"); // Render all products by default
+        renderPreOrderMenu("All");
 
     } catch (err) {
         console.error("Error loading products:", err);
@@ -369,7 +333,7 @@ async function loadPreOrderMenu() {
 // --- 3. Render Menu Items ---
 function renderPreOrderMenu(category) {
     if (!preOrderGrid) return;
-    preOrderGrid.innerHTML = ""; // Clear grid
+    preOrderGrid.innerHTML = ""; 
 
     const productsToRender = (category === "All")
         ? allProductsCache
@@ -383,7 +347,6 @@ function renderPreOrderMenu(category) {
         const card = document.createElement("div");
         card.className = "preorder-product-card";
         
-        // Price display logic
         let priceDisplay = "";
         if (product.variations && product.variations.length > 0) {
             const minPrice = Math.min(...product.variations.map(v => v.price));
@@ -408,10 +371,9 @@ function renderPreOrderMenu(category) {
 // --- 4. Handle Clicks on Menu Items ---
 function handlePreOrderProductClick(product) {
     if (product.variations && product.variations.length > 0) {
-        // Open variation choice modal
         if (preOrderVariationModal) {
             preOrderVariationTitle.textContent = `Select ${product.name} Size`;
-            preOrderVariationOptions.innerHTML = ""; // Clear old
+            preOrderVariationOptions.innerHTML = ""; 
             
             product.variations.forEach(v => {
                 const btn = document.createElement("button");
@@ -428,7 +390,6 @@ function handlePreOrderProductClick(product) {
             preOrderVariationModal.style.display = "flex";
         }
     } else {
-        // No variations, add directly
         addItemToPreOrderCart(product);
     }
 }
@@ -443,26 +404,57 @@ function addItemToPreOrderCart(item) {
     }
     updatePreOrderCart();
 }
+function adjustPreOrderItemQuantity(itemId, change) {
+    const itemIndex = preOrderCart.findIndex(i => i.id === itemId);
+    if (itemIndex === -1) return; // Item not found
+
+    const item = preOrderCart[itemIndex];
+    item.quantity += change;
+
+    if (item.quantity <= 0) {
+        // Remove item from cart if quantity is 0 or less
+        preOrderCart.splice(itemIndex, 1);
+    }
+
+    updatePreOrderCart(); // Re-render the cart
+}
 
 // --- 6. Update Pre-Order Cart UI ---
 function updatePreOrderCart() {
-    if (!preOrderCartItems) return;
+    if (!preOrderCartItems || !cartBadge) return;
     
+    const totalDistinctItems = preOrderCart.length; 
+    cartBadge.textContent = totalDistinctItems.toString();
+    cartBadge.style.display = totalDistinctItems > 0 ? 'block' : 'none';
+
     if (preOrderCart.length === 0) {
         preOrderCartItems.innerHTML = `<p style="color: #888; text-align: center;">Your cart is empty.</p>`;
         preOrderCheckoutBtn.disabled = true;
+        if (preOrderCartItemsWrapper && !preOrderCartItemsWrapper.classList.contains('collapsed')) {
+             preOrderCartItemsWrapper.classList.add('collapsed');
+        }
     } else {
         preOrderCartItems.innerHTML = "";
         preOrderCart.forEach(item => {
             const itemEl = document.createElement("div");
             itemEl.className = "preorder-cart-item";
+            
+            // --- FIX: This HTML was incorrect in the previous version ---
             itemEl.innerHTML = `
-                <span class="name">${item.quantity}x ${item.name}</span>
+                <span class="name">${item.name}</span>
+                <div class="preorder-qty-controls">
+                    <button class="preorder-qty-btn" data-id="${item.id}" data-change="-1">−</button>
+                    <span class="qty-display">${item.quantity}</span>
+                    <button class="preorder-qty-btn" data-id="${item.id}" data-change="1">+</button>
+                </div>
                 <span class="price">₱${(item.price * item.quantity).toFixed(2)}</span>
             `;
             preOrderCartItems.appendChild(itemEl);
         });
         preOrderCheckoutBtn.disabled = false;
+        if (preOrderCartItemsWrapper && preOrderCartItemsWrapper.classList.contains('collapsed')) {
+             preOrderCartItemsWrapper.classList.remove('collapsed');
+        }
     }
     
     // Update totals
@@ -514,7 +506,7 @@ function handleReceiptFileSelect(event) {
 
 // --- 9. Finalize: Upload Receipt and Update Reservation ---
 async function finalizePreOrder() {
-    if (!currentReceiptFile || !currentReservationId) {
+    if (!currentReceiptFile || !currentReservationData) {
         alert("Please upload a receipt screenshot.");
         return;
     }
@@ -525,10 +517,8 @@ async function finalizePreOrder() {
     }
 
     try {
-        // 1. Upload receipt to Cloudinary
         const receiptUrl = await uploadToCloudinary(currentReceiptFile);
         
-        // 2. Prepare pre-order data
         const preOrderData = preOrderCart.map(item => ({
             productId: item.id.split('-')[0],
             name: item.name,
@@ -536,15 +526,10 @@ async function finalizePreOrder() {
             pricePerItem: item.price
         }));
         
-        // 3. Update the reservation in Firestore
-        const resDocRef = doc(db, "reservations", currentReservationId);
-        await updateDoc(resDocRef, {
-            preOrder: preOrderData,
-            paymentReceiptUrl: receiptUrl
-        });
+        currentReservationData.preOrder = preOrderData;
+        currentReservationData.paymentReceiptUrl = receiptUrl;
 
-        // 4. Success!
-        showFinalSuccessMessage();
+        await saveReservation();
 
     } catch (err) {
         console.error("Error finalizing pre-order:", err);
@@ -557,28 +542,67 @@ async function finalizePreOrder() {
     }
 }
 
+// --- FIX: New function to handle skipping (or backing out) ---
+async function handleBackSkip() {
+    if (preOrderModal) preOrderModal.style.display = 'none'; 
+    // Save the reservation with an empty pre-order
+    await saveReservation();
+}
+
+// --- FIX: New central function to save the reservation ---
+async function saveReservation() {
+    if (!currentReservationData) {
+        console.log("No reservation data to save.");
+        if(confirmReservationBtn) confirmReservationBtn.disabled = false;
+        return; 
+    }
+    
+    if (currentReservationId) {
+        console.log("Reservation already saved.");
+        return; 
+    }
+
+    try {
+        const docRef = await addDoc(reservationsRef, currentReservationData);
+        currentReservationId = docRef.id; 
+        console.log("✅ Reservation saved to Firestore, ID:", docRef.id);
+        
+        showFinalSuccessMessage();
+
+    } catch (err) {
+        console.error("Error saving reservation:", err);
+        alert("Could not save reservation. Check console for details.");
+        if(confirmReservationBtn) confirmReservationBtn.disabled = false;
+    } finally {
+        currentReservationData = null; 
+    }
+}
+
+
 // --- 10. Show Final Success Message and Reset ---
 function showFinalSuccessMessage() {
     if (preOrderModal) preOrderModal.style.display = "none";
     if (preOrderPaymentModal) preOrderPaymentModal.style.display = "none";
     
-    // Reset the main reservation form
     document.getElementById("reservationForm")?.reset();
     setFormDisabled(true);
     if (reservationDateInput) reservationDateInput.value = "";
     checkAuthState(); // Re-fill user data
+    updateTableVisuals(); 
     
-    // Show the success message
     document.getElementById("successMessage")?.classList.add("show");
     setTimeout(() => {
         document.getElementById("successMessage")?.classList.remove("show");
-    }, 3000); // Show for 3 seconds
+    }, 3000); 
+    
+    if (confirmReservationBtn) confirmReservationBtn.disabled = false;
 }
 
 
 // ===================================
 // INITIALIZE
 // ===================================
+
 document.addEventListener("DOMContentLoaded", () => {
   // --- Assign Reservation Form elements ---
   reservationDateInput = document.getElementById("reservationDate");
@@ -593,14 +617,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Assign Pre-Order Modal elements ---
   preOrderModal = document.getElementById("preorder-modal");
-  skipPreOrderBtn = document.getElementById("skip-preorder-btn");
   preOrderCategories = document.getElementById("preorder-categories");
   preOrderGrid = document.getElementById("preorder-grid");
-  preOrderCartItems = document.getElementById("preorder-cart-items");
-  preOrderSubtotal = document.getElementById("preorder-subtotal");
-  preOrderTax = document.getElementById("preorder-tax");
-  preOrderTotal = document.getElementById("preorder-total");
-  preOrderCheckoutBtn = document.getElementById("preorder-checkout-btn");
+  preOrderCartItems = document.getElementById("preOrderCartItems"); // <-- FIX: Corrected ID
+  
+  // --- FIX: Correct all these IDs to match the HTML ---
+  preOrderSubtotal = document.getElementById("preOrderSubtotal");
+  preOrderTax = document.getElementById("preOrderTax");
+  preOrderTotal = document.getElementById("preOrderTotal");
+  preOrderCheckoutBtn = document.getElementById("preOrderCheckoutBtn");
   
   // --- Assign Variation Modal elements ---
   preOrderVariationModal = document.getElementById("preorder-variation-modal");
@@ -615,6 +640,13 @@ document.addEventListener("DOMContentLoaded", () => {
   receiptFileInput = document.getElementById("receipt-file-input");
   receiptPreview = document.getElementById("receipt-preview");
   uploadReceiptBtn = document.getElementById("upload-receipt-btn");
+
+  // --- Assign NEW Cart Icon & Header Elements ---
+  preorderBackBtn = document.querySelector(".preorder-back-btn");
+  cartIconContainer = document.getElementById("cartIconContainer");
+  cartBadge = document.getElementById("cartBadge");
+  preOrderCartItemsWrapper = document.getElementById("preOrderCartItemsWrapper");
+
   
   // --- Standard Init ---
   setDateRestrictions();
@@ -622,24 +654,24 @@ document.addEventListener("DOMContentLoaded", () => {
   checkAuthState();
   setFormDisabled(true);
 
-  const authModal = document.getElementById('auth-validation-modal');
-    if (authModal) {
-        const authModalClose = authModal.querySelector('.auth-modal-close-btn');
-        if (authModalClose) {
-            authModalClose.addEventListener('click', () => {
-                authModal.classList.add('hidden');
-            });
-        }
-    }
-
   // --- Reservation Form Listeners ---
   if (checkAvailabilityBtn) checkAvailabilityBtn.addEventListener("click", checkAvailability);
   if (reservationDateInput) reservationDateInput.addEventListener("input", () => setFormDisabled(true));
   const form = document.getElementById("reservationForm");
   if (form) form.addEventListener("submit", handleReservation);
 
+  // --- Auth Modal Close Button ---
+  const authModal = document.getElementById('auth-validation-modal');
+  if (authModal) {
+      const authModalClose = authModal.querySelector('.auth-modal-close-btn');
+      if (authModalClose) {
+          authModalClose.addEventListener('click', () => {
+              authModal.classList.add('hidden');
+          });
+      }
+  }
+
   // --- Pre-Order Listeners ---
-  if (skipPreOrderBtn) skipPreOrderBtn.addEventListener("click", showFinalSuccessMessage);
   if (preOrderCategories) preOrderCategories.addEventListener("click", (e) => {
       if (e.target.tagName === "LI") {
           document.querySelectorAll("#preorder-categories li").forEach(li => li.classList.remove("active"));
@@ -658,6 +690,37 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   if (receiptFileInput) receiptFileInput.addEventListener("change", handleReceiptFileSelect);
   if (uploadReceiptBtn) uploadReceiptBtn.addEventListener("click", finalizePreOrder);
+
+  // --- NEW: Handle Back button in Pre-Order Modal ---
+  if (preorderBackBtn && preOrderModal) {
+      preorderBackBtn.addEventListener('click', handleBackSkip);
+  }
+
+  // --- NEW: Handle Cart Icon Click to toggle cart items visibility ---
+  if (cartIconContainer && preOrderCartItemsWrapper) {
+      cartIconContainer.addEventListener('click', () => {
+          preOrderCartItemsWrapper.classList.toggle('collapsed');
+      });
+  }
+  
+  // Ensure the badge starts hidden if cart is empty
+  if (cartBadge) {
+      if (preOrderCart.length === 0) {
+          cartBadge.style.display = 'none';
+      }
+  }
+  
+  // --- Event listener for the Pre-Order Cart Qty Buttons (Delegation) ---
+  if (preOrderCartItems) {
+      preOrderCartItems.addEventListener('click', (e) => {
+          const button = e.target.closest('.preorder-qty-btn');
+          if (button) {
+              const itemId = button.dataset.id;
+              const change = parseInt(button.dataset.change, 10);
+              adjustPreOrderItemQuantity(itemId, change);
+          }
+      });
+  }
 
   // ... (other existing listeners: terms, floor toggle, vip)
   const openTerms = document.getElementById("openTerms");
@@ -696,7 +759,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function completeVipPayment() {
       paymentModal.classList.add("hidden");
       vipPaymentCompleted = true;
-      if(confirmReservationBtn) confirmReservationBtn.click();
+      if(confirmReservationBtn) confirmReservationBtn.click(); // This will now re-run handleReservation
   }
   if (closePayment) closePayment.addEventListener("click", completeVipPayment);
   if (closePaymentBtn) closePaymentBtn.addEventListener("click", completeVipPayment);

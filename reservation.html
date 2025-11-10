@@ -953,7 +953,7 @@
             <div id="iyd2">
                 <div>
                     <a href="index.html">
-                        <img id="ihtxj" src="https://cdn.grapesjs.com/workspaces/cmfdeh7by2aaty0i3kbmgsflu/assets/bc3511d6-050e-47d3-bc04-602f13480d07__acaccialogo.jpg" alt="Acaccia Logo" />
+                        <img id="ihtxj" src="assets/acaccia_logo.png" alt="Acaccia Logo" />
                     </a>
                 </div>
                 <button id="mobile-menu-toggle">
@@ -1192,8 +1192,7 @@
 <div id="preorder-modal" class="preorder-modal">
     <div class="preorder-modal-content">
         <div class="preorder-header">
-            <h2>Pre-Order Your Food</h2>
-            <button id="skip-preorder-btn" class="skip-btn">Skip for now</button>
+            <button class="preorder-back-btn">&larr;</button> <h2>Pre-Order Your Food</h2>
         </div>
         <div class="preorder-body">
             <div class="preorder-sidebar">
@@ -1206,27 +1205,37 @@
                 <div id="preorder-grid" class="preorder-grid">
                     </div>
             </div>
-            <div class="preorder-cart">
-                <h4>Your Pre-Order</h4>
-                <div id="preorder-cart-items" class="preorder-cart-items">
-                    <p style="color: #888; text-align: center;">Your cart is empty.</p>
-                </div>
-                <div class="preorder-total">
-                    <div class="total-line">
-                        <span>Subtotal:</span>
-                        <span id="preorder-subtotal">₱0.00</span>
-                    </div>
-                    <div class="total-line">
-                        <span>Tax (12%):</span>
-                        <span id="preorder-tax">₱0.00</span>
-                    </div>
-                    <div class="total-line total-final">
-                        <span>Total:</span>
-                        <span id="preorder-total">₱0.00</span>
-                    </div>
-                </div>
-                <button id="preorder-checkout-btn" class="submit-btn" disabled>Checkout</button>
-            </div>
+<div class="preorder-cart">
+    <div class="preorder-cart-summary-header">
+        <h3>Your Pre-Order</h3>
+        <div class="cart-icon-container" id="cartIconContainer">
+            <img src="assets/cart_icon.png" alt="Cart" class="cart-icon"> 
+            <span class="cart-badge" id="cartBadge">0</span>
+        </div>
+    </div>
+
+    <div id="preOrderCartItemsWrapper" class="preorder-cart-items-wrapper collapsed">
+        <div id="preOrderCartItems" class="preorder-cart-items">
+            <p style="color: #888; text-align: center;">Your cart is empty.</p>
+        </div>
+    </div>
+
+    <div class="preorder-summary"> 
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span id="preOrderSubtotal">₱0.00</span>
+        </div>
+        <div class="summary-row">
+            <span>Tax (12%):</span>
+            <span id="preOrderTax">₱0.00</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total:</span>
+            <span id="preOrderTotal">₱0.00</span>
+        </div>
+    </div>
+    <button id="preOrderCheckoutBtn" class="preorder-checkout-btn" disabled>Checkout</button>
+</div>
         </div>
     </div>
 </div>
