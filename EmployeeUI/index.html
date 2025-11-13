@@ -47,12 +47,6 @@
                             <span id="inventory-alert-dot"></span>
                         </button>
                 </li>
-                <li class="nav-item" data-permission="inventory">
-                <button class="nav-link" data-section="inventory-log">
-                    <span class="nav-icon">📋</span>
-                    Inventory Log
-                </button>
-                </li>
                 <li class="nav-item" data-permission="transactions">
                     <button id="transactions-tab" button class="nav-link" data-section="transactions">
                         <span class="nav-icon">💳</span>
@@ -243,8 +237,10 @@
                                 <section id="inventory-section" class="content-section">
                                 <div class="section-header">
                                     <h1>Inventory Management</h1>
-                                    <div class="header-actions"> <button id="manage-categories-btn" class="btn btn--secondary">Manage Categories</button>
-                                            <button id="add-product-btn" class="btn btn--primary">Add Product</button>
+                                    <div class="header-actions"> 
+                                        <button id="view-inventory-log-btn" class="btn btn--secondary">View Logs</button>
+                                        <button id="manage-categories-btn" class="btn btn--secondary">Manage Categories</button>
+                                        <button id="add-product-btn" class="btn btn--primary">Add Product</button>
                                     </div>
                                 </div>
 
@@ -311,6 +307,17 @@
 <section id="inventory-log-section" class="content-section hidden">
     <div class="section-header">
         <h1>Inventory Log</h1>
+        <div class="header-actions">
+            <div class="filter-controls" style="display: flex; gap: 10px; align-items: center;">
+                    <select id="log-date-filter" class="form-control" style="padding: 6px; width: auto;">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+            <button id="back-to-inventory-btn" class="btn btn--primary">← Back to Inventory</button>
+        </div>
     </div>
 
     <div class="table-container">
@@ -513,25 +520,19 @@
                 </div>
             </section>
 
-                <section id="feedback-section" class="content-section">
+<section id="feedback-section" class="content-section">
                     <div class="section-header">
-                        <h1>Customer Feedback Management</h1>
+                        <h1>Customer Feedback</h1>
+                        <div class="header-actions">
+                            <div class="average-rating-card">
+                                <h5>Average Rating</h5>
+                                <h2 id="overall-average-rating">...</h2>
+                            </div>
+                        </div>
                     </div>
-                    <div class="table-container">
-                        <table id="feedbackTable">
-                            <thead>
-                                <tr>
-                                    <th>Customer Name</th>
-                                    <th>Rating</th> <th>Comment</th>
-                                    <th>Image</th> <th>Date Submitted</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                </tbody>
-                        </table>
-                    </div>
+                
+                    <div class="feedback-grid" id="feedback-grid-container">
+                        </div>
                 </section>
 
             <section id="analytics-section" class="content-section">

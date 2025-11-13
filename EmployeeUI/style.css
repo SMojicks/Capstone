@@ -2998,3 +2998,341 @@ body.sidebar-collapsed .sidebar {
 #product-variations-list .ingredient-row .remove-ingredient:hover {
     background: var(--color-red-600);
 }
+/* ========================================
+   NEW FEEDBACK DASHBOARD STYLES
+   ======================================== */
+
+/* Average Rating Card in Header */
+.average-rating-card {
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 12px 20px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    min-width: 150px;
+}
+.average-rating-card h5 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+.average-rating-card h2 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-primary);
+}
+
+/* Feedback Grid Layout */
+.feedback-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* Individual Feedback Card */
+.feedback-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-fast);
+}
+.feedback-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Highlight pending reviews */
+.feedback-card.pending {
+    border-color: var(--color-orange);
+    background-color: var(--color-orange-light);
+}
+
+.feedback-card .feedback-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.feedback-card.pending .feedback-header {
+    border-bottom-color: #ffe0b2; /* Lighter orange */
+}
+
+.feedback-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.feedback-card .overall-stars {
+    font-size: 1.1rem;
+    color: var(--color-secondary);
+    font-weight: 700;
+}
+.feedback-card .feedback-rating-emoji {
+    font-size: 1.5rem;
+}
+
+.feedback-card .feedback-comment {
+    padding: 16px;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+/* Detailed Star Ratings */
+.feedback-card .detailed-ratings {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--color-border);
+    margin-top: auto;
+}
+.feedback-card .rating-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+.feedback-card .rating-item span:first-child {
+    font-weight: 500;
+    color: var(--color-text);
+}
+.feedback-card .rating-display-stars {
+    font-size: 1rem;
+    color: var(--color-secondary);
+}
+
+/* Feedback Photo */
+.feedback-card .feedback-photo {
+    padding: 0 16px 16px;
+}
+.feedback-card .feedback-photo img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+}
+
+/* Footer (Date & Actions) */
+.feedback-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+}
+.feedback-card.pending .feedback-footer {
+    background-color: #fffaf0;
+    border-top-color: #ffe0b2;
+}
+
+.feedback-card .feedback-date {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.feedback-card .feedback-actions {
+    display: flex;
+    gap: 10px;
+}
+.feedback-card .feedback-actions .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+.btn--icon-approve {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+}
+.btn--icon-approve:hover {
+    background-color: var(--color-primary-hover);
+}
+/* ========================================
+   NEW FEEDBACK DASHBOARD STYLES
+   ======================================== */
+
+/* Average Rating Card in Header */
+.average-rating-card {
+    background: var(--color-white);
+    color: var(--color-text);
+    padding: 12px 20px;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    min-width: 150px;
+}
+.average-rating-card h5 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+.average-rating-card h2 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-primary);
+}
+
+/* Feedback Grid Layout */
+.feedback-grid {
+    display: grid;
+    /* This creates 1 column on mobile, 2 on tablet, 3 on desktop */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* Individual Feedback Card */
+.feedback-card {
+    background-color: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease;
+}
+.feedback-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Highlight pending reviews */
+.feedback-card.pending {
+    border-color: var(--color-orange-500);
+    background-color: var(--color-brown-50); /* A light yellow/beige */
+}
+
+.feedback-card .feedback-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.feedback-card.pending .feedback-header {
+    border-bottom-color: var(--color-brown-200);
+}
+
+.feedback-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.feedback-card .overall-stars {
+    font-size: 1.1rem;
+    color: var(--color-secondary);
+    font-weight: 700;
+}
+.feedback-card .feedback-rating-emoji {
+    font-size: 1.5rem;
+}
+
+.feedback-card .feedback-comment {
+    padding: 16px;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    flex-grow: 1; /* This makes the card grow to fill space */
+}
+
+/* Detailed Star Ratings */
+.feedback-card .detailed-ratings {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--color-border);
+    margin-top: auto; /* Pushes to the bottom */
+}
+.feedback-card .rating-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+.feedback-card .rating-item span:first-child {
+    font-weight: 500;
+    color: var(--color-text);
+}
+.feedback-card .rating-display-stars {
+    font-size: 1rem;
+    color: var(--color-secondary);
+}
+
+/* Feedback Photo */
+.feedback-card .feedback-photo {
+    padding: 0 16px 16px;
+}
+.feedback-card .feedback-photo img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+}
+
+/* Footer (Date & Actions) */
+.feedback-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-gray-50);
+}
+.feedback-card.pending .feedback-footer {
+    background-color: var(--color-brown-100);
+    border-top-color: var(--color-brown-200);
+}
+
+.feedback-card .feedback-date {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.feedback-card .feedback-actions {
+    display: flex;
+    gap: 10px;
+}
+.feedback-card .feedback-actions .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+/* Use existing button styles but ensure they are styled if base .btn-icon isn't present */
+.btn--icon-approve {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+}
+.btn--icon-approve:hover {
+    background-color: var(--color-primary-hover);
+}

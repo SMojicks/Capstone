@@ -21,11 +21,6 @@
                 <p id="welcomeSubtext">Enter your credentials to view your account</p>
             </div>
 
-            <div class="login-type-selector">
-                <button class="login-type-btn active" id="customerBtn" onclick="switchLoginType('customer')">Customer</button>
-                <button class="login-type-btn" id="employeeBtn" onclick="switchLoginType('employee')">Employee</button>
-            </div>
-
             <form id="loginForm">
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -59,8 +54,16 @@
                 <button type="submit" class="main-button" id="mainButton">Log In</button>
             </form>
 
-            <div class="employee-login" id="employeeLoginLink">
-                <button type="button" onclick="switchLoginType('employee')">Login as Employee</button>
+<div class="employee-login" id="employeeLoginLink">
+                <button type="button" class="employee-login-btn" onclick="switchLoginType('employee')">
+                    Log in as Employee
+                </button>
+            </div>
+            
+            <div class="employee-login" id="customerLoginLink" style="display: none;">
+                <button type="button" class="employee-login-btn" onclick="switchLoginType('customer')">
+                    ← Back to Customer Login
+                </button>
             </div>
 
             <div class="register-link" id="registerLink">
@@ -69,43 +72,57 @@
         </div>
     </div>
 
-    <script>
+ <script>
         // This UI-toggling script stays
         let currentLoginType = 'customer';
         let isRegisterMode = false;
 
         function switchLoginType(type) {
             currentLoginType = type;
-            document.getElementById('customerBtn').classList.toggle('active', type === 'customer');
-            document.getElementById('employeeBtn').classList.toggle('active', type === 'employee');
+
+            const title = document.getElementById('welcomeTitle');
+            const subtext = document.getElementById('welcomeSubtext');
+            const mainButton = document.getElementById('mainButton');
+            const employeeLink = document.getElementById('employeeLoginLink');
+            const customerLink = document.getElementById('customerLoginLink');
+            const registerLink = document.getElementById('registerLink');
+            const forgotLink = document.getElementById('forgotLink');
 
             if (type === 'customer') {
-                // --- THIS BLOCK IS THE FIX ---
-                // Check if we are in register or login mode and set text accordingly
+                // --- Customer Mode ---
+                // Check if we are in register or login mode
                 if (isRegisterMode) {
-                    document.getElementById('welcomeTitle').textContent = 'Create Account';
-                    document.getElementById('welcomeSubtext').textContent = 'Join our community today';
-                    document.getElementById('mainButton').textContent = 'Sign Up';
+                    title.textContent = 'Create Account';
+                    subtext.textContent = 'Join our community today';
+                    mainButton.textContent = 'Sign Up';
+                    showRegistrationFields();
+                    forgotLink.style.display = 'none';
+                    registerLink.innerHTML = '<a href="#" onclick="toggleMode()">Already have an account? Log In</a>';
                 } else {
-                    document.getElementById('welcomeTitle').textContent = 'Welcome Back';
-                    document.getElementById('welcomeSubtext').textContent = 'Enter your credentials to view your account';
-                    document.getElementById('mainButton').textContent = 'Log In';
+                    title.textContent = 'Welcome Back';
+                    subtext.textContent = 'Enter your credentials to view your account';
+                    mainButton.textContent = 'Log In';
+                    hideRegistrationFields();
+                    forgotLink.style.display = 'block';
+                    registerLink.innerHTML = '<a href="#" onclick="toggleMode()">Don\'t have an account? Sign Up</a>';
                 }
-                // --- END OF FIX ---
                 
-                // Show customer-specific links
-                document.getElementById('employeeLoginLink').style.display = 'block';
-                document.getElementById('registerLink').style.display = 'block';
+                // Toggle link visibility
+                employeeLink.style.display = 'block';
+                customerLink.style.display = 'none';
+                registerLink.style.display = 'block';
 
             } else {
                 // --- Employee Mode ---
-                document.getElementById('welcomeTitle').textContent = 'Employee Login';
-                document.getElementById('welcomeSubtext').textContent = 'Access employee dashboard';
-                document.getElementById('mainButton').textContent = 'Employee Login';
+                title.textContent = 'Employee Login';
+                subtext.textContent = 'Access employee dashboard';
+                mainButton.textContent = 'Employee Login';
                 
-                // Hide customer-specific links
-                document.getElementById('employeeLoginLink').style.display = 'none';
-                document.getElementById('registerLink').style.display = 'none';
+                // Hide customer-specific links/fields
+                employeeLink.style.display = 'none';
+                customerLink.style.display = 'block';
+                registerLink.style.display = 'none';
+                forgotLink.style.display = 'none';
                 
                 // Hide registration fields if they were open and reset mode
                 hideRegistrationFields();
@@ -116,22 +133,10 @@
         function toggleMode() {
             if (currentLoginType !== 'customer') return;
             isRegisterMode = !isRegisterMode;
-            if (isRegisterMode) {
-                document.getElementById('welcomeTitle').textContent = 'Create Account';
-                document.getElementById('welcomeSubtext').textContent = 'Join our community today';
-                document.getElementById('mainButton').textContent = 'Sign Up';
-                document.getElementById('registerLink').innerHTML = '<a href="#" onclick="toggleMode()">Already have an account? Log In</a>';
-                document.getElementById('forgotLink').style.display = 'none';
-                showRegistrationFields();
-            } else {
-                document.getElementById('welcomeTitle').textContent = 'Welcome Back';
-                document.getElementById('welcomeSubtext').textContent = 'Enter your credentials to view your account';
-                document.getElementById('mainButton').textContent = 'Log In';
-                document.getElementById('registerLink').innerHTML = '<a href="#" onclick="toggleMode()">Don\'t have an account? Sign Up</a>';
-                document.getElementById('forgotLink').style.display = 'block';
-                hideRegistrationFields();
-            }
+            // switchLoginType('customer') will now handle all the text/field changes
+            switchLoginType('customer');
         }
+        
         function showRegistrationFields() {
             document.getElementById('confirmPasswordGroup').classList.remove('hidden');
             document.getElementById('fullNameGroup').classList.remove('hidden');
@@ -143,6 +148,7 @@
             document.getElementById('phoneGroup').classList.add('hidden');
         }
     </script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var toggleBtn = document.getElementById('mobile-menu-toggle');

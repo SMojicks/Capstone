@@ -1,4 +1,3 @@
-
 // EmployeeUI/app.js
 
 import { loadTransactions } from "../scripts/transaction.js";
@@ -41,6 +40,9 @@ function initializeApp() {
             setupNavigation(firstVisibleTab); // Pass the first visible tab to set as default
             setupLogout();
             setupSidebarToggle();
+            
+            // --- ADDED THIS CALL ---
+            setupInventoryToggle();
             
             // 3. Update employee info in navbar
             document.querySelector(".employee-name").textContent = userProfile.fullName || "Employee";
@@ -143,7 +145,7 @@ function setupNavigation(defaultSection) {
         if (defaultSection === 'transactions') loadTransactions();
         if (defaultSection === 'analytics') loadAnalytics();
         if (defaultSection === 'accounts') loadAccounts();
-        if (defaultSection === 'inventory-log') loadInventoryLog();
+        // --- REMOVED inventory-log load ---
     } else {
         // Fallback if the default doesn't exist (e.g., no permissions)
         document.getElementById('pos-section').classList.add('active');
@@ -171,9 +173,7 @@ function setupNavigation(defaultSection) {
             if (targetSectionId === 'accounts') { 
                 loadAccounts();
             }
-            if (targetSectionId === 'inventory-log') { 
-            loadInventoryLog();
-            }
+            // --- REMOVED inventory-log block ---
         });
     });
 }
@@ -205,4 +205,38 @@ function setupSidebarToggle() {
       document.body.classList.toggle('sidebar-collapsed');
     });
   }
+}
+
+// ---
+// --- NEW FUNCTION TO TOGGLE INVENTORY/LOGS ---
+// ---
+/**
+ * Sets up the toggle between Inventory and Inventory Log sections.
+ */
+function setupInventoryToggle() {
+    const viewLogBtn = document.getElementById('view-inventory-log-btn');
+    const backToInvBtn = document.getElementById('back-to-inventory-btn');
+    const inventorySection = document.getElementById('inventory-section');
+    const logSection = document.getElementById('inventory-log-section');
+
+    if (viewLogBtn && backToInvBtn && inventorySection && logSection) {
+        
+        viewLogBtn.addEventListener('click', () => {
+            // Hide inventory, show logs
+            inventorySection.classList.remove('active');
+            logSection.classList.add('active');
+            
+            // Manually load the log data *now*
+            loadInventoryLog(); 
+        });
+
+        backToInvBtn.addEventListener('click', () => {
+            // Hide logs, show inventory
+            logSection.classList.remove('active');
+            inventorySection.classList.add('active');
+            // No need to reload inventory, it's already loaded
+        });
+    } else {
+        console.warn("Could not find inventory toggle buttons or sections.");
+    }
 }

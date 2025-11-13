@@ -12,13 +12,14 @@ import {
   updateDoc 
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
+let hasUnsavedChanges = false;
 async function checkAuthState() {
     onAuthStateChanged(auth, async (user) => {
         const modal = document.getElementById('auth-validation-modal'); // Get the modal
 
         if (user) {
             // User is LOGGED IN
+            
             currentUserId = user.uid;
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
@@ -455,6 +456,7 @@ function updatePreOrderCart() {
     // Determine which set of elements to update
     const isDesktop = window.innerWidth > 992;
     
+    // ... (all your existing code for finding elements) ...
     const itemsEl = isDesktop ? preOrderCartItemsDesktop : preOrderCartItems;
     const badgeEl = isDesktop ? cartBadgeDesktop : cartBadge;
     const wrapperEl = isDesktop ? preOrderCartItemsWrapperDesktop : preOrderCartItemsWrapper;
@@ -463,18 +465,22 @@ function updatePreOrderCart() {
     const taxEl = isDesktop ? preOrderTaxDesktop : preOrderTax;
     const totalEl = isDesktop ? preOrderTotalDesktop : preOrderTotal;
     const paymentTotalEl = isDesktop ? paymentTotalAmountDesktop : paymentTotalAmount;
-    const clearCartBtn = isDesktop ? clearCartBtnDesktop : clearCartBtnMobile; // NEW
+    const clearCartBtn = isDesktop ? clearCartBtnDesktop : clearCartBtnMobile; 
 
     if (!itemsEl || !badgeEl) return;
+
+    // --- NEW: Set the flag if the cart has items ---
+    hasUnsavedChanges = preOrderCart.length > 0;
     
     const totalDistinctItems = preOrderCart.length; 
     badgeEl.textContent = totalDistinctItems.toString();
     badgeEl.style.display = totalDistinctItems > 0 ? 'block' : 'none';
 
+    // ... (rest of the function is identical) ...
     if (preOrderCart.length === 0) {
         itemsEl.innerHTML = `<p style="color: #888; text-align: center;">Your cart is empty.</p>`;
         checkoutBtnEl.disabled = true;
-        if (clearCartBtn) clearCartBtn.disabled = true; // NEW
+        if (clearCartBtn) clearCartBtn.disabled = true; 
         if (wrapperEl && !wrapperEl.classList.contains('collapsed')) {
              wrapperEl.classList.add('collapsed');
         }
@@ -496,13 +502,13 @@ function updatePreOrderCart() {
             itemsEl.appendChild(itemEl);
         });
         checkoutBtnEl.disabled = false;
-        if (clearCartBtn) clearCartBtn.disabled = false; // NEW
+        if (clearCartBtn) clearCartBtn.disabled = false; 
         if (wrapperEl && wrapperEl.classList.contains('collapsed')) {
              wrapperEl.classList.remove('collapsed');
         }
     }
     
-    // Update totals
+    // ... (rest of the function for totals) ...
     const subtotal = preOrderCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const tax = subtotal * 0.12;
     const total = subtotal + tax;
@@ -540,7 +546,7 @@ function openPaymentModal() {
 // --- 8. Handle Receipt File Selection (Modified) ---
 function handleReceiptFileSelect(event, isDesktop = false) {
     const uploadBtn = isDesktop ? uploadReceiptBtnDesktop : uploadReceiptBtn;
-    const previewLink = isDesktop ? receiptPreviewLinkDesktop : receiptPreviewLink; // UPDATED
+    const previewLink = isDesktop ? receiptPreviewLinkDesktop : receiptPreviewLink; 
 
     const file = event.target.files[0];
     if (file) {
@@ -549,6 +555,9 @@ function handleReceiptFileSelect(event, isDesktop = false) {
             return;
         }
         currentReceiptFile = file;
+
+        // --- NEW: Set the flag ---
+        hasUnsavedChanges = true;
 
         // Use URL.createObjectURL for lightweight preview
         const objectURL = URL.createObjectURL(file);
@@ -614,7 +623,7 @@ async function finalizePreOrder() {
 async function handleBackSkip() {
     // This function now does the same thing on mobile and desktop:
     // It cancels the reservation process and goes back to the main form.
-    
+    hasUnsavedChanges = false;
     if (window.innerWidth <= 992) {
         // --- Mobile: Hide Modal ---
         if (preOrderModal) preOrderModal.style.display = 'none'; 
@@ -668,6 +677,7 @@ async function saveReservation() {
 
 // --- 12. Show Final Success Message and Reset (Modified) ---
 function showFinalSuccessMessage() {
+    hasUnsavedChanges = false;
     if (window.innerWidth <= 992) {
         // --- Mobile: Hide Modals ---
         if (preOrderModal) preOrderModal.style.display = "none";
@@ -774,6 +784,23 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeTableClicks();
   checkAuthState();
   setFormDisabled(true);
+
+// --- NEW: Listen for unsaved changes ---
+  const reservationFormInputs = document.querySelectorAll('#reservationForm input, #reservationForm select, #reservationForm textarea');
+  reservationFormInputs.forEach(input => {
+      input.addEventListener('input', () => {
+          hasUnsavedChanges = true;
+      });
+  });
+
+  // --- NEW: Add the browser warning ---
+  window.addEventListener('beforeunload', (event) => {
+      if (hasUnsavedChanges) {
+          // Trigger the browser's confirmation prompt
+          event.preventDefault();
+          event.returnValue = ''; // Required for most browsers
+      }
+  });
 
   // --- Reservation Form Listeners ---
   if (checkAvailabilityBtn) checkAvailabilityBtn.addEventListener("click", checkAvailability);
